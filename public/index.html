@@ -7,234 +7,241 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --red: #f54251; --red-dk: #c0303d; --red-lt: #fde8ea;
-  --white: #ffffff; --off: #f5f5f5; --border: #e5e5e5;
-  --text: #1a1a1a; --muted: #888; --radius: 12px;
+  --red:#f54251; --red-dk:#c0303d; --red-lt:#fde8ea;
+  --white:#fff; --off:#f5f5f5; --border:#e5e5e5;
+  --text:#1a1a1a; --muted:#888; --radius:12px;
 }
-body.dark { --white: #111; --off: #1a1a1a; --border: #2e2e2e; --text: #f1f1f1; --muted: #777; }
-html, body { height: 100%; background: var(--off); color: var(--text); font-family: 'Segoe UI', system-ui, Arial, sans-serif; overflow: hidden; transition: background .2s, color .2s; }
-
-.page { display: none; width: 100vw; height: 100vh; flex-direction: column; }
-.page.active { display: flex; }
+body.dark { --white:#111; --off:#1a1a1a; --border:#2e2e2e; --text:#f1f1f1; --muted:#666; }
+html,body { height:100%; background:var(--off); color:var(--text); font-family:'Segoe UI',system-ui,Arial,sans-serif; overflow:hidden; }
+.page { display:none; width:100vw; height:100vh; flex-direction:column; }
+.page.active { display:flex; }
 
 /* TOPBAR */
-.topbar { height: 56px; background: var(--red); color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; flex-shrink: 0; box-shadow: 0 2px 10px rgba(245,66,81,.3); }
-.topbar-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 2px; }
-.topbar-sub { font-size: 11px; opacity: .75; margin-top: 2px; }
-.topbar-right { display: flex; gap: .5rem; align-items: center; }
-.pill { padding: 6px 16px; border-radius: 20px; border: 1.5px solid rgba(255,255,255,.5); background: transparent; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s; white-space: nowrap; }
-.pill:hover { background: rgba(255,255,255,.18); }
-.pill.solid { background: #fff; color: var(--red); border-color: #fff; }
-.pill.solid:hover { background: #ffe4e6; }
-.pill:disabled { opacity: .4; cursor: not-allowed; }
+.topbar { height:52px; background:var(--red); color:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 1.25rem; flex-shrink:0; box-shadow:0 2px 8px rgba(245,66,81,.3); }
+.topbar-logo { font-size:1.1rem; font-weight:900; letter-spacing:2px; }
+.topbar-sub { font-size:10px; opacity:.75; margin-top:1px; }
+.topbar-right { display:flex; gap:.4rem; align-items:center; }
+.pill { padding:5px 14px; border-radius:20px; border:1.5px solid rgba(255,255,255,.5); background:transparent; color:#fff; font-size:12px; font-weight:600; cursor:pointer; transition:background .15s; white-space:nowrap; }
+.pill:hover { background:rgba(255,255,255,.18); }
+.pill.solid { background:#fff; color:var(--red); border-color:#fff; }
+.pill.solid:hover { background:#ffe4e6; }
+.pill:disabled { opacity:.4; cursor:not-allowed; }
 
 /* JOIN */
-#page-join { align-items: center; justify-content: center; background: linear-gradient(135deg, #fff 0%, #ffe8ea 100%); }
-body.dark #page-join { background: linear-gradient(135deg, #111 0%, #2a0a0e 100%); }
-.join-card { background: var(--white); border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 8px 48px rgba(245,66,81,.15); border: 1.5px solid var(--border); }
-.join-logo { font-size: 3rem; font-weight: 900; color: var(--red); letter-spacing: 3px; }
-.join-tagline { color: var(--muted); font-size: 14px; margin: .25rem 0 2rem; }
-.field-lbl { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: .4rem; }
-.txt-input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 15px; background: var(--off); outline: none; margin-bottom: 1rem; transition: border-color .15s; }
-.txt-input:focus { border-color: var(--red); background: var(--white); }
-.big-btn { width: 100%; padding: 13px; background: var(--red); color: #fff; border: none; border-radius: var(--radius); font-size: 16px; font-weight: 800; cursor: pointer; transition: background .15s, transform .1s; letter-spacing: .5px; }
-.big-btn:hover { background: var(--red-dk); }
-.big-btn:active { transform: scale(.98); }
-.big-btn:disabled { background: #ccc; color: #999; cursor: not-allowed; transform: none; }
+#page-join { align-items:center; justify-content:center; background:linear-gradient(135deg,#fff 0%,#ffe8ea 100%); }
+body.dark #page-join { background:linear-gradient(135deg,#111 0%,#2a0a0e 100%); }
+.join-card { background:var(--white); border-radius:20px; padding:2.5rem; width:100%; max-width:400px; box-shadow:0 8px 40px rgba(245,66,81,.15); border:1.5px solid var(--border); }
+.join-logo { font-size:2.8rem; font-weight:900; color:var(--red); letter-spacing:3px; }
+.join-tagline { color:var(--muted); font-size:13px; margin:.2rem 0 1.75rem; }
+.field-lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:.35rem; }
+.txt-input { width:100%; padding:10px 13px; border:1.5px solid var(--border); border-radius:var(--radius); color:var(--text); font-size:14px; background:var(--off); outline:none; margin-bottom:.85rem; transition:border-color .15s; }
+.txt-input:focus { border-color:var(--red); background:var(--white); }
+.big-btn { width:100%; padding:12px; background:var(--red); color:#fff; border:none; border-radius:var(--radius); font-size:15px; font-weight:800; cursor:pointer; transition:background .15s,transform .1s; }
+.big-btn:hover { background:var(--red-dk); }
+.big-btn:active { transform:scale(.98); }
+.big-btn:disabled { background:#ccc; color:#999; cursor:not-allowed; transform:none; }
 
 /* LOBBY */
-#page-lobby { background: var(--off); }
-.lobby-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-.lobby-top { padding: 1.25rem 1.5rem 1rem; border-bottom: 1.5px solid var(--border); background: var(--white); flex-shrink: 0; }
-.lobby-top h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: .75rem; display: flex; align-items: center; gap: .4rem; }
-.dot-green { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; display: inline-block; }
-.players-row { display: flex; flex-wrap: wrap; gap: .5rem; }
-.player-chip { display: flex; align-items: center; gap: .5rem; background: var(--off); border: 1.5px solid var(--border); border-radius: 30px; padding: 5px 12px 5px 5px; font-size: 13px; font-weight: 600; }
-.player-chip .av { width: 26px; height: 26px; border-radius: 50%; background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
-.chip-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 700; background: var(--red-lt); color: var(--red); margin-left: 2px; }
-.chip-badge.playing { background: #e0f2fe; color: #0369a1; }
-.chip-badge.ready { background: #dcfce7; color: #15803d; }
-.lobby-bottom { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1.5rem; gap: 1.5rem; }
-.find-btn-wrap { text-align: center; }
-.find-game-btn { padding: 18px 56px; background: var(--red); color: #fff; border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: background .15s, transform .1s, box-shadow .15s; box-shadow: 0 6px 24px rgba(245,66,81,.35); letter-spacing: .5px; }
-.find-game-btn:hover { background: var(--red-dk); box-shadow: 0 8px 32px rgba(245,66,81,.45); transform: translateY(-1px); }
-.find-game-btn:active { transform: scale(.97); }
-.find-game-btn.searching { background: var(--off); color: var(--red); border: 2px solid var(--red); box-shadow: none; cursor: default; }
-.find-sub { font-size: 13px; color: var(--muted); margin-top: .5rem; }
-.queue-area { width: 100%; max-width: 540px; background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; padding: 1.25rem; display: none; }
-.queue-area.show { display: block; }
-.queue-title { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: .75rem; display: flex; align-items: center; gap: .5rem; }
-.searching-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: rpulse 1s infinite; display: inline-block; }
-@keyframes rpulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
-.queue-list { display: flex; flex-direction: column; gap: .5rem; }
-.queue-empty { font-size: 14px; color: var(--muted); text-align: center; padding: 1rem 0; }
-.queue-item { display: flex; align-items: center; gap: .75rem; padding: .65rem .75rem; background: var(--off); border-radius: 10px; border: 1.5px solid var(--border); }
-.queue-item .qav { width: 34px; height: 34px; border-radius: 50%; background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
-.queue-item .qname { font-size: 14px; font-weight: 600; }
-.queue-item .qsub { font-size: 11px; color: var(--muted); }
-.challenge-btn { margin-left: auto; padding: 6px 16px; background: var(--red); color: #fff; border: none; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s; white-space: nowrap; }
-.challenge-btn:hover { background: var(--red-dk); }
-.challenge-btn.sent { background: #ccc; color: #666; cursor: not-allowed; }
-.cancel-find-btn { padding: 8px 24px; background: transparent; color: var(--red); border: 1.5px solid var(--red); border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
-.cancel-find-btn:hover { background: var(--red-lt); }
+#page-lobby { background:var(--off); }
+.lobby-body { flex:1; overflow-y:auto; display:flex; flex-direction:column; }
+.lobby-top { padding:1rem 1.25rem .85rem; border-bottom:1.5px solid var(--border); background:var(--white); flex-shrink:0; }
+.lobby-top h3 { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:.6rem; display:flex; align-items:center; gap:.35rem; }
+.dot-green { width:7px; height:7px; border-radius:50%; background:#22c55e; display:inline-block; }
+.players-row { display:flex; flex-wrap:wrap; gap:.4rem; }
+.player-chip { display:flex; align-items:center; gap:.4rem; background:var(--off); border:1.5px solid var(--border); border-radius:30px; padding:4px 11px 4px 4px; font-size:12px; font-weight:600; }
+.player-chip .av { width:24px; height:24px; border-radius:50%; background:var(--red); color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; }
+.chip-badge { font-size:10px; padding:2px 6px; border-radius:10px; font-weight:700; background:var(--red-lt); color:var(--red); margin-left:2px; }
+.chip-badge.playing { background:#e0f2fe; color:#0369a1; }
+.chip-badge.ready { background:#dcfce7; color:#15803d; }
+.lobby-bottom { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:1.5rem; gap:1.25rem; }
+.find-game-btn { padding:16px 52px; background:var(--red); color:#fff; border:none; border-radius:50px; font-size:1rem; font-weight:800; cursor:pointer; box-shadow:0 6px 24px rgba(245,66,81,.35); letter-spacing:.5px; transition:background .15s,transform .1s; }
+.find-game-btn:hover { background:var(--red-dk); transform:translateY(-1px); }
+.find-game-btn.searching { background:var(--off); color:var(--red); border:2px solid var(--red); box-shadow:none; cursor:default; }
+.find-sub { font-size:12px; color:var(--muted); margin-top:.4rem; text-align:center; }
+.queue-area { width:100%; max-width:500px; background:var(--white); border:1.5px solid var(--border); border-radius:14px; padding:1rem; display:none; }
+.queue-area.show { display:block; }
+.queue-title { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:.6rem; display:flex; align-items:center; gap:.4rem; }
+.rpulse { width:7px; height:7px; border-radius:50%; background:var(--red); animation:rp 1s infinite; display:inline-block; }
+@keyframes rp { 0%,100%{opacity:1} 50%{opacity:.3} }
+.queue-empty { font-size:13px; color:var(--muted); text-align:center; padding:.75rem 0; }
+.queue-item { display:flex; align-items:center; gap:.65rem; padding:.55rem .65rem; background:var(--off); border-radius:9px; border:1.5px solid var(--border); margin-bottom:.4rem; }
+.qav { width:30px; height:30px; border-radius:50%; background:var(--red); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0; }
+.qname { font-size:13px; font-weight:600; }
+.qsub { font-size:10px; color:var(--muted); }
+.challenge-btn { margin-left:auto; padding:5px 14px; background:var(--red); color:#fff; border:none; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap; }
+.challenge-btn:hover { background:var(--red-dk); }
+.challenge-btn.sent { background:#ccc; color:#666; cursor:not-allowed; }
+.cancel-find-btn { padding:7px 22px; background:transparent; color:var(--red); border:1.5px solid var(--red); border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; }
+.cancel-find-btn:hover { background:var(--red-lt); }
 
 /* LOADING */
-#page-loading { align-items: center; justify-content: center; background: linear-gradient(135deg, var(--white) 0%, var(--red-lt) 100%); }
-body.dark #page-loading { background: linear-gradient(135deg, #111 0%, #2a0a0e 100%); }
-.loading-card { background: var(--white); border-radius: 24px; padding: 3rem 2.5rem; text-align: center; max-width: 400px; width: 92%; box-shadow: 0 8px 48px rgba(245,66,81,.15); border: 1.5px solid var(--border); }
-.vs-line { font-size: 2rem; font-weight: 900; margin-bottom: .5rem; }
-.vs-line span { color: var(--red); }
-.loading-card h2 { font-size: 1.5rem; font-weight: 800; color: var(--red); margin-bottom: .4rem; }
-.loading-card p { color: var(--muted); font-size: 14px; margin-bottom: 2rem; }
-.prog-bar { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-.prog-fill { height: 100%; background: var(--red); border-radius: 3px; width: 0%; transition: width 3s linear; }
-.ld-dots { display: flex; justify-content: center; gap: 6px; margin-top: 1.25rem; }
-.ld-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--red); opacity: .3; animation: pulse 1.2s infinite; }
-.ld-dots span:nth-child(2) { animation-delay: .2s; }
-.ld-dots span:nth-child(3) { animation-delay: .4s; }
+#page-loading { align-items:center; justify-content:center; background:linear-gradient(135deg,var(--white) 0%,var(--red-lt) 100%); }
+body.dark #page-loading { background:linear-gradient(135deg,#111 0%,#2a0a0e 100%); }
+.loading-card { background:var(--white); border-radius:20px; padding:2.5rem 2rem; text-align:center; max-width:380px; width:92%; box-shadow:0 8px 40px rgba(245,66,81,.15); border:1.5px solid var(--border); }
+.vs-line { font-size:1.8rem; font-weight:900; margin-bottom:.4rem; }
+.vs-line span { color:var(--red); }
+.loading-card h2 { font-size:1.35rem; font-weight:800; color:var(--red); margin-bottom:.3rem; }
+.loading-card p { color:var(--muted); font-size:13px; margin-bottom:1.75rem; }
+.prog-bar { width:100%; height:5px; background:var(--border); border-radius:3px; overflow:hidden; }
+.prog-fill { height:100%; background:var(--red); border-radius:3px; width:0%; transition:width 3s linear; }
+.ld-dots { display:flex; justify-content:center; gap:5px; margin-top:1rem; }
+.ld-dots span { width:7px; height:7px; border-radius:50%; background:var(--red); opacity:.3; animation:pulse 1.2s infinite; }
+.ld-dots span:nth-child(2){animation-delay:.2s} .ld-dots span:nth-child(3){animation-delay:.4s}
 @keyframes pulse { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
 
 /* PICK */
-#page-pick { background: var(--off); }
-.pick-topbar { background: var(--white); border-bottom: 1.5px solid var(--border); padding: 1rem 1.5rem; flex-shrink: 0; text-align: center; }
-.pick-topbar h2 { font-size: 1.3rem; font-weight: 800; color: var(--red); }
-.pick-topbar p { font-size: 13px; color: var(--muted); margin-top: .2rem; }
-.pick-scroll { flex: 1; overflow-y: auto; padding: 1rem; }
-.pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; max-width: 980px; margin: 0 auto; }
-.pick-card { aspect-ratio: 3/4; border-radius: var(--radius); overflow: hidden; border: 3px solid var(--border); cursor: pointer; position: relative; transition: border-color .15s, transform .15s; background: var(--white); display: flex; flex-direction: column; }
-.pick-card .pimg { flex: 1; overflow: hidden; }
-.pick-card .pimg img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.pick-card .pname { font-size: 11px; font-weight: 700; text-align: center; padding: 4px 4px 5px; background: var(--white); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-top: 1px solid var(--border); }
-.pick-card:hover:not(.disabled) { border-color: var(--red); transform: scale(1.04); }
-.pick-card.chosen { border-color: var(--red); box-shadow: 0 0 0 3px rgba(245,66,81,.2); }
-.pick-card.taken { opacity: .3; cursor: not-allowed; }
-.pick-tick { position: absolute; top: 6px; right: 6px; background: var(--red); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; }
-.pick-card.chosen .pick-tick { display: flex; }
-.pick-footer { background: var(--white); border-top: 1.5px solid var(--border); padding: .85rem 1.5rem; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.pick-status { font-size: 13px; color: var(--muted); }
-.confirm-btn { padding: 10px 32px; background: var(--red); color: #fff; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s; }
-.confirm-btn:hover { background: var(--red-dk); }
-.confirm-btn:disabled { background: #ccc; color: #999; cursor: not-allowed; }
+#page-pick { background:var(--off); }
+.pick-topbar { background:var(--white); border-bottom:1.5px solid var(--border); padding:.85rem 1.25rem; flex-shrink:0; text-align:center; }
+.pick-topbar h2 { font-size:1.2rem; font-weight:800; color:var(--red); }
+.pick-topbar p { font-size:12px; color:var(--muted); margin-top:.2rem; }
+.pick-scroll { flex:1; overflow-y:auto; padding:.75rem; }
+.pick-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:8px; max-width:900px; margin:0 auto; }
+.pick-card { aspect-ratio:3/4; border-radius:var(--radius); overflow:hidden; border:3px solid var(--border); cursor:pointer; position:relative; transition:border-color .15s,transform .15s; background:var(--white); display:flex; flex-direction:column; }
+.pick-card .pimg { flex:1; overflow:hidden; }
+.pick-card .pimg img { width:100%; height:100%; object-fit:cover; display:block; }
+.pick-card .pname { font-size:10px; font-weight:700; text-align:center; padding:3px 3px 4px; background:var(--white); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-top:1px solid var(--border); }
+.pick-card:hover:not(.disabled) { border-color:var(--red); transform:scale(1.04); }
+.pick-card.chosen { border-color:var(--red); box-shadow:0 0 0 3px rgba(245,66,81,.2); }
+.pick-card.taken { opacity:.3; cursor:not-allowed; }
+.pick-tick { position:absolute; top:5px; right:5px; background:var(--red); color:#fff; width:22px; height:22px; border-radius:50%; display:none; align-items:center; justify-content:center; font-size:12px; font-weight:900; }
+.pick-card.chosen .pick-tick { display:flex; }
+.pick-footer { background:var(--white); border-top:1.5px solid var(--border); padding:.75rem 1.25rem; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+.pick-status { font-size:12px; color:var(--muted); }
+.confirm-btn { padding:9px 28px; background:var(--red); color:#fff; border:none; border-radius:var(--radius); font-size:13px; font-weight:700; cursor:pointer; }
+.confirm-btn:hover { background:var(--red-dk); }
+.confirm-btn:disabled { background:#ccc; color:#999; cursor:not-allowed; }
 
-/* GAME */
-#page-game { background: var(--off); }
-.game-body { flex: 1; overflow-y: auto; padding: 1rem 1.25rem 1.5rem; display: flex; flex-direction: column; gap: .75rem; }
-.turn-banner { border-radius: var(--radius); padding: .75rem 1rem; font-size: 14px; font-weight: 700; text-align: center; }
-.turn-banner.mine { background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; }
-.turn-banner.theirs { background: var(--red-lt); color: var(--red-dk); border: 1.5px solid #fca5a5; }
-body.dark .turn-banner.mine { background: #14532d; color: #86efac; }
-body.dark .turn-banner.theirs { background: #450a0a; color: #fca5a5; }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
-@media(max-width:560px){ .two-col { grid-template-columns: 1fr; } }
-.info-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: .85rem 1rem; }
-.info-card .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: .5rem; }
-.secret-row { display: flex; align-items: center; gap: .75rem; }
-.secret-thumb { width: 46px; height: 56px; border-radius: 8px; overflow: hidden; border: 2px solid var(--red); flex-shrink: 0; }
-.secret-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.secret-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
-.opp-row { display: flex; align-items: center; gap: .75rem; }
-.opp-av { width: 36px; height: 36px; border-radius: 50%; background: var(--red-lt); color: var(--red); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
-body.dark .opp-av { background: #2a0a0e; }
-.opp-name { font-size: 14px; font-weight: 700; }
-.opp-elim { font-size: 11px; color: var(--muted); margin-top: 2px; }
-.guess-counter { display: inline-flex; align-items: center; gap: 4px; background: var(--red-lt); color: var(--red); border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
-body.dark .guess-counter { background: #450a0a; }
-.board-hint { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+/* FIX 5: GAME — no scroll, all fits */
+#page-game { background:var(--off); overflow:hidden; }
+.game-inner { flex:1; display:flex; flex-direction:column; overflow:hidden; padding:.6rem .85rem; gap:.5rem; }
+.turn-banner { border-radius:var(--radius); padding:.55rem .85rem; font-size:13px; font-weight:700; text-align:center; flex-shrink:0; }
+.turn-banner.mine { background:#dcfce7; color:#15803d; border:1.5px solid #86efac; }
+.turn-banner.theirs { background:var(--red-lt); color:var(--red-dk); border:1.5px solid #fca5a5; }
+body.dark .turn-banner.mine { background:#14532d; color:#86efac; }
+body.dark .turn-banner.theirs { background:#450a0a; color:#fca5a5; }
+.game-info-row { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; flex-shrink:0; }
+.info-card { background:var(--white); border:1.5px solid var(--border); border-radius:var(--radius); padding:.6rem .75rem; }
+.info-card .lbl { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:.35rem; }
+.secret-row { display:flex; align-items:center; gap:.6rem; }
+.secret-thumb { width:36px; height:44px; border-radius:6px; overflow:hidden; border:2px solid var(--red); flex-shrink:0; }
+.secret-thumb img { width:100%; height:100%; object-fit:cover; }
+.secret-desc { font-size:11px; color:var(--muted); line-height:1.35; }
+.opp-row { display:flex; align-items:center; gap:.6rem; }
+.opp-av { width:30px; height:30px; border-radius:50%; background:var(--red-lt); color:var(--red); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
+body.dark .opp-av { background:#2a0a0e; }
+.opp-name { font-size:13px; font-weight:700; }
+.opp-elim { font-size:10px; color:var(--muted); margin-top:1px; }
+.guess-counter { display:inline-flex; align-items:center; gap:3px; background:var(--red-lt); color:var(--red); border-radius:20px; padding:2px 8px; font-size:11px; font-weight:700; margin-top:.3rem; }
+body.dark .guess-counter { background:#450a0a; }
 
-/* flip card */
-.flip-card { aspect-ratio: 3/4; perspective: 900px; cursor: pointer; }
-.flip-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.4,0,.2,1); border-radius: var(--radius); }
-.flip-card.flipped .flip-inner { transform: rotateY(180deg); }
-.flip-card.flipped { cursor: default; }
-.flip-card.blocked { cursor: not-allowed; }
-.flip-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius); overflow: hidden; border: 2px solid var(--border); }
-.flip-front { background: var(--white); display: flex; flex-direction: column; }
-.flip-front .fimg { flex: 1; overflow: hidden; }
-.flip-front .fimg img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.flip-front .fname { font-size: 10px; font-weight: 700; text-align: center; padding: 3px 2px 4px; background: var(--white); color: var(--text); border-top: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.flip-back { background: var(--red); transform: rotateY(180deg); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px; }
-.flip-back .xmark { font-size: 3rem; font-weight: 900; color: rgba(255,255,255,.35); line-height: 1; }
-.flip-back .out-lbl { font-size: 10px; color: rgba(255,255,255,.45); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-.board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+/* FIX 5: board fills remaining space */
+.board-section { flex:1; overflow:hidden; display:flex; flex-direction:column; gap:.3rem; min-height:0; }
+.board-hint { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; flex-shrink:0; }
+.board-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:5px; flex:1; align-content:start; overflow:hidden; }
+/* FIX 5: cards sized to fill grid */
+.flip-card { aspect-ratio:3/4; perspective:800px; cursor:pointer; }
+.flip-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .45s cubic-bezier(.4,0,.2,1); border-radius:8px; }
+.flip-card.flipped .flip-inner { transform:rotateY(180deg); }
+.flip-card.flipped { cursor:default; }
+.flip-card.blocked { cursor:not-allowed; }
+.flip-face { position:absolute; inset:0; backface-visibility:hidden; border-radius:8px; overflow:hidden; border:2px solid var(--border); }
+.flip-front { background:var(--white); display:flex; flex-direction:column; }
+.flip-front .fimg { flex:1; overflow:hidden; }
+.flip-front .fimg img { width:100%; height:100%; object-fit:cover; display:block; }
+.flip-front .fname { font-size:9px; font-weight:700; text-align:center; padding:2px 2px 3px; background:var(--white); color:var(--text); border-top:1px solid var(--border); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.flip-back { background:var(--red); transform:rotateY(180deg); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:2px; }
+.flip-back .xmark { font-size:2rem; font-weight:900; color:rgba(255,255,255,.3); line-height:1; }
+.flip-back .out-lbl { font-size:9px; color:rgba(255,255,255,.4); font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+
+/* FIX 5: BIG bottom action buttons */
+.game-actions { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; flex-shrink:0; padding:.4rem 0 .2rem; }
+.action-btn { padding:13px; border:none; border-radius:var(--radius); font-size:14px; font-weight:800; cursor:pointer; transition:background .15s,transform .1s; letter-spacing:.3px; }
+.action-btn:active { transform:scale(.97); }
+.action-btn.end { background:var(--off); color:var(--text); border:2px solid var(--border); }
+.action-btn.end:hover:not(:disabled) { background:var(--border); }
+.action-btn.guess { background:var(--red); color:#fff; box-shadow:0 4px 16px rgba(245,66,81,.3); }
+.action-btn.guess:hover:not(:disabled) { background:var(--red-dk); }
+.action-btn:disabled { opacity:.4; cursor:not-allowed; transform:none !important; }
+
+/* SNIPE PHASE */
+.snipe-banner { background:#7c3aed; color:#fff; border-radius:var(--radius); padding:.7rem 1rem; font-size:13px; font-weight:700; text-align:center; flex-shrink:0; }
 
 /* MODALS */
-.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-.overlay.show { display: flex; }
-.modal { background: var(--white); border-radius: 20px; padding: 2rem; max-width: 420px; width: 92%; text-align: center; box-shadow: 0 24px 64px rgba(0,0,0,.18); border: 1.5px solid var(--border); animation: pop .3s cubic-bezier(.34,1.56,.64,1); }
+.overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:200; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.overlay.show { display:flex; }
+.modal { background:var(--white); border-radius:18px; padding:1.75rem; max-width:400px; width:92%; text-align:center; box-shadow:0 24px 64px rgba(0,0,0,.2); border:1.5px solid var(--border); animation:pop .3s cubic-bezier(.34,1.56,.64,1); }
 @keyframes pop { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:scale(1)} }
-.modal h2 { font-size: 1.35rem; font-weight: 800; margin-bottom: .4rem; }
-.modal p { color: var(--muted); font-size: 14px; margin-bottom: 1.25rem; line-height: 1.5; }
-.modal-photo { width: 96px; height: 116px; border-radius: 12px; overflow: hidden; margin: 0 auto 1rem; border: 3px solid var(--red); }
-.modal-photo img { width: 100%; height: 100%; object-fit: cover; }
-.result-emoji { font-size: 3.5rem; margin-bottom: .5rem; }
-.guess-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px,1fr)); gap: 8px; max-height: 300px; overflow-y: auto; margin-bottom: 1rem; }
-.guess-opt { border-radius: 8px; overflow: hidden; border: 3px solid var(--border); cursor: pointer; position: relative; transition: border-color .15s, transform .1s; background: var(--white); }
-.guess-opt .gimg { aspect-ratio: 3/4; overflow: hidden; }
-.guess-opt .gimg img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.guess-opt .gname { font-size: 10px; font-weight: 700; text-align: center; padding: 3px 2px; border-top: 1px solid var(--border); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.guess-opt:hover { border-color: var(--red); transform: scale(1.04); }
-.guess-opt.sel { border-color: var(--red); box-shadow: 0 0 0 2px rgba(245,66,81,.2); }
-.guess-opt .gtick { position: absolute; top: 5px; right: 5px; background: var(--red); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; }
-.guess-opt.sel .gtick { display: flex; }
-.mbtns { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; }
-.mbtn { padding: 10px 24px; background: var(--red); color: #fff; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s; }
-.mbtn:hover { background: var(--red-dk); }
-.mbtn:disabled { background: #ccc; color: #999; cursor: not-allowed; }
-.mbtn-ghost { padding: 10px 24px; background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 14px; cursor: pointer; }
-.mbtn-ghost:hover { background: var(--off); color: var(--text); }
+.modal h2 { font-size:1.25rem; font-weight:800; margin-bottom:.35rem; }
+.modal p { color:var(--muted); font-size:13px; margin-bottom:1.1rem; line-height:1.5; }
+.modal-photo { width:90px; height:108px; border-radius:11px; overflow:hidden; margin:0 auto .9rem; border:3px solid var(--red); }
+.modal-photo img { width:100%; height:100%; object-fit:cover; }
+.result-emoji { font-size:3rem; margin-bottom:.4rem; }
+.guess-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(75px,1fr)); gap:7px; max-height:280px; overflow-y:auto; margin-bottom:.9rem; }
+.guess-opt { border-radius:7px; overflow:hidden; border:3px solid var(--border); cursor:pointer; position:relative; transition:border-color .15s,transform .1s; background:var(--white); }
+.guess-opt .gimg { aspect-ratio:3/4; overflow:hidden; }
+.guess-opt .gimg img { width:100%; height:100%; object-fit:cover; display:block; }
+.guess-opt .gname { font-size:9px; font-weight:700; text-align:center; padding:2px 2px 3px; border-top:1px solid var(--border); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.guess-opt:hover { border-color:var(--red); transform:scale(1.04); }
+.guess-opt.sel { border-color:var(--red); box-shadow:0 0 0 2px rgba(245,66,81,.2); }
+.guess-opt .gtick { position:absolute; top:4px; right:4px; background:var(--red); color:#fff; width:18px; height:18px; border-radius:50%; display:none; align-items:center; justify-content:center; font-size:10px; font-weight:900; }
+.guess-opt.sel .gtick { display:flex; }
+.mbtns { display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; }
+.mbtn { padding:9px 22px; background:var(--red); color:#fff; border:none; border-radius:var(--radius); font-size:13px; font-weight:700; cursor:pointer; }
+.mbtn:hover { background:var(--red-dk); }
+.mbtn:disabled { background:#ccc; color:#999; cursor:not-allowed; }
+.mbtn-ghost { padding:9px 22px; background:transparent; color:var(--muted); border:1.5px solid var(--border); border-radius:var(--radius); font-size:13px; cursor:pointer; }
+.mbtn-ghost:hover { background:var(--off); color:var(--text); }
+.confirm-pick-photo { width:100px; height:120px; border-radius:11px; overflow:hidden; margin:0 auto .9rem; border:3px solid var(--red); }
+.confirm-pick-photo img { width:100%; height:100%; object-fit:cover; }
+.confirm-pick-name { font-size:1rem; font-weight:800; margin-bottom:.35rem; }
 
-/* FIX 4: confirm pick modal */
-.confirm-pick-photo { width: 110px; height: 132px; border-radius: 12px; overflow: hidden; margin: 0 auto 1rem; border: 3px solid var(--red); }
-.confirm-pick-photo img { width: 100%; height: 100%; object-fit: cover; }
-.confirm-pick-name { font-size: 1.1rem; font-weight: 800; margin-bottom: .4rem; }
-
-/* FIX 2: challenge notification */
-.challenge-notif { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; padding: 1.25rem 1.5rem; box-shadow: 0 8px 32px rgba(0,0,0,.18); z-index: 300; min-width: 300px; text-align: center; animation: slideUp .3s ease; display: none; }
-.challenge-notif.show { display: block; }
-@keyframes slideUp { from{opacity:0;transform:translateX(-50%) translateY(20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-.challenge-notif h3 { font-size: 1rem; font-weight: 800; margin-bottom: .3rem; }
-.challenge-notif p { font-size: 13px; color: var(--muted); margin-bottom: 1rem; }
-.challenge-notif-btns { display: flex; gap: .5rem; justify-content: center; }
-.accept-btn { padding: 8px 22px; background: var(--red); color: #fff; border: none; border-radius: var(--radius); font-size: 13px; font-weight: 700; cursor: pointer; }
-.accept-btn:hover { background: var(--red-dk); }
-.decline-btn { padding: 8px 18px; background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 13px; cursor: pointer; }
-.decline-btn:hover { background: var(--off); }
+/* challenge toast */
+.challenge-notif { position:fixed; bottom:1.25rem; left:50%; transform:translateX(-50%); background:var(--white); border:1.5px solid var(--border); border-radius:14px; padding:1.1rem 1.25rem; box-shadow:0 8px 32px rgba(0,0,0,.18); z-index:300; min-width:280px; text-align:center; display:none; animation:slideUp .3s ease; }
+.challenge-notif.show { display:block; }
+@keyframes slideUp { from{opacity:0;transform:translateX(-50%) translateY(16px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+.challenge-notif h3 { font-size:.95rem; font-weight:800; margin-bottom:.25rem; }
+.challenge-notif p { font-size:12px; color:var(--muted); margin-bottom:.85rem; }
+.chal-btns { display:flex; gap:.4rem; justify-content:center; }
+.accept-btn { padding:7px 20px; background:var(--red); color:#fff; border:none; border-radius:var(--radius); font-size:12px; font-weight:700; cursor:pointer; }
+.accept-btn:hover { background:var(--red-dk); }
+.decline-btn { padding:7px 16px; background:transparent; color:var(--muted); border:1.5px solid var(--border); border-radius:var(--radius); font-size:12px; cursor:pointer; }
+.decline-btn:hover { background:var(--off); }
 
 /* ADMIN */
-.admin-modal { max-width: 560px; text-align: left; max-height: 90vh; overflow-y: auto; }
-.admin-tabs { display: flex; border-bottom: 1.5px solid var(--border); margin-bottom: 1.25rem; }
-.admin-tab { padding: 8px 20px; font-size: 13px; font-weight: 600; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; color: var(--muted); background: transparent; border-top: none; border-left: none; border-right: none; transition: color .15s; }
-.admin-tab.active { color: var(--red); border-bottom-color: var(--red); }
-.admin-tab-panel { display: none; }
-.admin-tab-panel.active { display: block; }
-.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: .75rem 0; border-bottom: 1px solid var(--border); }
-.toggle-row:last-child { border-bottom: none; }
-.toggle-row .tl { font-size: 14px; font-weight: 600; }
-.toggle-row .td { font-size: 12px; color: var(--muted); margin-top: 2px; }
-.toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
-.toggle input { opacity: 0; width: 0; height: 0; }
-.toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 12px; cursor: pointer; transition: background .2s; }
-.toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s; }
-.toggle input:checked + .toggle-slider { background: var(--red); }
-.toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
-.photo-upload-zone { border: 2px dashed var(--red); border-radius: var(--radius); padding: 1.25rem; text-align: center; cursor: pointer; background: var(--red-lt); margin-bottom: 1rem; transition: background .15s; }
-.photo-upload-zone:hover { background: #fce4e6; }
-.photo-upload-zone p { color: var(--muted); font-size: 13px; margin-top: .25rem; }
-#admin-file { display: none; }
-.photos-name-list { display: flex; flex-direction: column; gap: .5rem; max-height: 300px; overflow-y: auto; margin-bottom: .75rem; }
-.photo-name-row { display: flex; align-items: center; gap: .75rem; background: var(--off); border: 1px solid var(--border); border-radius: 8px; padding: .4rem .6rem; }
-.photo-name-row .pthumb { width: 36px; height: 44px; border-radius: 5px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border); }
-.photo-name-row .pthumb img { width: 100%; height: 100%; object-fit: cover; }
-.photo-name-row .name-input { flex: 1; padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--white); color: var(--text); outline: none; }
-.photo-name-row .name-input:focus { border-color: var(--red); }
-.photo-name-row .rm-btn { width: 26px; height: 26px; border-radius: 50%; border: none; background: #fee2e2; color: var(--red); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 700; }
-.admin-count-line { font-size: 12px; color: var(--muted); margin-bottom: .75rem; }
-.pass-row { display: flex; gap: .5rem; margin-bottom: .75rem; }
-.pass-row input { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text); background: var(--off); outline: none; }
-.pass-row input:focus { border-color: var(--red); }
-.admin-msg-line { font-size: 13px; margin-top: .75rem; display: none; padding: .5rem .75rem; border-radius: 8px; }
-.admin-msg-line.ok { background: #dcfce7; color: #15803d; }
-.admin-msg-line.err { background: #fee2e2; color: var(--red); }
+.admin-modal { max-width:540px; text-align:left; max-height:90vh; overflow-y:auto; }
+.admin-tabs { display:flex; border-bottom:1.5px solid var(--border); margin-bottom:1.1rem; }
+.admin-tab { padding:7px 18px; font-size:12px; font-weight:600; cursor:pointer; border-bottom:2.5px solid transparent; margin-bottom:-1.5px; color:var(--muted); background:transparent; border-top:none; border-left:none; border-right:none; transition:color .15s; }
+.admin-tab.active { color:var(--red); border-bottom-color:var(--red); }
+.admin-tab-panel { display:none; }
+.admin-tab-panel.active { display:block; }
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:.65rem 0; border-bottom:1px solid var(--border); }
+.toggle-row:last-child { border-bottom:none; }
+.toggle-row .tl { font-size:13px; font-weight:600; }
+.toggle-row .td { font-size:11px; color:var(--muted); margin-top:1px; }
+.toggle { position:relative; width:42px; height:22px; flex-shrink:0; }
+.toggle input { opacity:0; width:0; height:0; }
+.toggle-slider { position:absolute; inset:0; background:var(--border); border-radius:11px; cursor:pointer; transition:background .2s; }
+.toggle-slider::before { content:''; position:absolute; width:16px; height:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform .2s; }
+.toggle input:checked + .toggle-slider { background:var(--red); }
+.toggle input:checked + .toggle-slider::before { transform:translateX(20px); }
+.photo-upload-zone { border:2px dashed var(--red); border-radius:var(--radius); padding:1.1rem; text-align:center; cursor:pointer; background:var(--red-lt); margin-bottom:.85rem; }
+.photo-upload-zone:hover { background:#fce4e6; }
+.photo-upload-zone p { color:var(--muted); font-size:12px; margin-top:.2rem; }
+#admin-file { display:none; }
+.photos-name-list { display:flex; flex-direction:column; gap:.4rem; max-height:280px; overflow-y:auto; margin-bottom:.65rem; }
+.photo-name-row { display:flex; align-items:center; gap:.6rem; background:var(--off); border:1px solid var(--border); border-radius:7px; padding:.35rem .5rem; }
+.photo-name-row .pthumb { width:32px; height:38px; border-radius:4px; overflow:hidden; flex-shrink:0; border:1px solid var(--border); }
+.photo-name-row .pthumb img { width:100%; height:100%; object-fit:cover; }
+.photo-name-row .name-input { flex:1; padding:5px 9px; border:1.5px solid var(--border); border-radius:7px; font-size:12px; background:var(--white); color:var(--text); outline:none; }
+.photo-name-row .name-input:focus { border-color:var(--red); }
+.photo-name-row .rm-btn { width:24px; height:24px; border-radius:50%; border:none; background:#fee2e2; color:var(--red); font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700; }
+.admin-count-line { font-size:11px; color:var(--muted); margin-bottom:.65rem; }
+.pass-row { display:flex; gap:.4rem; margin-bottom:.65rem; }
+.pass-row input { flex:1; padding:8px 11px; border:1.5px solid var(--border); border-radius:var(--radius); font-size:13px; color:var(--text); background:var(--off); outline:none; }
+.pass-row input:focus { border-color:var(--red); }
+.admin-msg-line { font-size:12px; margin-top:.65rem; display:none; padding:.4rem .65rem; border-radius:7px; }
+.admin-msg-line.ok { background:#dcfce7; color:#15803d; }
+.admin-msg-line.err { background:#fee2e2; color:var(--red); }
 </style>
 </head>
 <body>
@@ -259,23 +266,23 @@ body.dark .guess-counter { background: #450a0a; }
   <div class="lobby-body">
     <div class="lobby-top">
       <h3><span class="dot-green"></span> Online Players</h3>
-      <div class="players-row" id="players-row"><span style="font-size:13px;color:var(--muted)">No one here yet...</span></div>
+      <div class="players-row" id="players-row"><span style="font-size:12px;color:var(--muted)">No one here yet...</span></div>
     </div>
     <div class="lobby-bottom">
-      <div class="find-btn-wrap">
+      <div>
         <button class="find-game-btn" id="find-game-btn" onclick="toggleFindGame()">🎮 Find Game</button>
         <div class="find-sub" id="find-sub">Click to start searching for an opponent</div>
       </div>
       <div class="queue-area" id="queue-area">
-        <div class="queue-title"><span class="searching-pulse"></span> Players searching for a game</div>
-        <div class="queue-list" id="queue-list"><div class="queue-empty">No one searching yet...</div></div>
+        <div class="queue-title"><span class="rpulse"></span> Players searching</div>
+        <div id="queue-list"><div class="queue-empty">No one searching yet...</div></div>
       </div>
       <button class="cancel-find-btn" id="cancel-find-btn" style="display:none" onclick="cancelFind()">✕ Cancel Search</button>
     </div>
   </div>
 </div>
 
-<!-- LOADING INTERMISSION -->
+<!-- LOADING -->
 <div id="page-loading" class="page">
   <div class="loading-card">
     <div class="vs-line" id="loading-vs">You <span>VS</span> Opponent</div>
@@ -307,20 +314,16 @@ body.dark .guess-counter { background: #450a0a; }
 <div id="page-game" class="page">
   <div class="topbar">
     <div><div class="topbar-logo">GUESS WHO?</div><div class="topbar-sub" id="game-sub">Playing</div></div>
-    <div class="topbar-right">
-      <button class="pill" id="end-turn-btn" onclick="endTurn()" disabled>End Turn →</button>
-      <button class="pill solid" id="guess-open-btn" onclick="openGuessModal()">🎯 Guess!</button>
-      <button class="pill" onclick="openAdmin()">⚙</button>
-    </div>
+    <div class="topbar-right"><button class="pill" onclick="openAdmin()">⚙</button></div>
   </div>
-  <div class="game-body">
+  <div class="game-inner">
     <div class="turn-banner mine" id="turn-banner">Your turn!</div>
-    <div class="two-col">
+    <div class="game-info-row">
       <div class="info-card">
-        <div class="lbl">Your secret character</div>
+        <div class="lbl">Your secret</div>
         <div class="secret-row">
           <div class="secret-thumb"><img id="secret-img" src="" alt=""></div>
-          <div class="secret-desc">Your opponent is trying to guess this person</div>
+          <div class="secret-desc">Your opponent is guessing this</div>
         </div>
       </div>
       <div class="info-card">
@@ -329,23 +332,30 @@ body.dark .guess-counter { background: #450a0a; }
           <div class="opp-av" id="opp-av">?</div>
           <div>
             <div class="opp-name" id="opp-name">—</div>
-            <div class="opp-elim" id="opp-elim">0 cards eliminated</div>
+            <div class="opp-elim" id="opp-elim">0 eliminated</div>
+            <div class="guess-counter" id="guess-counter">🎯 3 left</div>
           </div>
         </div>
-        <div style="margin-top:.5rem"><span class="guess-counter" id="guess-counter">🎯 3 guesses left</span></div>
       </div>
     </div>
-    <div class="board-hint" id="board-hint">Tap a card to flip it — you can only flip on your turn</div>
-    <div class="board-grid" id="board-grid"></div>
+    <div class="board-section">
+      <div class="board-hint" id="board-hint">Tap to eliminate — only on your turn</div>
+      <div class="board-grid" id="board-grid"></div>
+    </div>
+    <!-- FIX 5: BIG action buttons at bottom -->
+    <div class="game-actions">
+      <button class="action-btn end" id="end-turn-btn" onclick="endTurn()" disabled>⏭ End Turn</button>
+      <button class="action-btn guess" id="guess-open-btn" onclick="openGuessModal()" disabled>🎯 Guess!</button>
+    </div>
   </div>
 </div>
 
 <!-- MODAL: ADMIN -->
 <div class="overlay" id="modal-admin">
   <div class="modal admin-modal">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem">
       <h2 style="margin:0">⚙ Admin</h2>
-      <button class="mbtn-ghost" style="padding:6px 14px;font-size:12px" onclick="closeOverlay('modal-admin')">Close</button>
+      <button class="mbtn-ghost" style="padding:5px 12px;font-size:11px" onclick="closeOverlay('modal-admin')">Close</button>
     </div>
     <div class="admin-tabs">
       <button class="admin-tab active" onclick="switchAdminTab('appearance',this)">🎨 Appearance</button>
@@ -358,33 +368,36 @@ body.dark .guess-counter { background: #450a0a; }
         <label class="toggle"><input type="checkbox" id="dark-toggle" onchange="toggleDark(this.checked)"><span class="toggle-slider"></span></label>
       </div>
       <div class="toggle-row">
-        <div><div class="tl">Show names on cards</div><div class="td">Display the name label under each photo</div></div>
+        <div><div class="tl">Show names on cards</div><div class="td">Display name label under each photo</div></div>
         <label class="toggle"><input type="checkbox" id="names-toggle" checked onchange="toggleNames(this.checked)"><span class="toggle-slider"></span></label>
       </div>
     </div>
     <div class="admin-tab-panel" id="tab-photos">
+      <!-- FIX 1: shows currently saved photos from server -->
+      <div style="font-size:12px;color:var(--muted);margin-bottom:.65rem;">Photos are saved on the server and persist across restarts. Add or remove below.</div>
       <div class="photo-upload-zone" onclick="document.getElementById('admin-file').click()">
-        <div style="font-size:2rem">📸</div>
-        <strong style="font-size:14px">Click to upload photos</strong>
-        <p>Up to 40 images — JPG, PNG, WEBP. Name each person below.</p>
+        <div style="font-size:1.75rem">📸</div>
+        <strong style="font-size:13px">Click to add more photos</strong>
+        <p>Up to 25 total — JPG, PNG, WEBP</p>
       </div>
       <input type="file" id="admin-file" accept="image/*" multiple>
       <div class="admin-count-line" id="admin-count"></div>
       <div class="photos-name-list" id="photos-name-list"></div>
-      <div class="pass-row"><input type="password" id="admin-pass" placeholder="Admin password (default: admin123)"></div>
-      <button class="mbtn" style="width:100%" onclick="pushPhotos()">📤 Push to All Players</button>
+      <div class="pass-row"><input type="password" id="admin-pass" placeholder="Admin password"></div>
+      <button class="mbtn" style="width:100%" onclick="pushPhotos()">📤 Save & Push to All Players</button>
       <div class="admin-msg-line" id="admin-msg"></div>
     </div>
     <div class="admin-tab-panel" id="tab-manage">
-      <p style="margin-bottom:1rem">Use these controls to manage all active games.</p>
+      <p style="margin-bottom:.85rem;font-size:13px">Send everyone back to the lobby and clear all active games.</p>
       <div class="pass-row"><input type="password" id="manage-pass" placeholder="Admin password"></div>
-      <button class="mbtn" style="width:100%;background:#1a1a1a" onclick="hardReset()">🔴 Hard Reset — Send Everyone to Lobby</button>
+      <!-- FIX 7: password not shown anywhere in UI -->
+      <button class="mbtn" style="width:100%;background:#111" onclick="hardReset()">🔴 Hard Reset — Send Everyone to Lobby</button>
       <div class="admin-msg-line" id="manage-msg"></div>
     </div>
   </div>
 </div>
 
-<!-- MODAL: CONFIRM PICK (FIX 4) -->
+<!-- MODAL: CONFIRM PICK -->
 <div class="overlay" id="modal-confirm-pick">
   <div class="modal">
     <h2>Are you sure? 🤔</h2>
@@ -401,12 +414,27 @@ body.dark .guess-counter { background: #450a0a; }
 <!-- MODAL: GUESS -->
 <div class="overlay" id="modal-guess">
   <div class="modal">
-    <h2>Make your guess 🤔</h2>
+    <h2>Make your guess 🎯</h2>
     <p id="guess-modal-sub">Who is your opponent's secret character?</p>
     <div class="guess-grid" id="guess-grid"></div>
     <div class="mbtns">
       <button class="mbtn" id="guess-confirm-btn" disabled onclick="submitGuess()">That's them!</button>
       <button class="mbtn-ghost" onclick="closeOverlay('modal-guess')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SNIPE RESPONSE (FIX 6) -->
+<div class="overlay" id="modal-snipe">
+  <div class="modal">
+    <div style="font-size:2.5rem;margin-bottom:.4rem">⚡</div>
+    <h2 id="snipe-title">Snipe incoming!</h2>
+    <p id="snipe-desc"></p>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:.9rem" id="snipe-guess-label" style="display:none">Or pick someone to counter-guess:</div>
+    <div class="guess-grid" id="snipe-grid"></div>
+    <div class="mbtns">
+      <button class="mbtn" id="snipe-confirm-btn" disabled onclick="submitSnipeGuess()">Counter-guess!</button>
+      <button class="mbtn-ghost" onclick="passSnipe()">Pass — no counter</button>
     </div>
   </div>
 </div>
@@ -425,18 +453,18 @@ body.dark .guess-counter { background: #450a0a; }
 <!-- MODAL: OPP LEFT -->
 <div class="overlay" id="modal-opp-left">
   <div class="modal">
-    <div style="font-size:3rem;margin-bottom:.5rem">🔌</div>
+    <div style="font-size:2.5rem;margin-bottom:.4rem">🔌</div>
     <h2>Opponent disconnected</h2>
     <p>Your opponent left the game.</p>
     <div class="mbtns"><button class="mbtn" onclick="backToLobby()">Back to Lobby</button></div>
   </div>
 </div>
 
-<!-- FIX 2: CHALLENGE NOTIFICATION (toast) -->
+<!-- CHALLENGE TOAST (FIX 2) -->
 <div class="challenge-notif" id="challenge-notif">
-  <h3 id="challenge-notif-title">Challenge received!</h3>
-  <p id="challenge-notif-msg">wants to play against you!</p>
-  <div class="challenge-notif-btns">
+  <h3 id="chal-title">Challenge received!</h3>
+  <p id="chal-msg"></p>
+  <div class="chal-btns">
     <button class="accept-btn" onclick="acceptChallenge()">✓ Accept</button>
     <button class="decline-btn" onclick="declineChallenge()">✕ Decline</button>
   </div>
@@ -446,526 +474,490 @@ body.dark .guess-counter { background: #450a0a; }
 // ══════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════
-let ws = null;
-let myId = null;
-let myName = '';
-let myStatus = 'lobby';
-let pendingPickId = null;      // selected but not confirmed
-let pendingGuessId = null;
-let adminPhotos = [];
-let currentPhotos = [];
-let currentGame = null;
-let boardBuilt = false;
-let showNames = true;
-let incomingChallengerId = null;  // FIX 2
+let ws=null, myId=null, myName='', myStatus='lobby';
+let pendingPickId=null, pendingGuessId=null, pendingSnipeId=null;
+let adminPhotos=[];   // local edits in admin panel
+let currentPhotos=[]; // from server
+let currentGame=null;
+let boardBuilt=false;
+let showNames=true;
+let incomingChallengerId=null;
 
 // ══════════════════════════════════════
 //  CONNECT
 // ══════════════════════════════════════
-function connect(cb) {
-  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  ws = new WebSocket(`${proto}//${location.host}`);
-  ws.onopen = () => cb && cb();
-  ws.onmessage = e => handle(JSON.parse(e.data));
-  ws.onclose = () => setTimeout(() => connect(), 2500);
-  ws.onerror = () => ws.close();
+function connect(cb){
+  const proto=location.protocol==='https:'?'wss:':'ws:';
+  ws=new WebSocket(`${proto}//${location.host}`);
+  ws.onopen=()=>cb&&cb();
+  ws.onmessage=e=>handle(JSON.parse(e.data));
+  ws.onclose=()=>setTimeout(connect,2500);
+  ws.onerror=()=>ws.close();
 }
-function wsSend(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
+function wsSend(obj){ if(ws&&ws.readyState===1) ws.send(JSON.stringify(obj)); }
 
 // ══════════════════════════════════════
-//  MESSAGE HANDLER
+//  MESSAGES
 // ══════════════════════════════════════
-function handle(msg) {
-
-  if (msg.type === 'welcome') {
-    myId = msg.clientId;
-    currentPhotos = msg.photos || [];
+function handle(msg){
+  if(msg.type==='welcome'){
+    myId=msg.clientId;
+    currentPhotos=msg.photos||[];
+    // FIX 1: load server photos into admin panel on welcome
+    syncAdminPhotos(currentPhotos);
     return;
   }
-
-  // FIX 1: lobby_update only reaches this handler when on lobby pages — but we also
-  // make sure server doesn't send it to playing clients
-  if (msg.type === 'lobby_update') {
-    currentPhotos = msg.photos || [];
-    // Only re-render lobby if actually on lobby page
-    if (isOnPage('page-lobby') || myStatus === 'lobby' || myStatus === 'waiting') {
-      renderLobby(msg);
-    }
+  if(msg.type==='lobby_update'){
+    currentPhotos=msg.photos||[];
+    if(myStatus!=='playing') renderLobby(msg);
     return;
   }
-
-  // FIX 3: intermission — stay 3 seconds, then game_state arrives
-  if (msg.type === 'matched') {
-    myStatus = 'playing';
+  if(msg.type==='matched'){
+    myStatus='playing';
     showLoading(msg.opponentName);
     return;
   }
-
-  if (msg.type === 'game_state') {
-    currentGame = msg;
-    if (msg.phase === 'pick') renderPick(msg);
-    else if (msg.phase === 'playing') renderGame(msg);
-    else if (msg.phase === 'gameover') renderResult(msg);
+  if(msg.type==='game_state'){
+    currentGame=msg;
+    if(msg.phase==='pick') renderPick(msg);
+    else if(msg.phase==='playing') renderGame(msg);
+    else if(msg.phase==='snipe') renderSnipe(msg);
+    else if(msg.phase==='gameover') renderResult(msg);
     return;
   }
-
-  if (msg.type === 'go_lobby') {
-    myStatus = 'lobby'; boardBuilt = false; pendingPickId = null; currentGame = null;
+  if(msg.type==='go_lobby'||msg.type==='force_lobby'){ // FIX 3
+    myStatus='lobby'; boardBuilt=false; pendingPickId=null; currentGame=null;
     resetFindUI();
+    closeOverlay('modal-result'); closeOverlay('modal-opp-left');
+    closeOverlay('modal-guess'); closeOverlay('modal-snipe');
     showPage('page-lobby');
     return;
   }
-
-  if (msg.type === 'opponent_left') {
-    closeOverlay('modal-result'); closeOverlay('modal-guess');
+  if(msg.type==='opponent_left'){
+    closeOverlay('modal-guess'); closeOverlay('modal-snipe');
     document.getElementById('modal-opp-left').classList.add('show');
     return;
   }
-
-  // FIX 2: received a challenge
-  if (msg.type === 'challenge_received') {
-    incomingChallengerId = msg.challengerId;
-    document.getElementById('challenge-notif-title').textContent = `${esc(msg.challengerName)} wants to play!`;
-    document.getElementById('challenge-notif-msg').textContent = `${esc(msg.challengerName)} has challenged you to a game.`;
+  if(msg.type==='challenge_received'){
+    incomingChallengerId=msg.challengerId;
+    document.getElementById('chal-title').textContent=`${esc(msg.challengerName)} wants to play!`;
+    document.getElementById('chal-msg').textContent=`${esc(msg.challengerName)} challenged you to a game.`;
     document.getElementById('challenge-notif').classList.add('show');
     return;
   }
-
-  // FIX 2: challenge you sent was declined
-  if (msg.type === 'challenge_declined') {
-    alert(`${msg.declinerName} declined your challenge.`);
-    // Re-enable challenge buttons
-    document.querySelectorAll('.challenge-btn.sent').forEach(b => {
-      b.textContent = 'Challenge!'; b.classList.remove('sent');
-      b.disabled = false;
-    });
+  if(msg.type==='challenge_declined'){
+    alert(`${esc(msg.declinerName)} declined your challenge.`);
+    document.querySelectorAll('.challenge-btn.sent').forEach(b=>{ b.textContent='Challenge!'; b.classList.remove('sent'); b.disabled=false; });
     return;
   }
-
-  // FIX 2: challenge you sent was accepted — matched msg will come next
-  if (msg.type === 'challenge_sent') {
-    return; // UI already updated
+  if(msg.type==='challenge_sent') return;
+  if(msg.type==='error'){ alert(msg.text); return; }
+  if(msg.type==='admin_ok'){
+    showAdminMsg('admin-msg',msg.text,'ok');
+    showAdminMsg('manage-msg',msg.text,'ok');
+    return;
   }
-
-  if (msg.type === 'error') { alert(msg.text); return; }
-  if (msg.type === 'admin_ok') { showAdminMsg('admin-msg', msg.text, 'ok'); showAdminMsg('manage-msg', msg.text, 'ok'); return; }
+  if(msg.type==='pick_ack') return;
 }
 
 // ══════════════════════════════════════
 //  JOIN
 // ══════════════════════════════════════
-function joinLobby() {
-  const name = document.getElementById('join-name').value.trim();
-  if (!name) return;
-  myName = name;
-  connect(() => {
-    wsSend({ type: 'join', name });
-    showPage('page-lobby');
-  });
+function joinLobby(){
+  const name=document.getElementById('join-name').value.trim();
+  if(!name) return;
+  myName=name;
+  connect(()=>{ wsSend({type:'join',name}); showPage('page-lobby'); });
 }
-document.getElementById('join-name').addEventListener('keydown', e => { if (e.key === 'Enter') joinLobby(); });
+document.getElementById('join-name').addEventListener('keydown',e=>{ if(e.key==='Enter') joinLobby(); });
 
 // ══════════════════════════════════════
 //  LOBBY
 // ══════════════════════════════════════
-function toggleFindGame() {
-  if (myStatus === 'waiting') return;
-  myStatus = 'waiting';
-  wsSend({ type: 'ready' });
-  const btn = document.getElementById('find-game-btn');
-  btn.textContent = '🔍 Searching...';
-  btn.classList.add('searching');
-  btn.onclick = null;
-  document.getElementById('find-sub').textContent = 'Looking for opponents — challenge anyone who appears below!';
-  document.getElementById('cancel-find-btn').style.display = 'block';
+function toggleFindGame(){
+  if(myStatus==='waiting') return;
+  myStatus='waiting';
+  wsSend({type:'ready'});
+  const btn=document.getElementById('find-game-btn');
+  btn.textContent='🔍 Searching...'; btn.classList.add('searching'); btn.onclick=null;
+  document.getElementById('find-sub').textContent='Looking for opponents — challenge anyone below!';
+  document.getElementById('cancel-find-btn').style.display='block';
   document.getElementById('queue-area').classList.add('show');
 }
 
-function cancelFind() {
-  myStatus = 'lobby';
-  wsSend({ type: 'cancel_wait' });
+function cancelFind(){
+  myStatus='lobby';
+  wsSend({type:'cancel_wait'});
   resetFindUI();
 }
 
-function resetFindUI() {
-  const btn = document.getElementById('find-game-btn');
-  btn.textContent = '🎮 Find Game';
-  btn.classList.remove('searching');
-  btn.onclick = toggleFindGame;
-  document.getElementById('find-sub').textContent = 'Click to start searching for an opponent';
-  document.getElementById('cancel-find-btn').style.display = 'none';
+function resetFindUI(){
+  const btn=document.getElementById('find-game-btn');
+  btn.textContent='🎮 Find Game'; btn.classList.remove('searching'); btn.onclick=toggleFindGame;
+  document.getElementById('find-sub').textContent='Click to start searching for an opponent';
+  document.getElementById('cancel-find-btn').style.display='none';
   document.getElementById('queue-area').classList.remove('show');
 }
 
-function renderLobby(msg) {
-  // FIX 1: Don't redirect playing players back to lobby
-  if (myStatus === 'playing') return;
+function renderLobby(msg){
+  if(myStatus==='playing') return; // FIX 1
   showPage('page-lobby');
-
-  const online = msg.online || [];
-  const waiting = msg.waiting || [];
-
-  // Online strip
-  const row = document.getElementById('players-row');
-  row.innerHTML = '';
-  if (!online.length) {
-    row.innerHTML = '<span style="font-size:13px;color:var(--muted)">No one here yet...</span>';
-  } else {
-    online.forEach(p => {
-      const isMe = p.id === myId;
-      const d = document.createElement('div');
-      d.className = 'player-chip';
-      const init = (p.name||'?')[0].toUpperCase();
-      const statusLabel = p.status === 'playing' ? 'In game' : p.status === 'waiting' ? 'Searching' : 'Browsing';
-      const badgeClass = p.status === 'playing' ? 'playing' : p.status === 'waiting' ? 'ready' : '';
-      d.innerHTML = `<div class="av">${init}</div><div><div style="font-size:13px;font-weight:600">${esc(p.name)}</div></div>${isMe ? '<span class="chip-badge">YOU</span>' : `<span class="chip-badge ${badgeClass}">${statusLabel}</span>`}`;
-      row.appendChild(d);
-    });
-  }
-  document.getElementById('lobby-sub').textContent = `${online.length} player${online.length !== 1 ? 's' : ''} online`;
-
-  // Queue list
-  const qlist = document.getElementById('queue-list');
-  const others = waiting.filter(p => p.id !== myId);
-  qlist.innerHTML = '';
-  if (!others.length) {
-    qlist.innerHTML = '<div class="queue-empty">No one searching yet...</div>';
-  } else {
-    others.forEach(p => {
-      const d = document.createElement('div');
-      d.className = 'queue-item';
-      const init = (p.name||'?')[0].toUpperCase();
-      const canChallenge = myStatus === 'waiting' && currentPhotos.length >= 2;
-      d.innerHTML = `
-        <div class="qav">${init}</div>
-        <div><div class="qname">${esc(p.name)}</div><div class="qsub">Looking for a game</div></div>
-        ${canChallenge ? `<button class="challenge-btn" id="chal-${p.id}" onclick="sendChallenge('${p.id}')">Challenge!</button>` : ''}`;
-      qlist.appendChild(d);
-    });
-  }
-
-  // Sync my status chip
-  const me = online.find(p => p.id === myId);
-  if (me && me.status !== myStatus && myStatus !== 'playing') {
-    myStatus = me.status;
-  }
+  const online=msg.online||[], waiting=msg.waiting||[];
+  const row=document.getElementById('players-row');
+  row.innerHTML='';
+  if(!online.length){ row.innerHTML='<span style="font-size:12px;color:var(--muted)">No one here yet...</span>'; }
+  else { online.forEach(p=>{ const isMe=p.id===myId; const d=document.createElement('div'); d.className='player-chip'; const init=(p.name||'?')[0].toUpperCase(); const sl=p.status==='playing'?'In game':p.status==='waiting'?'Searching':'Browsing'; const bc=p.status==='playing'?'playing':p.status==='waiting'?'ready':''; d.innerHTML=`<div class="av">${init}</div><div style="font-size:12px;font-weight:600">${esc(p.name)}</div>${isMe?'<span class="chip-badge">YOU</span>':`<span class="chip-badge ${bc}">${sl}</span>`}`; row.appendChild(d); }); }
+  document.getElementById('lobby-sub').textContent=`${online.length} player${online.length!==1?'s':''} online`;
+  const qlist=document.getElementById('queue-list');
+  const others=waiting.filter(p=>p.id!==myId);
+  qlist.innerHTML='';
+  if(!others.length){ qlist.innerHTML='<div class="queue-empty">No one searching yet...</div>'; }
+  else { others.forEach(p=>{ const d=document.createElement('div'); d.className='queue-item'; const init=(p.name||'?')[0].toUpperCase(); const canChal=myStatus==='waiting'&&currentPhotos.length>=2; d.innerHTML=`<div class="qav">${init}</div><div><div class="qname">${esc(p.name)}</div><div class="qsub">Looking for a game</div></div>${canChal?`<button class="challenge-btn" id="chal-${p.id}" onclick="sendChallenge('${p.id}')">Challenge!</button>`:''}`; qlist.appendChild(d); }); }
 }
 
-// FIX 2: send challenge (not start immediately)
-function sendChallenge(targetId) {
-  wsSend({ type: 'challenge', targetId });
-  const btn = document.getElementById('chal-' + targetId);
-  if (btn) { btn.textContent = 'Sent ✓'; btn.classList.add('sent'); btn.disabled = true; }
+function sendChallenge(targetId){
+  wsSend({type:'challenge',targetId});
+  const btn=document.getElementById('chal-'+targetId);
+  if(btn){ btn.textContent='Sent ✓'; btn.classList.add('sent'); btn.disabled=true; }
 }
 
-// FIX 2: accept incoming challenge
-function acceptChallenge() {
+function acceptChallenge(){
   document.getElementById('challenge-notif').classList.remove('show');
-  if (!incomingChallengerId) return;
-  wsSend({ type: 'accept_challenge', challengerId: incomingChallengerId });
-  incomingChallengerId = null;
+  if(!incomingChallengerId) return;
+  wsSend({type:'accept_challenge',challengerId:incomingChallengerId});
+  incomingChallengerId=null;
 }
 
-// FIX 2: decline incoming challenge
-function declineChallenge() {
+function declineChallenge(){
   document.getElementById('challenge-notif').classList.remove('show');
-  if (!incomingChallengerId) return;
-  wsSend({ type: 'decline_challenge', challengerId: incomingChallengerId });
-  incomingChallengerId = null;
+  if(!incomingChallengerId) return;
+  wsSend({type:'decline_challenge',challengerId:incomingChallengerId});
+  incomingChallengerId=null;
 }
 
 // ══════════════════════════════════════
-//  FIX 3: LOADING INTERMISSION — 3 seconds
+//  LOADING
 // ══════════════════════════════════════
-function showLoading(oppName) {
+function showLoading(oppName){
   showPage('page-loading');
-  document.getElementById('loading-vs').innerHTML = `${esc(myName)} <span>VS</span> ${esc(oppName)}`;
-  const bar = document.getElementById('prog-fill');
-  bar.style.width = '0%';
-  // Trigger CSS transition to fill over 3s
-  requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
-  // Server sends game_state after 3s — frontend just waits for it
+  document.getElementById('loading-vs').innerHTML=`${esc(myName)} <span>VS</span> ${esc(oppName)}`;
+  const bar=document.getElementById('prog-fill');
+  bar.style.width='0%';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ bar.style.width='100%'; }));
 }
 
 // ══════════════════════════════════════
 //  PICK
 // ══════════════════════════════════════
-function renderPick(msg) {
+function renderPick(msg){
   showPage('page-pick');
-  const photos = msg.photos || [];
-  const myLocked = msg.me?.secret !== null && msg.me?.secret !== undefined;
-  if (myLocked) pendingPickId = msg.me.secret;
-
-  const grid = document.getElementById('pick-grid');
-  grid.innerHTML = '';
-  photos.forEach(p => {
-    const takenByOpp = msg.opponent?.secret === p.id;
-    const chosen = pendingPickId === p.id;
-    const d = document.createElement('div');
-    d.className = 'pick-card' + (chosen ? ' chosen' : '') + (takenByOpp ? ' taken disabled' : '');
-    d.innerHTML = `<div class="pimg"><img src="${p.src}" alt=""></div>${showNames ? `<div class="pname">${esc(p.name||'')}</div>` : ''}<div class="pick-tick">✓</div>`;
-    if (!takenByOpp && !myLocked) {
-      d.onclick = () => { pendingPickId = p.id; renderPick(msg); document.getElementById('pick-confirm').disabled = false; };
-    }
+  const photos=msg.photos||[];
+  const myLocked=msg.me?.secret!==null&&msg.me?.secret!==undefined;
+  if(myLocked) pendingPickId=msg.me.secret;
+  const grid=document.getElementById('pick-grid');
+  grid.innerHTML='';
+  photos.forEach(p=>{
+    // FIX 4: mark opponent's pick as taken
+    const takenByOpp=msg.opponent?.secret===p.id;
+    const chosen=pendingPickId===p.id;
+    const d=document.createElement('div');
+    d.className='pick-card'+(chosen?' chosen':'')+(takenByOpp?' taken disabled':'');
+    d.innerHTML=`<div class="pimg"><img src="${p.src}" alt=""></div>${showNames?`<div class="pname">${esc(p.name||'')}</div>`:''}<div class="pick-tick">✓</div>`;
+    if(!takenByOpp&&!myLocked) d.onclick=()=>{ pendingPickId=p.id; renderPick(msg); document.getElementById('pick-confirm').disabled=false; };
     grid.appendChild(d);
   });
-
-  const confirmBtn = document.getElementById('pick-confirm');
-  confirmBtn.disabled = myLocked || pendingPickId === null;
-  confirmBtn.textContent = myLocked ? '✓ Locked in!' : 'Lock In →';
-
-  const oppPicked = msg.opponent?.secretPicked;
-  document.getElementById('pick-status').textContent =
-    myLocked && !oppPicked ? '✓ Locked in! Waiting for opponent...' :
-    !myLocked && oppPicked ? 'Your opponent is ready — choose yours!' :
-    myLocked && oppPicked ? 'Both ready! Starting...' : 'Tap someone to choose them';
+  const cb=document.getElementById('pick-confirm');
+  cb.disabled=myLocked||pendingPickId===null;
+  cb.textContent=myLocked?'✓ Locked in!':'Lock In →';
+  const oppPicked=msg.opponent?.secretPicked;
+  document.getElementById('pick-status').textContent=
+    myLocked&&!oppPicked?'✓ Locked in! Waiting for opponent...':
+    !myLocked&&oppPicked?'Opponent is ready — pick yours!':
+    myLocked&&oppPicked?'Both ready! Starting...':'Tap someone to choose them';
 }
 
-// FIX 4: open confirm modal before locking in
-function openPickConfirm() {
-  if (pendingPickId === null) return;
-  const photo = currentPhotos.find(p => p.id === pendingPickId) || (currentGame?.photos || []).find(p => p.id === pendingPickId);
-  if (!photo) return;
-  document.getElementById('confirm-pick-img').src = photo.src;
-  document.getElementById('confirm-pick-name').textContent = photo.name || '';
+function openPickConfirm(){
+  if(pendingPickId===null) return;
+  const photo=(currentGame?.photos||currentPhotos).find(p=>p.id===pendingPickId);
+  if(!photo) return;
+  document.getElementById('confirm-pick-img').src=photo.src;
+  document.getElementById('confirm-pick-name').textContent=photo.name||'';
   document.getElementById('modal-confirm-pick').classList.add('show');
 }
 
-// FIX 4: actually lock in after double confirm
-function confirmPickFinal() {
+function confirmPickFinal(){
   closeOverlay('modal-confirm-pick');
-  if (pendingPickId === null) return;
-  wsSend({ type: 'pick_secret', photoId: pendingPickId, confirmed: true });
+  if(pendingPickId===null) return;
+  wsSend({type:'pick_secret',photoId:pendingPickId,confirmed:true});
 }
 
 // ══════════════════════════════════════
 //  GAME
 // ══════════════════════════════════════
-function renderGame(msg) {
+function renderGame(msg){
   showPage('page-game');
-  const photos = msg.photos || [];
-  const isMyTurn = msg.turn === myId;
-  const guessesLeft = msg.me?.guessesLeft ?? 3;
-
-  document.getElementById('game-sub').textContent = isMyTurn ? 'Your turn' : `${msg.opponent?.name || 'Opponent'}'s turn`;
-  const banner = document.getElementById('turn-banner');
-  banner.className = 'turn-banner ' + (isMyTurn ? 'mine' : 'theirs');
-  banner.textContent = isMyTurn
-    ? '🟢 Your turn — ask your opponent a yes/no question, then flip cards!'
-    : `⏳ ${msg.opponent?.name || 'Opponent'}'s turn — answer their question`;
-
-  // FIX 5: disable end turn and guess button when not your turn
-  document.getElementById('end-turn-btn').disabled = !isMyTurn;
-  const guessBtn = document.getElementById('guess-open-btn');
-  guessBtn.disabled = !isMyTurn || guessesLeft === 0;
-
-  // FIX 7: show guess counter
-  document.getElementById('guess-counter').textContent = `🎯 ${guessesLeft} guess${guessesLeft !== 1 ? 'es' : ''} left`;
-  document.getElementById('guess-counter').style.opacity = guessesLeft === 0 ? '.5' : '1';
-
-  const mySecretPhoto = photos.find(p => p.id === msg.me?.secret);
-  if (mySecretPhoto) document.getElementById('secret-img').src = mySecretPhoto.src;
-
-  const oppName = msg.opponent?.name || '—';
-  document.getElementById('opp-av').textContent = oppName[0]?.toUpperCase() || '?';
-  document.getElementById('opp-name').textContent = oppName;
-  document.getElementById('opp-elim').textContent = `${(msg.opponent?.eliminated || []).length} cards eliminated`;
-
-  // FIX 5: board hint changes based on turn
-  document.getElementById('board-hint').textContent = isMyTurn
-    ? 'Tap a card to flip it — eliminated cards cannot be flipped back'
-    : "Wait for your turn to flip cards";
-
-  const myElim = new Set(msg.me?.eliminated || []);
-  if (!boardBuilt) {
-    buildBoard(photos, myElim, isMyTurn);
-    boardBuilt = true;
-  } else {
-    syncBoard(myElim, isMyTurn);
-  }
+  closeOverlay('modal-snipe');
+  const photos=msg.photos||[];
+  const isMyTurn=msg.turn===myId;
+  const guessesLeft=msg.me?.guessesLeft??3;
+  document.getElementById('game-sub').textContent=isMyTurn?'Your turn':`${msg.opponent?.name||'Opponent'}'s turn`;
+  const banner=document.getElementById('turn-banner');
+  banner.className='turn-banner '+(isMyTurn?'mine':'theirs');
+  banner.textContent=isMyTurn?'🟢 Your turn — ask a question, then flip cards!':
+    `⏳ ${msg.opponent?.name||'Opponent'}'s turn — answer their question`;
+  // FIX 5: disable buttons properly
+  document.getElementById('end-turn-btn').disabled=!isMyTurn;
+  const gBtn=document.getElementById('guess-open-btn');
+  gBtn.disabled=!isMyTurn||guessesLeft===0;
+  document.getElementById('guess-counter').textContent=`🎯 ${guessesLeft} left`;
+  document.getElementById('guess-counter').style.opacity=guessesLeft===0?'.4':'1';
+  const mySecretPhoto=photos.find(p=>p.id===msg.me?.secret);
+  if(mySecretPhoto) document.getElementById('secret-img').src=mySecretPhoto.src;
+  const oppName=msg.opponent?.name||'—';
+  document.getElementById('opp-av').textContent=oppName[0]?.toUpperCase()||'?';
+  document.getElementById('opp-name').textContent=oppName;
+  document.getElementById('opp-elim').textContent=`${(msg.opponent?.eliminated||[]).length} eliminated`;
+  document.getElementById('board-hint').textContent=isMyTurn?'Tap a card to eliminate — one-way only':'Waiting for opponent...';
+  const myElim=new Set(msg.me?.eliminated||[]);
+  if(!boardBuilt){ buildBoard(photos,myElim,isMyTurn); boardBuilt=true; }
+  else syncBoard(myElim,isMyTurn);
 }
 
-function buildBoard(photos, elimSet, isMyTurn) {
-  const grid = document.getElementById('board-grid');
-  grid.innerHTML = '';
-  photos.forEach(p => {
-    const isFlipped = elimSet.has(p.id);
-    const c = document.createElement('div');
-    // FIX 5: add 'blocked' class when not your turn
-    c.className = 'flip-card' + (isFlipped ? ' flipped' : '') + (!isMyTurn ? ' blocked' : '');
-    c.dataset.photoid = p.id;
-    c.innerHTML = `<div class="flip-inner">
-      <div class="flip-face flip-front">
-        <div class="fimg"><img src="${p.src}" alt=""></div>
-        ${showNames ? `<div class="fname">${esc(p.name||'')}</div>` : ''}
-      </div>
-      <div class="flip-face flip-back"><div class="xmark">✕</div><div class="out-lbl">Out</div></div>
-    </div>`;
-    c.onclick = () => flipCard(p.id, c);
+function buildBoard(photos,elimSet,isMyTurn){
+  const grid=document.getElementById('board-grid');
+  grid.innerHTML='';
+  photos.forEach(p=>{
+    const isFlipped=elimSet.has(p.id);
+    const c=document.createElement('div');
+    c.className='flip-card'+(isFlipped?' flipped':'')+((!isMyTurn&&!isFlipped)?' blocked':'');
+    c.dataset.photoid=p.id;
+    c.innerHTML=`<div class="flip-inner"><div class="flip-face flip-front"><div class="fimg"><img src="${p.src}" alt=""></div>${showNames?`<div class="fname">${esc(p.name||'')}</div>`:''}</div><div class="flip-face flip-back"><div class="xmark">✕</div><div class="out-lbl">Out</div></div></div>`;
+    c.onclick=()=>flipCard(p.id,c);
     grid.appendChild(c);
   });
 }
 
-function syncBoard(elimSet, isMyTurn) {
-  document.querySelectorAll('.flip-card').forEach(card => {
-    const id = parseInt(card.dataset.photoid);
-    if (elimSet.has(id) && !card.classList.contains('flipped')) card.classList.add('flipped');
-    // FIX 5: update blocked state dynamically
-    if (isMyTurn) card.classList.remove('blocked');
-    else if (!card.classList.contains('flipped')) card.classList.add('blocked');
+function syncBoard(elimSet,isMyTurn){
+  document.querySelectorAll('.flip-card').forEach(card=>{
+    const id=parseInt(card.dataset.photoid);
+    if(elimSet.has(id)&&!card.classList.contains('flipped')) card.classList.add('flipped');
+    if(!card.classList.contains('flipped')){ if(isMyTurn) card.classList.remove('blocked'); else card.classList.add('blocked'); }
   });
 }
 
-function flipCard(photoId, cardEl) {
-  if (cardEl.classList.contains('flipped')) return;
-  // FIX 5: blocked means not your turn
-  if (cardEl.classList.contains('blocked')) return;
+function flipCard(photoId,cardEl){
+  if(cardEl.classList.contains('flipped')||cardEl.classList.contains('blocked')) return;
   cardEl.classList.add('flipped');
-  wsSend({ type: 'toggle_eliminate', photoId });
+  wsSend({type:'toggle_eliminate',photoId});
 }
 
-function endTurn() { wsSend({ type: 'end_turn' }); }
+function endTurn(){ wsSend({type:'end_turn'}); }
 
 // ══════════════════════════════════════
-//  GUESS (FIX 7: show remaining count)
+//  GUESS
 // ══════════════════════════════════════
-function openGuessModal() {
-  pendingGuessId = null;
-  const photos = currentGame?.photos || currentPhotos;
-  const guessesLeft = currentGame?.me?.guessesLeft ?? 3;
-  document.getElementById('guess-modal-sub').textContent = `Who is your opponent's secret character? (${guessesLeft} guess${guessesLeft !== 1 ? 'es' : ''} remaining)`;
-  const grid = document.getElementById('guess-grid');
-  grid.innerHTML = '';
-  document.getElementById('guess-confirm-btn').disabled = true;
-  photos.forEach(p => {
-    const d = document.createElement('div');
-    d.className = 'guess-opt';
-    d.innerHTML = `<div class="gimg"><img src="${p.src}" alt=""></div>${showNames ? `<div class="gname">${esc(p.name||'')}</div>` : ''}<div class="gtick">✓</div>`;
-    d.onclick = () => {
-      grid.querySelectorAll('.guess-opt').forEach(x => x.classList.remove('sel'));
-      d.classList.add('sel'); pendingGuessId = p.id;
-      document.getElementById('guess-confirm-btn').disabled = false;
-    };
+function openGuessModal(){
+  pendingGuessId=null;
+  const photos=currentGame?.photos||currentPhotos;
+  const guessesLeft=currentGame?.me?.guessesLeft??3;
+  document.getElementById('guess-modal-sub').textContent=`Who is it? (${guessesLeft} guess${guessesLeft!==1?'es':''} left)`;
+  const grid=document.getElementById('guess-grid');
+  grid.innerHTML='';
+  document.getElementById('guess-confirm-btn').disabled=true;
+  photos.forEach(p=>{
+    const d=document.createElement('div'); d.className='guess-opt';
+    d.innerHTML=`<div class="gimg"><img src="${p.src}" alt=""></div>${showNames?`<div class="gname">${esc(p.name||'')}</div>`:''}<div class="gtick">✓</div>`;
+    d.onclick=()=>{ grid.querySelectorAll('.guess-opt').forEach(x=>x.classList.remove('sel')); d.classList.add('sel'); pendingGuessId=p.id; document.getElementById('guess-confirm-btn').disabled=false; };
     grid.appendChild(d);
   });
   document.getElementById('modal-guess').classList.add('show');
 }
 
-function submitGuess() {
-  if (pendingGuessId === null) return;
+function submitGuess(){
+  if(pendingGuessId===null) return;
   closeOverlay('modal-guess');
-  wsSend({ type: 'guess', photoId: pendingGuessId });
+  wsSend({type:'guess',photoId:pendingGuessId});
+}
+
+// ══════════════════════════════════════
+//  FIX 6: SNIPE PHASE
+// ══════════════════════════════════════
+function renderSnipe(msg){
+  showPage('page-game');
+  renderGame({...msg,phase:'playing'}); // keep board visible
+  const snipe=msg.snipe;
+  if(!snipe) return;
+  const amInitiator=snipe.initiatorId===myId;
+  if(amInitiator){
+    // Initiator already guessed — wait for opponent response
+    const banner=document.getElementById('turn-banner');
+    banner.className='turn-banner theirs';
+    banner.textContent=`⚡ Snipe sent! Waiting for ${msg.opponent?.name||'opponent'} to respond...`;
+    document.getElementById('end-turn-btn').disabled=true;
+    document.getElementById('guess-open-btn').disabled=true;
+    return;
+  }
+  // Responder: show snipe modal
+  const initiatorGuessPhoto=(msg.photos||[]).find(p=>p.id===snipe.initiatorGuessId);
+  document.getElementById('snipe-title').textContent=`⚡ ${esc(snipe.initiatorName)} is sniping!`;
+  document.getElementById('snipe-desc').textContent=`${esc(snipe.initiatorName)} guessed that your secret character is${initiatorGuessPhoto?.name?' '+esc(initiatorGuessPhoto.name):'...'}. Do you want to counter-guess their character?`;
+  pendingSnipeId=null;
+  const grid=document.getElementById('snipe-grid');
+  grid.innerHTML='';
+  document.getElementById('snipe-confirm-btn').disabled=true;
+  (msg.photos||[]).forEach(p=>{
+    const d=document.createElement('div'); d.className='guess-opt';
+    d.innerHTML=`<div class="gimg"><img src="${p.src}" alt=""></div>${showNames?`<div class="gname">${esc(p.name||'')}</div>`:''}<div class="gtick">✓</div>`;
+    d.onclick=()=>{ grid.querySelectorAll('.guess-opt').forEach(x=>x.classList.remove('sel')); d.classList.add('sel'); pendingSnipeId=p.id; document.getElementById('snipe-confirm-btn').disabled=false; };
+    grid.appendChild(d);
+  });
+  document.getElementById('modal-snipe').classList.add('show');
+}
+
+function submitSnipeGuess(){
+  closeOverlay('modal-snipe');
+  wsSend({type:'snipe_respond',photoId:pendingSnipeId});
+}
+
+function passSnipe(){
+  closeOverlay('modal-snipe');
+  wsSend({type:'snipe_respond',photoId:null});
 }
 
 // ══════════════════════════════════════
 //  RESULT
 // ══════════════════════════════════════
-function renderResult(msg) {
+function renderResult(msg){
   showPage('page-game');
-  const r = msg.result; if (!r) return;
-  const iWon = r.correct && r.guesserId === myId;
-  const iGuessed = r.guesserId === myId;
-  const isAuto = r.auto;
-  document.getElementById('result-emoji').textContent = iWon ? '🎉' : iGuessed ? '😬' : '😮';
-  document.getElementById('result-photo').src = r.correct ? r.guessedPhotoSrc : r.actualPhotoSrc;
-  document.getElementById('result-title').textContent = iWon ? 'You win! 🎉' : iGuessed && !r.correct ? 'Wrong guess!' : `${esc(r.guesserName)} got you!`;
-  document.getElementById('result-msg').textContent =
-    isAuto && iWon ? `You eliminated everyone else — it had to be them!` :
-    iWon ? `You correctly guessed your opponent's character!` :
-    iGuessed && !r.correct ? `That wasn't right — your opponent wins!` :
-    `${r.guesserName} figured out who you were!`;
+  closeOverlay('modal-snipe');
+  const r=msg.result; if(!r) return;
+  let emoji='🎉', title='', resultMsg='', photoSrc='';
+  if(r.snipeResult){
+    const iAmInitiator=r.initiatorId===myId;
+    const iAmResponder=r.responderId===myId;
+    if(r.snipeResult==='tie'){
+      emoji='🤝'; title='It\'s a tie!';
+      resultMsg='Both of you guessed correctly at the same time!';
+      photoSrc=iAmInitiator?r.actualPhotoSrc:r.p1SecretSrc||r.actualPhotoSrc;
+    } else if((r.snipeResult==='initiator'&&iAmInitiator)||(r.snipeResult==='responder'&&iAmResponder)){
+      emoji='🎉'; title='You win!';
+      resultMsg='You guessed correctly!';
+      photoSrc=r.guessedPhotoSrc;
+    } else {
+      emoji='😬'; title='You lose!';
+      resultMsg='Your opponent guessed right. Better luck next time!';
+      photoSrc=r.actualPhotoSrc;
+    }
+  } else {
+    const iWon=r.correct&&r.guesserId===myId;
+    const iGuessed=r.guesserId===myId;
+    emoji=iWon?'🎉':iGuessed?'😬':'😮';
+    title=iWon?'You win! 🎉':iGuessed?'Wrong guess!':`${esc(r.guesserName)} got you!`;
+    resultMsg=iWon?'You correctly guessed your opponent\'s character!':
+      iGuessed?'That wasn\'t right — your opponent wins!':
+      `${r.guesserName} figured out who you were!`;
+    photoSrc=r.correct?r.guessedPhotoSrc:r.actualPhotoSrc;
+  }
+  document.getElementById('result-emoji').textContent=emoji;
+  document.getElementById('result-photo').src=photoSrc||'';
+  document.getElementById('result-title').textContent=title;
+  document.getElementById('result-msg').textContent=resultMsg;
   document.getElementById('modal-result').classList.add('show');
 }
 
-function backToLobby() {
+function backToLobby(){
   closeOverlay('modal-result'); closeOverlay('modal-opp-left');
-  boardBuilt = false; pendingPickId = null; pendingGuessId = null; currentGame = null;
-  myStatus = 'lobby';
-  resetFindUI();
-  wsSend({ type: 'back_to_lobby' });
+  boardBuilt=false; pendingPickId=null; pendingGuessId=null; currentGame=null;
+  myStatus='lobby'; resetFindUI();
+  wsSend({type:'back_to_lobby'});
 }
 
 // ══════════════════════════════════════
-//  ADMIN
+//  FIX 1: ADMIN — sync with server photos
 // ══════════════════════════════════════
-function openAdmin() { document.getElementById('modal-admin').classList.add('show'); }
+function syncAdminPhotos(serverPhotos){
+  adminPhotos=serverPhotos.map(p=>({ src:p.src, name:p.name||'' }));
+  renderPhotosList();
+}
 
-function switchAdminTab(name, btn) {
-  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.remove('active'));
+function openAdmin(){
+  // Refresh admin photo list from current server photos
+  syncAdminPhotos(currentPhotos);
+  document.getElementById('modal-admin').classList.add('show');
+}
+
+function switchAdminTab(name,btn){
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.admin-tab-panel').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
 }
 
-function toggleDark(on) { document.body.classList.toggle('dark', on); }
+function toggleDark(on){ document.body.classList.toggle('dark',on); }
 
-function toggleNames(on) {
-  showNames = on;
-  if (boardBuilt && currentGame) {
-    const myElim = new Set(currentGame.me?.eliminated || []);
-    const isMyTurn = currentGame.turn === myId;
-    buildBoard(currentGame.photos || [], myElim, isMyTurn);
+function toggleNames(on){
+  showNames=on;
+  if(boardBuilt&&currentGame){
+    const myElim=new Set(currentGame.me?.eliminated||[]);
+    const isMyTurn=currentGame.turn===myId;
+    buildBoard(currentGame.photos||[],myElim,isMyTurn);
   }
 }
 
-document.getElementById('admin-file').addEventListener('change', e => handleAdminFiles(e.target.files));
-document.querySelector('.photo-upload-zone').addEventListener('dragover', e => e.preventDefault());
-document.querySelector('.photo-upload-zone').addEventListener('drop', e => { e.preventDefault(); handleAdminFiles(e.dataTransfer.files); });
+document.getElementById('admin-file').addEventListener('change',e=>handleAdminFiles(e.target.files));
+document.querySelector('.photo-upload-zone').addEventListener('dragover',e=>e.preventDefault());
+document.querySelector('.photo-upload-zone').addEventListener('drop',e=>{ e.preventDefault(); handleAdminFiles(e.dataTransfer.files); });
 
-function handleAdminFiles(files) {
-  const slots = 40 - adminPhotos.length;
-  Array.from(files).slice(0, slots).forEach(f => {
-    if (!f.type.startsWith('image/')) return;
-    const r = new FileReader();
-    r.onload = ev => { adminPhotos.push({ src: ev.target.result, name: f.name.replace(/\.[^.]+$/, '') }); renderPhotosList(); };
+function handleAdminFiles(files){
+  const slots=25-adminPhotos.length;
+  Array.from(files).slice(0,slots).forEach(f=>{
+    if(!f.type.startsWith('image/')) return;
+    const r=new FileReader();
+    r.onload=ev=>{ adminPhotos.push({src:ev.target.result,name:f.name.replace(/\.[^.]+$/,'')}); renderPhotosList(); };
     r.readAsDataURL(f);
   });
 }
 
-function renderPhotosList() {
-  const wrap = document.getElementById('photos-name-list');
-  wrap.innerHTML = '';
-  adminPhotos.forEach((p, i) => {
-    const d = document.createElement('div');
-    d.className = 'photo-name-row';
-    d.innerHTML = `<div class="pthumb"><img src="${p.src}"></div><input class="name-input" type="text" value="${esc(p.name)}" placeholder="Name" oninput="adminPhotos[${i}].name=this.value"><button class="rm-btn" onclick="removeAdminPhoto(${i})">✕</button>`;
+function renderPhotosList(){
+  const wrap=document.getElementById('photos-name-list');
+  wrap.innerHTML='';
+  adminPhotos.forEach((p,i)=>{
+    const d=document.createElement('div'); d.className='photo-name-row';
+    d.innerHTML=`<div class="pthumb"><img src="${p.src}"></div><input class="name-input" type="text" value="${esc(p.name)}" placeholder="Name" oninput="adminPhotos[${i}].name=this.value"><button class="rm-btn" onclick="removeAdminPhoto(${i})">✕</button>`;
     wrap.appendChild(d);
   });
-  document.getElementById('admin-count').textContent = `${adminPhotos.length} / 40 photos`;
+  document.getElementById('admin-count').textContent=`${adminPhotos.length} / 25 photos`;
 }
 
-function removeAdminPhoto(i) { adminPhotos.splice(i, 1); renderPhotosList(); }
+function removeAdminPhoto(i){ adminPhotos.splice(i,1); renderPhotosList(); }
 
-function pushPhotos() {
-  const pass = document.getElementById('admin-pass').value;
-  if (!pass) { showAdminMsg('admin-msg', 'Enter the admin password.', 'err'); return; }
-  if (adminPhotos.length < 2) { showAdminMsg('admin-msg', 'Upload at least 2 photos.', 'err'); return; }
-  wsSend({ type: 'admin_photos', password: pass, photos: adminPhotos.map(p => ({ src: p.src, name: p.name })) });
+function pushPhotos(){
+  const pass=document.getElementById('admin-pass').value;
+  if(!pass){ showAdminMsg('admin-msg','Enter the admin password.','err'); return; }
+  if(adminPhotos.length<2){ showAdminMsg('admin-msg','Upload at least 2 photos.','err'); return; }
+  wsSend({type:'admin_photos',password:pass,photos:adminPhotos.map(p=>({src:p.src,name:p.name}))});
 }
 
-function hardReset() {
-  const pass = document.getElementById('manage-pass').value;
-  if (!pass) { showAdminMsg('manage-msg', 'Enter the admin password.', 'err'); return; }
-  if (!confirm('Hard reset — send everyone back to lobby?')) return;
-  wsSend({ type: 'admin_reset', password: pass });
+// FIX 3: hard reset
+function hardReset(){
+  const pass=document.getElementById('manage-pass').value;
+  if(!pass){ showAdminMsg('manage-msg','Enter the admin password.','err'); return; }
+  if(!confirm('Hard reset — send everyone back to lobby and clear all games?')) return;
+  wsSend({type:'admin_reset',password:pass});
 }
 
-function showAdminMsg(id, text, type) {
-  const el = document.getElementById(id);
-  el.textContent = text; el.className = 'admin-msg-line ' + type; el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 4000);
+function showAdminMsg(id,text,type){
+  const el=document.getElementById(id);
+  el.textContent=text; el.className='admin-msg-line '+type; el.style.display='block';
+  setTimeout(()=>el.style.display='none',4000);
 }
 
 // ══════════════════════════════════════
 //  UTILS
 // ══════════════════════════════════════
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-function isOnPage(id) { return document.getElementById(id).classList.contains('active'); }
-function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showPage(id){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function closeOverlay(id){ document.getElementById(id).classList.remove('show'); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>
 </html>
