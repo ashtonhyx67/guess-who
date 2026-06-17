@@ -92,11 +92,13 @@ function sendGameState(gameId) {
     // FIX 6: include snipe state
     let snipeInfo = null;
     if (g.phase === 'snipe') {
+      const amInitiator = pid === g.snipe.initiatorId;
       snipeInfo = {
         initiatorId: g.snipe.initiatorId,
         initiatorName: clients[g.snipe.initiatorId]?.name,
-        initiatorGuessId: g.snipe.initiatorGuessId,
-        myChoice: g.snipe.choices[pid] ?? null,   // null=pending, photoId=guessed, 'pass'=passed
+        // Only reveal the guessed card to the initiator — responder sees null
+        initiatorGuessId: amInitiator ? g.snipe.initiatorGuessId : null,
+        myChoice: g.snipe.choices[pid] ?? null,
         oppChoice: g.snipe.choices[oppId] ?? null,
       };
     }
