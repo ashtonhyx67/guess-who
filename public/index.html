@@ -8,380 +8,399 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface2: #334155;
-  --surface3: #475569;
-  --text: #f1f5f9;
-  --muted: #94a3b8;
-  --border: #334155;
-  --yellow: #f59e0b;
-  --yellow-dk: #78350f;
-  --blue: #1a237e;
-  --blue2: #3949ab;
-  --red: #dc2626;
-  --green: #16a34a;
+  --red: #f54251;
+  --red-dk: #c0303d;
+  --red-lt: #fde8ea;
+  --white: #ffffff;
+  --off: #f7f7f7;
+  --border: #e5e5e5;
+  --text: #1a1a1a;
+  --muted: #888;
+  --surface: #ffffff;
   --radius: 12px;
 }
 
-html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, Arial, sans-serif; overflow: hidden; }
+html, body { height: 100%; background: var(--off); color: var(--text); font-family: 'Segoe UI', system-ui, Arial, sans-serif; overflow: hidden; }
 
-/* ─── PAGES ─── */
+/* ── PAGES ── */
 .page { display: none; width: 100vw; height: 100vh; flex-direction: column; }
 .page.active { display: flex; }
 
-/* ─── TOP BAR ─── */
+/* ── TOPBAR ── */
 .topbar {
-  height: 54px; background: var(--surface); border-bottom: 1px solid var(--border);
+  height: 56px; background: var(--red); color: #fff;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 1.25rem; flex-shrink: 0;
+  padding: 0 1.25rem; flex-shrink: 0; box-shadow: 0 2px 8px rgba(245,66,81,.25);
 }
-.topbar-logo { font-size: 1.1rem; font-weight: 900; color: var(--yellow); letter-spacing: 2px; }
-.topbar-sub { font-size: 11px; color: var(--muted); }
+.topbar-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 2px; }
 .topbar-right { display: flex; gap: .5rem; align-items: center; }
-.pill-btn {
-  padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
-  background: transparent; color: var(--text); font-size: 12px; font-weight: 600;
+.topbar-sub { font-size: 11px; opacity: .8; margin-top: 1px; }
+
+.pill {
+  padding: 6px 14px; border-radius: 20px; border: 1.5px solid rgba(255,255,255,.5);
+  background: transparent; color: #fff; font-size: 12px; font-weight: 600;
   cursor: pointer; transition: background .15s; white-space: nowrap;
 }
-.pill-btn:hover { background: var(--surface2); }
-.pill-btn.yellow { background: var(--yellow); color: var(--yellow-dk); border-color: var(--yellow); }
-.pill-btn.yellow:hover { background: #fbbf24; }
-.pill-btn.red { background: var(--red); color: #fff; border-color: var(--red); }
-.pill-btn.red:hover { background: #b91c1c; }
-.pill-btn:disabled { opacity: .4; cursor: not-allowed; }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); display: inline-block; margin-right: 4px; }
-.status-dot.on { background: var(--green); }
+.pill:hover { background: rgba(255,255,255,.15); }
+.pill.white { background: #fff; color: var(--red); border-color: #fff; }
+.pill.white:hover { background: #ffe8ea; }
+.pill:disabled { opacity: .4; cursor: not-allowed; }
 
-/* ─── JOIN PAGE ─── */
-#page-join {
-  align-items: center; justify-content: center;
-  background: radial-gradient(ellipse at 50% 10%, #1a237e66 0%, transparent 60%), var(--bg);
-}
+/* ── JOIN PAGE ── */
+#page-join { align-items: center; justify-content: center; background: linear-gradient(135deg, #fff 0%, #ffe8ea 100%); }
 .join-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
-  padding: 2.5rem; width: 100%; max-width: 420px;
-  box-shadow: 0 24px 64px rgba(0,0,0,.5);
+  background: var(--white); border-radius: 20px; padding: 2.5rem;
+  width: 100%; max-width: 420px; box-shadow: 0 8px 40px rgba(245,66,81,.15);
+  border: 1.5px solid var(--border);
 }
-.join-logo { font-size: 3rem; font-weight: 900; color: var(--yellow); letter-spacing: 3px; margin-bottom: .25rem; }
-.join-sub { color: var(--muted); font-size: 14px; margin-bottom: 2rem; }
+.join-logo { font-size: 3rem; font-weight: 900; color: var(--red); letter-spacing: 3px; }
+.join-sub { color: var(--muted); font-size: 14px; margin: .25rem 0 2rem; }
 .field-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: .4rem; }
 .text-input {
-  width: 100%; padding: 11px 14px; background: var(--bg); border: 1px solid var(--border);
-  border-radius: var(--radius); color: var(--text); font-size: 15px; outline: none;
-  margin-bottom: 1.25rem; transition: border-color .15s;
+  width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
+  border-radius: var(--radius); color: var(--text); font-size: 15px;
+  outline: none; margin-bottom: 1rem; background: var(--off); transition: border-color .15s;
 }
-.text-input:focus { border-color: var(--blue2); }
+.text-input:focus { border-color: var(--red); background: #fff; }
 .big-btn {
-  width: 100%; padding: 13px; background: var(--yellow); color: var(--yellow-dk);
+  width: 100%; padding: 13px; background: var(--red); color: #fff;
   border: none; border-radius: var(--radius); font-size: 16px; font-weight: 800;
-  cursor: pointer; letter-spacing: .5px; transition: background .15s, transform .1s;
+  cursor: pointer; transition: background .15s, transform .1s; letter-spacing: .5px;
 }
-.big-btn:hover { background: #fbbf24; }
+.big-btn:hover { background: var(--red-dk); }
 .big-btn:active { transform: scale(.98); }
-.big-btn:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; transform: none; }
-.join-error { color: #f87171; font-size: 13px; margin-top: .75rem; display: none; }
+.big-btn:disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
+.err-msg { color: var(--red); font-size: 13px; margin-top: .75rem; display: none; }
 
-/* ─── LOBBY PAGE ─── */
-#page-lobby {
-  align-items: center; justify-content: center;
-  background: radial-gradient(ellipse at 50% 10%, #1a237e55, transparent 60%), var(--bg);
-}
-.lobby-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
-  padding: 2rem; width: 100%; max-width: 440px; text-align: center;
-}
-.lobby-card h2 { font-size: 1.4rem; font-weight: 700; color: var(--yellow); margin-bottom: .5rem; }
-.lobby-card p { color: var(--muted); font-size: 14px; margin-bottom: 1.5rem; }
-.player-slots { display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1.5rem; }
-.player-slot {
-  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: .75rem 1rem; display: flex; align-items: center; gap: .75rem;
-}
-.slot-avatar {
-  width: 36px; height: 36px; border-radius: 50%; background: var(--surface2);
-  display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
-}
-.slot-name { font-size: 14px; font-weight: 600; }
-.slot-badge {
-  margin-left: auto; font-size: 11px; padding: 3px 10px; border-radius: 20px;
-  background: var(--surface2); color: var(--muted);
-}
-.slot-badge.me { background: #1a237e; color: #a5b4fc; }
-.slot-badge.ready { background: #14532d; color: #86efac; }
-.waiting-dots span {
-  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-  background: var(--muted); margin: 0 2px;
-  animation: blink 1.2s infinite;
-}
-.waiting-dots span:nth-child(2) { animation-delay: .2s; }
-.waiting-dots span:nth-child(3) { animation-delay: .4s; }
-@keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
-.no-photos-warn { background: #451a03; border: 1px solid #92400e; border-radius: var(--radius); padding: .75rem 1rem; font-size: 13px; color: #fde68a; margin-bottom: 1rem; }
+/* ── LOBBY PAGE ── */
+#page-lobby { background: var(--off); }
+.lobby-body { flex: 1; overflow-y: auto; padding: 1.25rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-content: start; }
+@media(max-width:640px){ .lobby-body { grid-template-columns: 1fr; } }
 
-/* ─── PICK PAGE ─── */
-#page-pick {
-  background: radial-gradient(ellipse at 50% 0%, #1a237e55 0%, transparent 50%), var(--bg);
+.card {
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: 16px; padding: 1.25rem; box-shadow: 0 2px 12px rgba(0,0,0,.05);
 }
-.pick-header { text-align: center; padding: 1.25rem 1rem .75rem; flex-shrink: 0; }
-.pick-header h2 { font-size: 1.5rem; font-weight: 800; color: var(--yellow); }
-.pick-header p { color: var(--muted); font-size: 13px; margin-top: .3rem; }
-.pick-scroll { flex: 1; overflow-y: auto; padding: .5rem 1.25rem; }
+.card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 1rem; }
+
+.online-list { display: flex; flex-direction: column; gap: .5rem; }
+.online-item {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .6rem .75rem; border-radius: 10px; background: var(--off);
+  border: 1.5px solid var(--border);
+}
+.online-item .avatar {
+  width: 34px; height: 34px; border-radius: 50%; background: var(--red-lt);
+  color: var(--red); display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; flex-shrink: 0;
+}
+.online-item .iname { font-size: 14px; font-weight: 600; }
+.online-item .istatus { font-size: 11px; color: var(--muted); }
+.online-item .challenge-btn {
+  margin-left: auto; padding: 5px 13px; background: var(--red); color: #fff;
+  border: none; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: background .15s;
+}
+.online-item .challenge-btn:hover { background: var(--red-dk); }
+.online-item .challenge-btn:disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
+.online-item.me .avatar { background: var(--red); color: #fff; }
+.me-badge { font-size: 10px; background: var(--red-lt); color: var(--red); padding: 2px 7px; border-radius: 10px; font-weight: 700; margin-left: auto; }
+.status-badge {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 700; margin-left: auto;
+}
+.status-badge.playing { background: #e0f2fe; color: #0369a1; }
+.status-badge.waiting { background: #dcfce7; color: #15803d; }
+
+.waiting-section { display: flex; flex-direction: column; gap: .75rem; }
+.wait-btn-row { display: flex; gap: .5rem; }
+.wait-btn {
+  flex: 1; padding: 10px; background: var(--red); color: #fff;
+  border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: background .15s;
+}
+.wait-btn:hover { background: var(--red-dk); }
+.wait-btn.cancel { background: #fff; color: var(--red); border: 1.5px solid var(--red); }
+.wait-btn.cancel:hover { background: var(--red-lt); }
+.wait-hint { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+.no-photos-banner {
+  background: #fff8e1; border: 1.5px solid #fbbf24; border-radius: var(--radius);
+  padding: .65rem 1rem; font-size: 13px; color: #92400e; margin-bottom: .75rem;
+}
+
+/* ── LOADING / INTERMISSION PAGE ── */
+#page-loading { align-items: center; justify-content: center; background: linear-gradient(135deg, #fff 0%, #ffe8ea 100%); }
+.loading-card {
+  background: var(--white); border-radius: 20px; padding: 3rem 2.5rem;
+  text-align: center; max-width: 380px; width: 90%;
+  box-shadow: 0 8px 40px rgba(245,66,81,.15); border: 1.5px solid var(--border);
+}
+.loading-card h2 { font-size: 1.6rem; font-weight: 800; color: var(--red); margin-bottom: .5rem; }
+.loading-card p { color: var(--muted); font-size: 14px; margin-bottom: 2rem; }
+.loading-vs { font-size: 2.5rem; font-weight: 900; color: var(--text); margin-bottom: .5rem; }
+.loading-vs span { color: var(--red); }
+.progress-bar { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--red); border-radius: 3px; width: 0%; transition: width 4s linear; }
+.loading-dots { display: flex; justify-content: center; gap: 6px; margin-top: 1.5rem; }
+.loading-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--red); opacity: .3; animation: pulse 1.2s infinite; }
+.loading-dots span:nth-child(2) { animation-delay: .2s; }
+.loading-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes pulse { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+
+/* ── PICK PAGE ── */
+#page-pick { background: var(--off); }
+.pick-header { text-align: center; padding: 1.25rem 1rem .75rem; flex-shrink: 0; background: var(--white); border-bottom: 1.5px solid var(--border); }
+.pick-header h2 { font-size: 1.4rem; font-weight: 800; color: var(--red); }
+.pick-header p { color: var(--muted); font-size: 13px; margin-top: .25rem; }
+.pick-scroll { flex: 1; overflow-y: auto; padding: 1rem; }
 .pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; max-width: 960px; margin: 0 auto; }
 .pick-card {
   aspect-ratio: 3/4; border-radius: var(--radius); overflow: hidden;
   border: 3px solid var(--border); cursor: pointer; position: relative;
-  transition: border-color .15s, transform .15s;
+  transition: border-color .15s, transform .15s; background: var(--white);
 }
 .pick-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.pick-card:hover:not(.disabled) { border-color: var(--blue2); transform: scale(1.05); }
-.pick-card.chosen { border-color: var(--yellow); box-shadow: 0 0 0 3px #fde68a44; }
+.pick-card:hover:not(.disabled) { border-color: var(--red); transform: scale(1.05); }
+.pick-card.chosen { border-color: var(--red); box-shadow: 0 0 0 3px rgba(245,66,81,.2); }
 .pick-card.taken { opacity: .3; cursor: not-allowed; }
-.pick-card.disabled { cursor: not-allowed; }
 .pick-tick {
-  position: absolute; top: 6px; right: 6px; background: var(--yellow); color: var(--yellow-dk);
+  position: absolute; top: 6px; right: 6px; background: var(--red); color: #fff;
   width: 26px; height: 26px; border-radius: 50%; display: none;
-  align-items: center; justify-content: center; font-size: 15px; font-weight: 900;
+  align-items: center; justify-content: center; font-size: 14px; font-weight: 900;
 }
 .pick-card.chosen .pick-tick { display: flex; }
-.pick-lock-overlay {
-  position: absolute; inset: 0; background: rgba(245,158,11,.15);
-  display: flex; align-items: center; justify-content: center; font-size: 2rem;
+.pick-footer { padding: 1rem 1.25rem; flex-shrink: 0; background: var(--white); border-top: 1.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.pick-status { font-size: 13px; color: var(--muted); }
+.confirm-btn {
+  padding: 11px 32px; background: var(--red); color: #fff;
+  border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: background .15s;
 }
-.pick-footer { padding: 1rem 1.25rem 1.25rem; flex-shrink: 0; text-align: center; }
-.pick-status { font-size: 13px; color: var(--muted); margin-bottom: .75rem; min-height: 20px; }
+.confirm-btn:hover { background: var(--red-dk); }
+.confirm-btn:disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
 
-/* ─── GAME PAGE ─── */
-#page-game { background: var(--bg); }
+/* ── GAME PAGE ── */
+#page-game { background: var(--off); }
 .game-body { flex: 1; overflow-y: auto; padding: 1rem 1.25rem 1.5rem; display: flex; flex-direction: column; gap: .75rem; }
-
 .turn-banner {
-  border-radius: var(--radius); padding: .65rem 1rem;
-  font-size: 14px; font-weight: 700; text-align: center; flex-shrink: 0;
+  border-radius: var(--radius); padding: .75rem 1rem;
+  font-size: 14px; font-weight: 700; text-align: center;
 }
-.turn-banner.my-turn { background: #14532d; color: #86efac; }
-.turn-banner.their-turn { background: #1e1b4b; color: #a5b4fc; }
-
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; flex-shrink: 0; }
-@media(max-width:600px){ .two-col { grid-template-columns: 1fr; } }
-
-.info-panel {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: .75rem 1rem;
-}
-.info-panel .label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: .5rem; }
+.turn-banner.mine { background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; }
+.turn-banner.theirs { background: var(--red-lt); color: var(--red-dk); border: 1.5px solid #fca5a5; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+@media(max-width:560px){ .two-col { grid-template-columns: 1fr; } }
+.info-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: .85rem 1rem; }
+.info-card .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: .5rem; }
 .secret-row { display: flex; align-items: center; gap: .75rem; }
-.secret-thumb { width: 46px; height: 56px; border-radius: 8px; overflow: hidden; border: 2px solid var(--yellow); flex-shrink: 0; }
+.secret-thumb { width: 46px; height: 56px; border-radius: 8px; overflow: hidden; border: 2px solid var(--red); flex-shrink: 0; }
 .secret-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .secret-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
 .opp-row { display: flex; align-items: center; gap: .75rem; }
-.opp-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.opp-av { width: 36px; height: 36px; border-radius: 50%; background: var(--red-lt); color: var(--red); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
 .opp-name { font-size: 14px; font-weight: 700; }
 .opp-elim { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-.board-hint { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; flex-shrink: 0; }
+.board-hint { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 .board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
 
-/* flip cards */
+/* flip card */
 .flip-card { aspect-ratio: 3/4; perspective: 900px; cursor: pointer; }
 .flip-inner {
   width: 100%; height: 100%; position: relative; transform-style: preserve-3d;
   transition: transform .5s cubic-bezier(.4,0,.2,1); border-radius: var(--radius);
 }
 .flip-card.flipped .flip-inner { transform: rotateY(180deg); }
-.flip-face {
-  position: absolute; inset: 0; backface-visibility: hidden;
-  border-radius: var(--radius); overflow: hidden; border: 2px solid var(--border);
-}
-.flip-front { background: #1e3a6e; }
+.flip-card.flipped { cursor: default; }
+.flip-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius); overflow: hidden; border: 2px solid var(--border); }
+.flip-front { background: #fff; }
 .flip-front img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .flip-back {
-  background: var(--blue); transform: rotateY(180deg);
+  background: var(--red); transform: rotateY(180deg);
   display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px;
 }
-.flip-back .xmark { font-size: 3rem; font-weight: 900; color: rgba(255,255,255,.2); line-height: 1; }
-.flip-back .elim-label { font-size: 10px; color: rgba(255,255,255,.2); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.flip-back .xmark { font-size: 3rem; font-weight: 900; color: rgba(255,255,255,.4); line-height: 1; }
+.flip-back .out-label { font-size: 10px; color: rgba(255,255,255,.5); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 
-/* ─── MODALS ─── */
-.overlay {
-  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.8);
-  z-index: 200; align-items: center; justify-content: center;
-  backdrop-filter: blur(6px);
-}
+/* ── MODALS ── */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 .overlay.show { display: flex; }
-.modal {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
-  padding: 2rem; max-width: 400px; width: 92%; text-align: center;
-  box-shadow: 0 32px 80px rgba(0,0,0,.7);
-  animation: pop .3s cubic-bezier(.34,1.56,.64,1);
-}
-@keyframes pop { from{opacity:0;transform:scale(.8)} to{opacity:1;transform:scale(1)} }
+.modal { background: #fff; border-radius: 20px; padding: 2rem; max-width: 400px; width: 92%; text-align: center; box-shadow: 0 24px 64px rgba(0,0,0,.2); border: 1.5px solid var(--border); animation: pop .3s cubic-bezier(.34,1.56,.64,1); }
+@keyframes pop { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:scale(1)} }
 .modal h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: .4rem; }
 .modal p { color: var(--muted); font-size: 14px; margin-bottom: 1.25rem; line-height: 1.5; }
-.modal-photo { width: 96px; height: 116px; border-radius: 12px; overflow: hidden; margin: 0 auto 1rem; border: 3px solid var(--yellow); }
+.modal-photo { width: 96px; height: 116px; border-radius: 12px; overflow: hidden; margin: 0 auto 1rem; border: 3px solid var(--red); }
 .modal-photo img { width: 100%; height: 100%; object-fit: cover; }
 .result-emoji { font-size: 3.5rem; margin-bottom: .5rem; }
-
-/* guess grid inside modal */
 .guess-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px,1fr)); gap: 8px; max-height: 280px; overflow-y: auto; margin-bottom: 1rem; }
-.guess-opt {
-  aspect-ratio: 3/4; border-radius: 8px; overflow: hidden;
-  border: 3px solid var(--border); cursor: pointer; position: relative;
-  transition: border-color .15s, transform .1s;
-}
+.guess-opt { aspect-ratio: 3/4; border-radius: 8px; overflow: hidden; border: 3px solid var(--border); cursor: pointer; position: relative; transition: border-color .15s, transform .1s; }
 .guess-opt img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.guess-opt:hover { border-color: var(--blue2); transform: scale(1.05); }
-.guess-opt.sel { border-color: var(--yellow); box-shadow: 0 0 0 2px #fde68a44; }
-.guess-opt .gtick {
-  position: absolute; inset: 0; background: rgba(245,158,11,.3);
-  display: none; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900;
-}
+.guess-opt:hover { border-color: var(--red); transform: scale(1.05); }
+.guess-opt.sel { border-color: var(--red); box-shadow: 0 0 0 2px rgba(245,66,81,.2); }
+.guess-opt .gtick { position: absolute; inset: 0; background: rgba(245,66,81,.25); display: none; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; }
 .guess-opt.sel .gtick { display: flex; }
-
 .mbtns { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; }
-.mbtn {
-  padding: 10px 24px; background: var(--yellow); color: var(--yellow-dk);
-  border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700;
-  cursor: pointer; transition: background .15s;
-}
-.mbtn:hover { background: #fbbf24; }
-.mbtn:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
-.mbtn-ghost {
-  padding: 10px 24px; background: transparent; color: var(--muted);
-  border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; cursor: pointer;
-}
-.mbtn-ghost:hover { background: var(--surface2); color: var(--text); }
+.mbtn { padding: 10px 24px; background: var(--red); color: #fff; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s; }
+.mbtn:hover { background: var(--red-dk); }
+.mbtn:disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
+.mbtn-ghost { padding: 10px 24px; background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 14px; cursor: pointer; }
+.mbtn-ghost:hover { background: var(--off); color: var(--text); }
 
-/* admin modal */
-.admin-upload-zone {
-  border: 2px dashed var(--blue2); border-radius: var(--radius); padding: 1.5rem;
-  text-align: center; cursor: pointer; transition: all .2s; background: #1a237e11; margin-bottom: 1rem;
-}
-.admin-upload-zone:hover, .admin-upload-zone.drag { border-color: var(--yellow); background: #f59e0b0d; }
-.admin-upload-zone p { color: var(--muted); font-size: 13px; margin-top: .25rem; }
+/* admin */
+.admin-zone { border: 2px dashed var(--red); border-radius: var(--radius); padding: 1.5rem; text-align: center; cursor: pointer; transition: all .2s; background: var(--red-lt); margin-bottom: 1rem; }
+.admin-zone:hover { background: #fce4e6; }
+.admin-zone p { color: var(--muted); font-size: 13px; margin-top: .25rem; }
 #admin-file { display: none; }
-.admin-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px,1fr)); gap: 5px; max-height: 160px; overflow-y: auto; margin-bottom: .75rem; }
-.admin-thumb { aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 2px solid var(--border); position: relative; cursor: pointer; }
+.admin-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px,1fr)); gap: 5px; max-height: 150px; overflow-y: auto; margin-bottom: .75rem; }
+.admin-thumb { aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 2px solid var(--border); }
 .admin-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.admin-thumb .rm { position: absolute; inset: 0; background: rgba(220,38,38,.75); display: none; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; color: #fff; }
-.admin-thumb:hover .rm { display: flex; }
 .admin-count { font-size: 12px; color: var(--muted); margin-bottom: .75rem; }
-.admin-pass-row { display: flex; gap: .5rem; margin-bottom: .75rem; }
-.admin-pass-row input { flex:1; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 14px; outline: none; }
-.admin-pass-row input:focus { border-color: var(--blue2); }
+.pass-row { display: flex; gap: .5rem; margin-bottom: .75rem; }
+.pass-row input { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 14px; outline: none; background: var(--off); }
+.pass-row input:focus { border-color: var(--red); }
+.admin-msg { font-size: 13px; margin-top: .75rem; display: none; }
+.admin-msg.ok { color: var(--green, #15803d); }
+.admin-msg.err { color: var(--red); }
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════
-     PAGE: JOIN
-══════════════════════════════ -->
+<!-- ══ PAGE: JOIN ══ -->
 <div id="page-join" class="page active">
   <div class="join-card">
     <div class="join-logo">GUESS WHO?</div>
-    <div class="join-sub">Multiplayer — enter your name to join the game.</div>
+    <div class="join-sub">Multiplayer — enter your name to join the lobby.</div>
     <div class="field-label">Your name</div>
-    <input class="text-input" id="join-name" placeholder="e.g. Alex" maxlength="20" />
-    <button class="big-btn" id="join-btn" onclick="joinGame()">Join Game →</button>
-    <div class="join-error" id="join-error"></div>
+    <input class="text-input" id="join-name" placeholder="e.g. Alex" maxlength="20">
+    <button class="big-btn" onclick="joinLobby()">Enter Lobby →</button>
+    <div class="err-msg" id="join-err"></div>
   </div>
 </div>
 
-
-<!-- ══════════════════════════════
-     PAGE: LOBBY
-══════════════════════════════ -->
+<!-- ══ PAGE: LOBBY ══ -->
 <div id="page-lobby" class="page">
   <div class="topbar">
-    <div><div class="topbar-logo">GUESS WHO?</div><div class="topbar-sub">Waiting for players...</div></div>
+    <div>
+      <div class="topbar-logo">GUESS WHO?</div>
+      <div class="topbar-sub">Choose an opponent to play against</div>
+    </div>
     <div class="topbar-right">
-      <span id="conn-indicator"><span class="status-dot" id="conn-dot"></span><span id="conn-text" style="font-size:12px;color:var(--muted)">Connecting</span></span>
-      <button class="pill-btn" onclick="openAdmin()">⚙ Admin</button>
+      <button class="pill" onclick="openAdmin()">⚙ Admin</button>
     </div>
   </div>
-  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:1.5rem">
-    <div class="lobby-card">
-      <h2>🎭 Game Lobby</h2>
-      <p id="lobby-desc">Waiting for both players and photos to be uploaded...</p>
-      <div id="no-photos-warn" class="no-photos-warn" style="display:none">⚠ No photos uploaded yet — an admin needs to upload friend photos before the game can start.</div>
-      <div class="player-slots" id="player-slots"></div>
-      <div class="waiting-dots"><span></span><span></span><span></span></div>
+  <div class="lobby-body">
+    <!-- Online players -->
+    <div class="card">
+      <h3>🟢 Online Players</h3>
+      <div id="no-photos-banner" class="no-photos-banner" style="display:none">⚠ Admin needs to upload photos before games can start.</div>
+      <div class="online-list" id="online-list"></div>
+    </div>
+    <!-- Join waiting / status -->
+    <div class="card">
+      <h3>Your Status</h3>
+      <div class="waiting-section">
+        <div class="wait-hint" id="wait-hint">Click "Ready to Play" to appear as available. Then tap Challenge next to someone also ready!</div>
+        <div class="wait-btn-row" id="wait-btn-row">
+          <button class="wait-btn" id="ready-btn" onclick="goReady()">✋ Ready to Play</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- ══ PAGE: LOADING INTERMISSION ══ -->
+<div id="page-loading" class="page">
+  <div class="loading-card">
+    <div class="loading-vs" id="loading-vs">You <span>VS</span> Opponent</div>
+    <h2>Game is loading...</h2>
+    <p>Get ready to pick your secret character!</p>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="loading-dots"><span></span><span></span><span></span></div>
+  </div>
+</div>
 
-<!-- ══════════════════════════════
-     PAGE: PICK SECRET
-══════════════════════════════ -->
+<!-- ══ PAGE: PICK ══ -->
 <div id="page-pick" class="page">
   <div class="topbar">
-    <div><div class="topbar-logo">GUESS WHO?</div><div class="topbar-sub" id="pick-topbar-sub">Pick your secret character</div></div>
-    <div class="topbar-right">
-      <span id="conn-indicator2"><span class="status-dot on" id="conn-dot2"></span><span id="conn-text2" style="font-size:12px;color:var(--muted)">Connected</span></span>
-      <button class="pill-btn" onclick="openAdmin()">⚙ Admin</button>
-    </div>
+    <div><div class="topbar-logo">GUESS WHO?</div><div class="topbar-sub">Pick your secret character</div></div>
+    <div class="topbar-right"><button class="pill" onclick="openAdmin()">⚙ Admin</button></div>
   </div>
   <div class="pick-header">
     <h2>🔒 Pick your secret character</h2>
-    <p>Tap one person — this is who your opponent has to guess. Don't let them see!</p>
+    <p>Tap one person — this is who your opponent has to guess. They can't see your screen!</p>
   </div>
   <div class="pick-scroll">
     <div class="pick-grid" id="pick-grid"></div>
   </div>
   <div class="pick-footer">
-    <div class="pick-status" id="pick-status">Tap a character to choose them</div>
-    <button class="big-btn" id="pick-confirm-btn" style="max-width:320px" disabled onclick="confirmPick()">Lock In My Choice →</button>
+    <div class="pick-status" id="pick-status">Tap someone to choose them</div>
+    <button class="confirm-btn" id="pick-confirm" disabled onclick="confirmPick()">Lock In →</button>
   </div>
 </div>
 
-
-<!-- ══════════════════════════════
-     PAGE: GAME
-══════════════════════════════ -->
+<!-- ══ PAGE: GAME ══ -->
 <div id="page-game" class="page">
   <div class="topbar">
-    <div><div class="topbar-logo">GUESS WHO?</div><div class="topbar-sub" id="game-topbar-sub"></div></div>
+    <div><div class="topbar-logo">GUESS WHO?</div><div class="topbar-sub" id="game-sub">Playing</div></div>
     <div class="topbar-right">
-      <button class="pill-btn" id="end-turn-btn" onclick="endTurn()" disabled>End Turn →</button>
-      <button class="pill-btn yellow" onclick="openGuessModal()">🎯 Guess!</button>
-      <button class="pill-btn" onclick="openAdmin()">⚙ Admin</button>
+      <button class="pill" id="end-turn-btn" onclick="endTurn()" disabled>End Turn →</button>
+      <button class="pill white" onclick="openGuessModal()">🎯 Guess!</button>
+      <button class="pill" onclick="openAdmin()">⚙</button>
     </div>
   </div>
   <div class="game-body">
-    <div class="turn-banner my-turn" id="turn-banner">Your turn — ask a question!</div>
+    <div class="turn-banner mine" id="turn-banner">Your turn!</div>
     <div class="two-col">
-      <div class="info-panel">
-        <div class="label">Your secret character</div>
+      <div class="info-card">
+        <div class="lbl">Your secret character</div>
         <div class="secret-row">
-          <div class="secret-thumb"><img id="my-secret-img" src="" alt=""></div>
+          <div class="secret-thumb"><img id="secret-img" src="" alt=""></div>
           <div class="secret-desc">Your opponent is trying to guess this person</div>
         </div>
       </div>
-      <div class="info-panel">
-        <div class="label">Opponent</div>
+      <div class="info-card">
+        <div class="lbl">Opponent</div>
         <div class="opp-row">
-          <div class="opp-avatar">👤</div>
+          <div class="opp-av" id="opp-av">?</div>
           <div>
             <div class="opp-name" id="opp-name">—</div>
-            <div class="opp-elim" id="opp-elim">0 eliminated</div>
+            <div class="opp-elim" id="opp-elim">0 cards eliminated</div>
           </div>
         </div>
       </div>
     </div>
-    <div class="board-hint">Your board — tap a card to flip it over and eliminate that person</div>
+    <div class="board-hint">Tap a card to flip it over — eliminated cards cannot be flipped back</div>
     <div class="board-grid" id="board-grid"></div>
   </div>
 </div>
 
+<!-- ══ MODAL: ADMIN ══ -->
+<div class="overlay" id="modal-admin">
+  <div class="modal" style="text-align:left;max-width:480px">
+    <h2 style="margin-bottom:.5rem">⚙ Admin</h2>
+    <p>Upload photos and manage the game. Password required.</p>
+    <div class="admin-zone" onclick="document.getElementById('admin-file').click()">
+      <div style="font-size:1.8rem">📸</div>
+      <strong>Click to upload photos</strong>
+      <p>Up to 25 images — JPG, PNG, WEBP</p>
+    </div>
+    <input type="file" id="admin-file" accept="image/*" multiple>
+    <div class="admin-preview" id="admin-preview"></div>
+    <div class="admin-count" id="admin-count"></div>
+    <div class="pass-row"><input type="password" id="admin-pass" placeholder="Admin password (default: admin123)"></div>
+    <div class="mbtns" style="flex-direction:column;gap:.5rem">
+      <button class="mbtn" style="width:100%" onclick="pushPhotos()">📤 Push Photos to All Players</button>
+      <button class="mbtn" style="width:100%;background:#1a1a1a" onclick="hardReset()">🔴 Hard Reset — Send Everyone to Lobby</button>
+      <button class="mbtn-ghost" style="width:100%" onclick="closeOverlay('modal-admin')">Close</button>
+    </div>
+    <div class="admin-msg" id="admin-msg"></div>
+  </div>
+</div>
 
-<!-- ══════════════════════════════
-     MODAL: GUESS
-══════════════════════════════ -->
+<!-- ══ MODAL: GUESS ══ -->
 <div class="overlay" id="modal-guess">
   <div class="modal">
     <h2>Make your guess 🤔</h2>
-    <p>Who do you think your opponent's secret character is? Tap them to select.</p>
+    <p>Who is your opponent's secret character?</p>
     <div class="guess-grid" id="guess-grid"></div>
     <div class="mbtns">
       <button class="mbtn" id="guess-confirm-btn" disabled onclick="submitGuess()">That's them!</button>
@@ -390,10 +409,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   </div>
 </div>
 
-
-<!-- ══════════════════════════════
-     MODAL: RESULT
-══════════════════════════════ -->
+<!-- ══ MODAL: RESULT ══ -->
 <div class="overlay" id="modal-result">
   <div class="modal">
     <div class="result-emoji" id="result-emoji">🎉</div>
@@ -401,255 +417,241 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
     <h2 id="result-title"></h2>
     <p id="result-msg"></p>
     <div class="mbtns">
-      <button class="mbtn" onclick="playAgain()">Play Again</button>
+      <button class="mbtn" onclick="backToLobby()">Back to Lobby</button>
     </div>
   </div>
 </div>
 
-
-<!-- ══════════════════════════════
-     MODAL: ADMIN
-══════════════════════════════ -->
-<div class="overlay" id="modal-admin">
-  <div class="modal" style="max-width:480px;text-align:left">
-    <h2 style="margin-bottom:.5rem">⚙ Admin Settings</h2>
-    <p>Upload all friend photos here. They'll sync to both players instantly.</p>
-
-    <div class="admin-upload-zone" id="admin-zone" onclick="document.getElementById('admin-file').click()">
-      <div style="font-size:1.8rem">📸</div>
-      <strong>Click to upload photos</strong>
-      <p>JPG, PNG, WEBP — up to 25 total</p>
-    </div>
-    <input type="file" id="admin-file" accept="image/*" multiple>
-
-    <div class="admin-preview" id="admin-preview"></div>
-    <div class="admin-count" id="admin-count"></div>
-
-    <div class="admin-pass-row">
-      <input type="password" id="admin-pass" placeholder="Admin password" />
-    </div>
-
-    <div class="mbtns">
-      <button class="mbtn" onclick="pushPhotos()">Push Photos to Game →</button>
-      <button class="mbtn-ghost" onclick="closeOverlay('modal-admin')">Close</button>
-    </div>
-    <div style="font-size:12px;color:#f87171;margin-top:.75rem;display:none" id="admin-error"></div>
-  </div>
-</div>
-
-
-<!-- ══════════════════════════════
-     MODAL: DISCONNECT
-══════════════════════════════ -->
-<div class="overlay" id="modal-disconnect">
+<!-- ══ MODAL: OPPONENT LEFT ══ -->
+<div class="overlay" id="modal-opp-left">
   <div class="modal">
     <div style="font-size:3rem;margin-bottom:.5rem">🔌</div>
-    <h2>Connection lost</h2>
-    <p>Your opponent disconnected or the server went away. Trying to reconnect...</p>
-    <div class="waiting-dots" style="justify-content:center;display:flex"><span></span><span></span><span></span></div>
+    <h2>Opponent disconnected</h2>
+    <p>Your opponent left the game.</p>
+    <div class="mbtns"><button class="mbtn" onclick="backToLobby()">Back to Lobby</button></div>
   </div>
 </div>
 
-
 <script>
-// ══════════════════════════════════
-//  WS + STATE
-// ══════════════════════════════════
+// ══════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════
 let ws = null;
 let myId = null;
 let myName = '';
-let gameState = null;
+let myStatus = 'lobby'; // lobby | waiting | playing
 let pendingPickId = null;
 let pendingGuessId = null;
 let adminPhotos = [];
+let currentPhotos = [];
+let currentGame = null; // { opponentName, me, opponent, turn, phase }
+let boardBuilt = false;
 
-// board flip state (local only)
-let flipped = new Set();
-
+// ══════════════════════════════════════
+//  CONNECT
+// ══════════════════════════════════════
 function connect() {
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
   ws = new WebSocket(`${proto}//${location.host}`);
-
-  ws.onopen = () => {
-    setConnected(true);
-    closeOverlay('modal-disconnect');
-    if (myId && myName) {
-      // rejoin after reconnect
-      ws.send(JSON.stringify({ type: 'join', name: myName }));
-    }
-  };
-
-  ws.onmessage = e => {
-    const msg = JSON.parse(e.data);
-    handleMessage(msg);
-  };
-
-  ws.onclose = () => {
-    setConnected(false);
-    document.getElementById('modal-disconnect').classList.add('show');
-    setTimeout(connect, 3000);
-  };
-
-  ws.onerror = () => ws.close();
+  ws.onopen = () => { if (myId && myName) ws.send(JSON.stringify({ type: 'join', name: myName })); };
+  ws.onmessage = e => handle(JSON.parse(e.data));
+  ws.onclose = () => setTimeout(connect, 2000);
 }
 
 function wsSend(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
 
-function setConnected(on) {
-  ['conn-dot','conn-dot2'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.classList.toggle('on', on); }
-  });
-  ['conn-text','conn-text2'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = on ? 'Connected' : 'Disconnected';
-  });
-}
-
-// ══════════════════════════════════
+// ══════════════════════════════════════
 //  MESSAGE HANDLER
-// ══════════════════════════════════
-function handleMessage(msg) {
+// ══════════════════════════════════════
+function handle(msg) {
   if (msg.type === 'welcome') {
     myId = msg.clientId;
-    gameState = msg;
-    // If we were on join page and have a name ready, that's fine
+    currentPhotos = msg.photos || [];
     return;
   }
-
+  if (msg.type === 'lobby_update') {
+    currentPhotos = msg.photos || [];
+    renderLobby(msg);
+    return;
+  }
+  if (msg.type === 'matched') {
+    showLoading(msg.opponentName);
+    return;
+  }
+  if (msg.type === 'game_state') {
+    currentGame = msg;
+    if (msg.phase === 'pick') renderPick(msg);
+    else if (msg.phase === 'playing') renderGame(msg);
+    else if (msg.phase === 'gameover') renderResult(msg);
+    return;
+  }
+  if (msg.type === 'go_lobby') {
+    myStatus = 'lobby'; boardBuilt = false; pendingPickId = null;
+    showPage('page-lobby');
+    return;
+  }
+  if (msg.type === 'opponent_left') {
+    document.getElementById('modal-result').classList.remove('show');
+    document.getElementById('modal-guess').classList.remove('show');
+    document.getElementById('modal-opp-left').classList.add('show');
+    return;
+  }
   if (msg.type === 'error') {
-    showError(msg.text);
-    return;
+    alert(msg.text); return;
   }
-
-  if (msg.type === 'state' || msg.type === 'player_left') {
-    gameState = msg;
-    render();
+  if (msg.type === 'admin_ok') {
+    const el = document.getElementById('admin-msg');
+    el.textContent = msg.text; el.className = 'admin-msg ok'; el.style.display = 'block';
     return;
   }
 }
 
-function render() {
-  if (!gameState) return;
-  const phase = gameState.phase;
-
-  if (phase === 'lobby') renderLobby();
-  else if (phase === 'pick') renderPick();
-  else if (phase === 'playing') renderGame();
-  else if (phase === 'gameover') renderGameover();
-}
-
-// ══════════════════════════════════
+// ══════════════════════════════════════
 //  JOIN
-// ══════════════════════════════════
-function joinGame() {
+// ══════════════════════════════════════
+function joinLobby() {
   const name = document.getElementById('join-name').value.trim();
-  if (!name) { showError('Please enter your name.'); return; }
+  if (!name) { showErr('join-err', 'Enter your name!'); return; }
   myName = name;
-  document.getElementById('join-error').style.display = 'none';
-  wsSend({ type: 'join', name });
-  showPage('page-lobby');
+  connect();
+  // Wait for ws open then send join
+  const tryJoin = () => {
+    if (ws.readyState === 1) { wsSend({ type: 'join', name }); showPage('page-lobby'); }
+    else setTimeout(tryJoin, 100);
+  };
+  tryJoin();
 }
+document.getElementById('join-name').addEventListener('keydown', e => { if (e.key === 'Enter') joinLobby(); });
 
-document.getElementById('join-name').addEventListener('keydown', e => { if (e.key === 'Enter') joinGame(); });
-
-function showError(text) {
-  const el = document.getElementById('join-error');
-  el.textContent = text;
-  el.style.display = 'block';
-}
-
-// ══════════════════════════════════
+// ══════════════════════════════════════
 //  LOBBY
-// ══════════════════════════════════
-function renderLobby() {
+// ══════════════════════════════════════
+function goReady() {
+  myStatus = 'waiting';
+  wsSend({ type: 'ready' });
+  document.getElementById('ready-btn').style.display = 'none';
+  document.getElementById('wait-hint').textContent = '✅ You\'re ready! Challenge someone in the list who is also ready.';
+  // Show cancel button
+  const row = document.getElementById('wait-btn-row');
+  const cancel = document.createElement('button');
+  cancel.className = 'wait-btn cancel'; cancel.textContent = '✕ Cancel';
+  cancel.id = 'cancel-btn';
+  cancel.onclick = () => { myStatus = 'lobby'; wsSend({ type: 'cancel_wait' }); };
+  row.appendChild(cancel);
+}
+
+function renderLobby(msg) {
+  if (document.getElementById('page-lobby').classList.contains('active') === false && myStatus !== 'lobby' && myStatus !== 'waiting') return;
   showPage('page-lobby');
-  const players = gameState.players || [];
-  const hasPhotos = (gameState.photos || []).length > 0;
 
-  document.getElementById('no-photos-warn').style.display = hasPhotos ? 'none' : 'block';
+  const hasPhotos = (msg.photos || []).length > 0;
+  document.getElementById('no-photos-banner').style.display = hasPhotos ? 'none' : 'block';
 
-  const slots = document.getElementById('player-slots');
-  slots.innerHTML = '';
+  // Sync ready/cancel buttons
+  const readyBtn = document.getElementById('ready-btn');
+  const cancelBtn = document.getElementById('cancel-btn');
+  const hint = document.getElementById('wait-hint');
 
-  // Show joined players
-  players.forEach(p => {
+  const me = (msg.online || []).find(p => p.id === myId);
+  if (me) myStatus = me.status;
+
+  if (myStatus === 'waiting') {
+    readyBtn && (readyBtn.style.display = 'none');
+    hint.textContent = '✅ You\'re ready! Challenge someone below who is also ready.';
+    if (!cancelBtn) {
+      const row = document.getElementById('wait-btn-row');
+      const btn = document.createElement('button');
+      btn.className = 'wait-btn cancel'; btn.textContent = '✕ Cancel'; btn.id = 'cancel-btn';
+      btn.onclick = () => { myStatus = 'lobby'; wsSend({ type: 'cancel_wait' }); };
+      row.appendChild(btn);
+    }
+  } else if (myStatus === 'lobby') {
+    readyBtn && (readyBtn.style.display = '');
+    cancelBtn && cancelBtn.remove();
+    hint.textContent = 'Click "Ready to Play" to appear as available. Then tap Challenge next to someone also ready!';
+  }
+
+  const list = document.getElementById('online-list');
+  list.innerHTML = '';
+  if (!msg.online || msg.online.length === 0) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:.5rem 0">No one else online yet...</div>';
+    return;
+  }
+
+  msg.online.forEach(p => {
     const isMe = p.id === myId;
     const d = document.createElement('div');
-    d.className = 'player-slot';
+    d.className = 'online-item' + (isMe ? ' me' : '');
+    const initial = (p.name || '?')[0].toUpperCase();
+    const statusLabel = p.status === 'playing' ? 'In game' : p.status === 'waiting' ? 'Ready' : 'In lobby';
+    const canChallenge = !isMe && p.status === 'waiting' && myStatus === 'waiting' && hasPhotos;
+
     d.innerHTML = `
-      <div class="slot-avatar">${isMe ? '😎' : '👤'}</div>
-      <div class="slot-name">${escHtml(p.name)}</div>
-      <div class="slot-badge ${isMe ? 'me' : ''}">${isMe ? 'You' : 'Joined'}</div>`;
-    slots.appendChild(d);
+      <div class="avatar">${initial}</div>
+      <div>
+        <div class="iname">${esc(p.name)}${isMe ? ' (you)' : ''}</div>
+        <div class="istatus">${statusLabel}</div>
+      </div>
+      ${isMe ? '<div class="me-badge">YOU</div>' :
+        `<span class="status-badge ${p.status === 'playing' ? 'playing' : p.status === 'waiting' ? 'waiting' : ''}">${statusLabel}</span>
+         ${canChallenge ? `<button class="challenge-btn" onclick="challenge('${p.id}')">Challenge!</button>` : ''}`
+      }`;
+    list.appendChild(d);
   });
-
-  // Empty slot
-  if (players.length < 2) {
-    const d = document.createElement('div');
-    d.className = 'player-slot';
-    d.innerHTML = `<div class="slot-avatar" style="background:none;border:2px dashed var(--border)">?</div><div class="slot-name" style="color:var(--muted)">Waiting for player 2...</div>`;
-    slots.appendChild(d);
-  }
-
-  const desc = players.length < 2
-    ? 'Waiting for your opponent to join...'
-    : hasPhotos ? 'Both players joined! Starting soon...' : 'Both players joined — waiting for photo upload.';
-  document.getElementById('lobby-desc').textContent = desc;
 }
 
-// ══════════════════════════════════
-//  PICK
-// ══════════════════════════════════
-function renderPick() {
-  showPage('page-pick');
-  const photos = gameState.photos || [];
-  const me = gameState.me;
-  const opponents = gameState.opponents || [];
-  const oppPickedId = opponents[0]?.secretPicked ? opponents[0]?.secret : null;
+function challenge(targetId) {
+  wsSend({ type: 'challenge', targetId });
+}
 
-  pendingPickId = me?.secret ?? pendingPickId;
+// ══════════════════════════════════════
+//  LOADING INTERMISSION
+// ══════════════════════════════════════
+function showLoading(opponentName) {
+  showPage('page-loading');
+  document.getElementById('loading-vs').innerHTML = `${esc(myName)} <span>VS</span> ${esc(opponentName)}`;
+  const bar = document.getElementById('progress-fill');
+  bar.style.width = '0%';
+  requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
+}
+
+// ══════════════════════════════════════
+//  PICK
+// ══════════════════════════════════════
+function renderPick(msg) {
+  showPage('page-pick');
+  pendingPickId = msg.me?.secret ?? pendingPickId;
+  const photos = msg.photos || [];
+  const oppSecretId = msg.opponent?.secret;
+  const mySecretLocked = msg.me?.secret !== null && msg.me?.secret !== undefined;
 
   const grid = document.getElementById('pick-grid');
   grid.innerHTML = '';
-
   photos.forEach(p => {
-    const alreadyPicked = me?.secret === p.id;
-    const takenByOpp = opponents.some(o => o.secret === p.id);
+    const takenByOpp = msg.opponent?.secret === p.id;
     const chosen = pendingPickId === p.id;
-
     const d = document.createElement('div');
     d.className = 'pick-card' + (chosen ? ' chosen' : '') + (takenByOpp ? ' taken disabled' : '');
-    d.innerHTML = `<img src="${p.src}" alt=""><div class="pick-tick">✓</div>` +
-      (takenByOpp ? `<div class="pick-lock-overlay">🔒</div>` : '');
-
-    if (!takenByOpp && !me?.secret) {
-      d.onclick = () => {
-        pendingPickId = p.id;
-        renderPick();
-        document.getElementById('pick-confirm-btn').disabled = false;
-      };
+    d.innerHTML = `<img src="${p.src}" alt=""><div class="pick-tick">✓</div>`;
+    if (!takenByOpp && !mySecretLocked) {
+      d.onclick = () => { pendingPickId = p.id; renderPick(msg); document.getElementById('pick-confirm').disabled = false; };
     }
     grid.appendChild(d);
   });
 
-  const confirmBtn = document.getElementById('pick-confirm-btn');
-  if (me?.secret !== null && me?.secret !== undefined) {
-    confirmBtn.disabled = true;
-    confirmBtn.textContent = '✓ Character locked in!';
+  const confirmBtn = document.getElementById('pick-confirm');
+  if (mySecretLocked) {
+    confirmBtn.disabled = true; confirmBtn.textContent = '✓ Locked in!';
   } else {
-    confirmBtn.disabled = pendingPickId === null;
-    confirmBtn.textContent = 'Lock In My Choice →';
+    confirmBtn.disabled = pendingPickId === null; confirmBtn.textContent = 'Lock In →';
   }
 
-  // Status line
-  const myPicked = me?.secret !== null && me?.secret !== undefined;
-  const oppPicked = opponents[0]?.secretPicked;
-  let status = '';
-  if (!myPicked && !oppPicked) status = 'Tap a character to choose them';
-  else if (myPicked && !oppPicked) status = '✓ You\'re locked in! Waiting for your opponent...';
-  else if (!myPicked && oppPicked) status = 'Your opponent has chosen — hurry up!';
-  else status = 'Both picked! Starting game...';
+  const myPicked = mySecretLocked;
+  const oppPicked = msg.opponent?.secretPicked;
+  let status = !myPicked && !oppPicked ? 'Tap a character to choose them'
+    : myPicked && !oppPicked ? '✓ Locked in! Waiting for opponent...'
+    : !myPicked && oppPicked ? 'Your opponent is ready — hurry up!'
+    : 'Both picked! Starting...';
   document.getElementById('pick-status').textContent = status;
 }
 
@@ -658,94 +660,89 @@ function confirmPick() {
   wsSend({ type: 'pick_secret', photoId: pendingPickId });
 }
 
-// ══════════════════════════════════
+// ══════════════════════════════════════
 //  GAME
-// ══════════════════════════════════
-function renderGame() {
+// ══════════════════════════════════════
+function renderGame(msg) {
   showPage('page-game');
-  const photos = gameState.photos || [];
-  const me = gameState.me;
-  const opp = (gameState.opponents || [])[0];
-  const isMyTurn = gameState.turn === myId;
+  const photos = msg.photos || [];
+  const isMyTurn = msg.turn === myId;
 
-  // Turn banner
+  document.getElementById('game-sub').textContent = isMyTurn ? 'Your turn' : `${msg.opponent?.name || 'Opponent'}'s turn`;
   const banner = document.getElementById('turn-banner');
-  banner.className = 'turn-banner ' + (isMyTurn ? 'my-turn' : 'their-turn');
-  banner.textContent = isMyTurn ? '🟢 Your turn — ask your opponent a question!' : `⏳ ${opp?.name || 'Opponent'}'s turn — answer their question`;
-
-  // Topbar
-  document.getElementById('game-topbar-sub').textContent = isMyTurn ? 'Your turn' : `${opp?.name || 'Opponent'}'s turn`;
+  banner.className = 'turn-banner ' + (isMyTurn ? 'mine' : 'theirs');
+  banner.textContent = isMyTurn ? '🟢 Your turn — ask your opponent a yes/no question!' : `⏳ ${msg.opponent?.name || 'Opponent'}'s turn — answer their question honestly`;
   document.getElementById('end-turn-btn').disabled = !isMyTurn;
 
-  // Secret
-  const mySecretPhoto = photos.find(p => p.id === me?.secret);
-  if (mySecretPhoto) document.getElementById('my-secret-img').src = mySecretPhoto.src;
+  const mySecretPhoto = photos.find(p => p.id === msg.me?.secret);
+  if (mySecretPhoto) document.getElementById('secret-img').src = mySecretPhoto.src;
 
-  // Opponent info
-  document.getElementById('opp-name').textContent = opp?.name || '—';
-  document.getElementById('opp-elim').textContent = `${(opp?.eliminated || []).length} eliminated`;
+  const oppName = msg.opponent?.name || '—';
+  document.getElementById('opp-av').textContent = oppName[0]?.toUpperCase() || '?';
+  document.getElementById('opp-name').textContent = oppName;
+  document.getElementById('opp-elim').textContent = `${(msg.opponent?.eliminated || []).length} cards eliminated`;
 
-  // Board — sync server eliminations on load but let local flips dominate
-  const grid = document.getElementById('board-grid');
-  // Only rebuild if photo count changed (avoid resetting flips)
-  if (grid.children.length !== photos.length) {
-    buildBoard(photos, me?.eliminated || []);
+  // Build board only once, then sync flip state
+  const myElim = new Set(msg.me?.eliminated || []);
+  if (!boardBuilt) {
+    buildBoard(photos, myElim);
+    boardBuilt = true;
+  } else {
+    syncBoard(myElim);
   }
 }
 
-function buildBoard(photos, serverElim) {
-  // Sync server elim state into local flipped
-  serverElim.forEach(id => flipped.add(id));
-
+function buildBoard(photos, elimSet) {
   const grid = document.getElementById('board-grid');
   grid.innerHTML = '';
   photos.forEach(p => {
-    const isFlipped = flipped.has(p.id);
+    const isFlipped = elimSet.has(p.id);
     const c = document.createElement('div');
     c.className = 'flip-card' + (isFlipped ? ' flipped' : '');
     c.dataset.photoid = p.id;
     c.innerHTML = `<div class="flip-inner">
       <div class="flip-face flip-front"><img src="${p.src}" alt=""></div>
-      <div class="flip-face flip-back"><div class="xmark">✕</div><div class="elim-label">Out</div></div>
+      <div class="flip-face flip-back"><div class="xmark">✕</div><div class="out-label">Out</div></div>
     </div>`;
-    c.onclick = () => toggleCard(p.id, c);
+    c.onclick = () => flipCard(p.id, c);
     grid.appendChild(c);
   });
 }
 
-function toggleCard(photoId, cardEl) {
-  if (flipped.has(photoId)) { flipped.delete(photoId); cardEl.classList.remove('flipped'); }
-  else { flipped.add(photoId); cardEl.classList.add('flipped'); }
+function syncBoard(elimSet) {
+  document.querySelectorAll('.flip-card').forEach(card => {
+    const id = parseInt(card.dataset.photoid);
+    if (elimSet.has(id) && !card.classList.contains('flipped')) card.classList.add('flipped');
+  });
+}
+
+function flipCard(photoId, cardEl) {
+  if (cardEl.classList.contains('flipped')) return; // one-way only
+  cardEl.classList.add('flipped');
   wsSend({ type: 'toggle_eliminate', photoId });
 }
 
-function endTurn() {
-  wsSend({ type: 'end_turn' });
-}
+function endTurn() { wsSend({ type: 'end_turn' }); }
 
-// ══════════════════════════════════
+// ══════════════════════════════════════
 //  GUESS
-// ══════════════════════════════════
+// ══════════════════════════════════════
 function openGuessModal() {
   pendingGuessId = null;
-  const photos = gameState.photos || [];
   const grid = document.getElementById('guess-grid');
   grid.innerHTML = '';
   document.getElementById('guess-confirm-btn').disabled = true;
-
-  photos.forEach(p => {
+  (currentGame?.photos || currentPhotos).forEach(p => {
     const d = document.createElement('div');
     d.className = 'guess-opt';
     d.innerHTML = `<img src="${p.src}" alt=""><div class="gtick">✓</div>`;
     d.onclick = () => {
       grid.querySelectorAll('.guess-opt').forEach(x => x.classList.remove('sel'));
-      d.classList.add('sel');
-      pendingGuessId = p.id;
+      d.classList.add('sel'); pendingGuessId = p.id;
       document.getElementById('guess-confirm-btn').disabled = false;
     };
     grid.appendChild(d);
   });
-
   document.getElementById('modal-guess').classList.add('show');
 }
 
@@ -755,47 +752,43 @@ function submitGuess() {
   wsSend({ type: 'guess', photoId: pendingGuessId });
 }
 
-// ══════════════════════════════════
-//  GAMEOVER
-// ══════════════════════════════════
-function renderGameover() {
-  showPage('page-game'); // stay on game page, show modal
-  const result = gameState.result;
-  if (!result) return;
-
-  const iWon = result.correct && result.guesserId === myId;
-  const iGuessed = result.guesserId === myId;
-
-  document.getElementById('result-emoji').textContent = iWon ? '🎉' : (iGuessed ? '😬' : '😮');
-  document.getElementById('result-photo').src = result.correct ? result.guessedPhotoSrc : result.actualPhotoSrc;
-  document.getElementById('result-title').textContent = iWon ? 'You win!' : (iGuessed ? 'Wrong guess!' : `${result.guesserName} guessed right!`);
-
-  let msg = '';
-  if (iWon) msg = `You correctly guessed your opponent's character!`;
-  else if (iGuessed && !result.correct) msg = `That wasn't the right person. Your opponent wins this round!`;
-  else msg = `${result.guesserName} figured out who you were!`;
-  document.getElementById('result-msg').textContent = msg;
-
+// ══════════════════════════════════════
+//  RESULT
+// ══════════════════════════════════════
+function renderResult(msg) {
+  showPage('page-game');
+  const r = msg.result;
+  if (!r) return;
+  const iWon = r.correct && r.guesserId === myId;
+  const iGuessed = r.guesserId === myId;
+  document.getElementById('result-emoji').textContent = iWon ? '🎉' : iGuessed ? '😬' : '😮';
+  document.getElementById('result-photo').src = r.correct ? r.guessedPhotoSrc : r.actualPhotoSrc;
+  document.getElementById('result-title').textContent = iWon ? 'You win! 🎉' : iGuessed ? 'Wrong guess!' : `${r.guesserName} got you!`;
+  document.getElementById('result-msg').textContent = iWon
+    ? `You correctly guessed your opponent's character!`
+    : iGuessed ? `That wasn't right — your opponent wins!`
+    : `${r.guesserName} figured out who you were!`;
   document.getElementById('modal-result').classList.add('show');
 }
 
-function playAgain() {
+function backToLobby() {
   closeOverlay('modal-result');
-  flipped = new Set();
-  wsSend({ type: 'play_again' });
+  closeOverlay('modal-opp-left');
+  boardBuilt = false; pendingPickId = null; pendingGuessId = null;
+  wsSend({ type: 'back_to_lobby' });
 }
 
-// ══════════════════════════════════
+// ══════════════════════════════════════
 //  ADMIN
-// ══════════════════════════════════
+// ══════════════════════════════════════
 function openAdmin() { document.getElementById('modal-admin').classList.add('show'); }
 
-const adminFileInput = document.getElementById('admin-file');
-const adminZone = document.getElementById('admin-zone');
-adminFileInput.addEventListener('change', e => handleAdminFiles(e.target.files));
-adminZone.addEventListener('dragover', e => { e.preventDefault(); adminZone.classList.add('drag'); });
-adminZone.addEventListener('dragleave', () => adminZone.classList.remove('drag'));
-adminZone.addEventListener('drop', e => { e.preventDefault(); adminZone.classList.remove('drag'); handleAdminFiles(e.dataTransfer.files); });
+document.getElementById('admin-file').addEventListener('change', e => handleAdminFiles(e.target.files));
+document.getElementById('admin-file').addEventListener('click', () => { document.getElementById('admin-file').value = ''; });
+
+const adminZone = document.querySelector('.admin-zone');
+adminZone.addEventListener('dragover', e => { e.preventDefault(); });
+adminZone.addEventListener('drop', e => { e.preventDefault(); handleAdminFiles(e.dataTransfer.files); });
 
 function handleAdminFiles(files) {
   const slots = 25 - adminPhotos.length;
@@ -810,44 +803,41 @@ function handleAdminFiles(files) {
 function renderAdminPreview() {
   const wrap = document.getElementById('admin-preview');
   wrap.innerHTML = '';
-  adminPhotos.forEach((src, i) => {
+  adminPhotos.forEach(src => {
     const d = document.createElement('div');
     d.className = 'admin-thumb';
-    d.innerHTML = `<img src="${src}"><div class="rm" onclick="removeAdminPhoto(${i})">✕</div>`;
+    d.innerHTML = `<img src="${src}">`;
     wrap.appendChild(d);
   });
-  document.getElementById('admin-count').textContent = `${adminPhotos.length} photo(s) — hover to remove`;
-  adminZone.style.display = adminPhotos.length >= 25 ? 'none' : 'block';
+  document.getElementById('admin-count').textContent = `${adminPhotos.length} photo(s) loaded`;
 }
-
-function removeAdminPhoto(i) { adminPhotos.splice(i, 1); renderAdminPreview(); }
 
 function pushPhotos() {
   const pass = document.getElementById('admin-pass').value;
-  const errEl = document.getElementById('admin-error');
-  errEl.style.display = 'none';
-
-  if (!pass) { errEl.textContent = 'Enter the admin password.'; errEl.style.display = 'block'; return; }
-  if (adminPhotos.length < 2) { errEl.textContent = 'Upload at least 2 photos.'; errEl.style.display = 'block'; return; }
-
+  const msg = document.getElementById('admin-msg');
+  if (!pass) { msg.textContent = 'Enter password.'; msg.className = 'admin-msg err'; msg.style.display = 'block'; return; }
+  if (adminPhotos.length < 2) { msg.textContent = 'Upload at least 2 photos.'; msg.className = 'admin-msg err'; msg.style.display = 'block'; return; }
   wsSend({ type: 'admin_photos', password: pass, photos: adminPhotos });
-  closeOverlay('modal-admin');
 }
 
-// ══════════════════════════════════
-//  UTILITIES
-// ══════════════════════════════════
+function hardReset() {
+  const pass = document.getElementById('admin-pass').value;
+  const msg = document.getElementById('admin-msg');
+  if (!pass) { msg.textContent = 'Enter password.'; msg.className = 'admin-msg err'; msg.style.display = 'block'; return; }
+  if (!confirm('Hard reset — send everyone back to lobby?')) return;
+  wsSend({ type: 'admin_reset', password: pass });
+}
+
+// ══════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
-function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// ══════════════════════════════════
-//  INIT
-// ══════════════════════════════════
-connect();
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showErr(id, txt) { const e = document.getElementById(id); e.textContent = txt; e.style.display = 'block'; }
 </script>
 </body>
 </html>
