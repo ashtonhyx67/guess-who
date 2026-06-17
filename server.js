@@ -7,21 +7,26 @@ const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = 'xzone';            // FIX 7
 const MAX_GUESSES = 3;
 const MAX_PHOTOS = 25;                     // FIX 5
-const PHOTOS_FILE = path.join(__dirname, 'photos.json'); // FIX 1
+// Use Railway persistent volume at /data if it exists, otherwise local folder
+const DATA_DIR = fs.existsSync('/data') ? '/data' : __dirname;
+const PHOTOS_FILE = path.join(DATA_DIR, 'photos.json');
 
 // ─────────────────────────────────────────
-//  FIX 1: Load photos from disk on startup
+//  Load photos from persistent storage on startup
 // ─────────────────────────────────────────
 let photos = [];
 try {
   if (fs.existsSync(PHOTOS_FILE)) {
     photos = JSON.parse(fs.readFileSync(PHOTOS_FILE, 'utf8'));
-    console.log(`Loaded ${photos.length} photos from disk`);
+    console.log(`Loaded ${photos.length} photos from ${PHOTOS_FILE}`);
   }
 } catch(e) { console.error('Failed to load photos:', e.message); }
 
 function savePhotos() {
-  try { fs.writeFileSync(PHOTOS_FILE, JSON.stringify(photos)); }
+  try {
+    fs.writeFileSync(PHOTOS_FILE, JSON.stringify(photos));
+    console.log(`Saved ${photos.length} photos to ${PHOTOS_FILE}`);
+  }
   catch(e) { console.error('Failed to save photos:', e.message); }
 }
 
