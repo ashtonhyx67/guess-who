@@ -509,6 +509,11 @@ function handle(msg){
   }
   if(msg.type==='lobby_update'){
     currentPhotos=msg.photos||[];
+    // Always trust server's authoritative status for this client
+    if(msg.myStatus && msg.myStatus !== 'playing') {
+      myStatus = msg.myStatus;
+      syncFindUI(myStatus);
+    }
     if(myStatus!=='playing') renderLobby(msg);
     return;
   }
@@ -575,20 +580,18 @@ document.getElementById('join-name').addEventListener('keydown',e=>{ if(e.key===
 //  LOBBY
 // ══════════════════════════════════════
 function toggleFindGame(){
-  if(myStatus==='waiting') return;
+  if(myStatus==='waiting'||myStatus==='playing') return;
+  // Optimistically update UI, server will confirm via lobby_update
   myStatus='waiting';
+  syncFindUI('waiting');
   wsSend({type:'ready'});
-  const btn=document.getElementById('find-game-btn');
-  btn.textContent='🔍 Searching...'; btn.classList.add('searching'); btn.onclick=null;
-  document.getElementById('find-sub').textContent='Looking for opponents — challenge anyone below!';
-  document.getElementById('cancel-find-btn').style.display='block';
-  document.getElementById('queue-area').classList.add('show');
 }
 
 function cancelFind(){
+  // Optimistically update UI, server will confirm via lobby_update
   myStatus='lobby';
+  syncFindUI('lobby');
   wsSend({type:'cancel_wait'});
-  resetFindUI();
 }
 
 function resetFindUI(){
@@ -599,8 +602,27 @@ function resetFindUI(){
   document.getElementById('queue-area').classList.remove('show');
 }
 
+// Sync the find-game UI to match server-authoritative status
+function syncFindUI(status){
+  const btn=document.getElementById('find-game-btn');
+  const cancelBtn=document.getElementById('cancel-find-btn');
+  const queueArea=document.getElementById('queue-area');
+  const findSub=document.getElementById('find-sub');
+  if(status==='waiting'){
+    btn.textContent='🔍 Searching...'; btn.classList.add('searching'); btn.onclick=null;
+    findSub.textContent='Looking for opponents — challenge anyone below!';
+    cancelBtn.style.display='block';
+    queueArea.classList.add('show');
+  } else if(status==='lobby'){
+    btn.textContent='🎮 Find Game'; btn.classList.remove('searching'); btn.onclick=toggleFindGame;
+    findSub.textContent='Click to start searching for an opponent';
+    cancelBtn.style.display='none';
+    queueArea.classList.remove('show');
+  }
+}
+
 function renderLobby(msg){
-  if(myStatus==='playing') return; // FIX 1
+  if(myStatus==='playing') return;
   showPage('page-lobby');
   const online=msg.online||[], waiting=msg.waiting||[];
   const row=document.getElementById('players-row');
@@ -612,7 +634,7 @@ function renderLobby(msg){
   const others=waiting.filter(p=>p.id!==myId);
   qlist.innerHTML='';
   if(!others.length){ qlist.innerHTML='<div class="queue-empty">No one searching yet...</div>'; }
-  else { others.forEach(p=>{ const d=document.createElement('div'); d.className='queue-item'; const init=(p.name||'?')[0].toUpperCase(); const canChal=myStatus==='waiting'&&currentPhotos.length>=2; d.innerHTML=`<div class="qav">${init}</div><div><div class="qname">${esc(p.name)}</div><div class="qsub">Looking for a game</div></div>${canChal?`<button class="challenge-btn" id="chal-${p.id}" onclick="sendChallenge('${p.id}')">Challenge!</button>`:''}`; qlist.appendChild(d); }); }
+  else { others.forEach(p=>{ const d=document.createElement('div'); d.className='queue-item'; const init=(p.name||'?')[0].toUpperCase(); const canChal=myStatus==='waiting'; d.innerHTML=`<div class="qav">${init}</div><div><div class="qname">${esc(p.name)}</div><div class="qsub">Looking for a game</div></div>${canChal?`<button class="challenge-btn" id="chal-${p.id}" onclick="sendChallenge('${p.id}')">Challenge!</button>`:''}`; qlist.appendChild(d); }); }
 }
 
 function sendChallenge(targetId){
@@ -868,7 +890,7 @@ function renderResult(msg){
 function backToLobby(){
   closeOverlay('modal-result'); closeOverlay('modal-opp-left');
   boardBuilt=false; pendingPickId=null; pendingGuessId=null; currentGame=null;
-  myStatus='lobby'; resetFindUI();
+  myStatus='lobby'; syncFindUI('lobby');
   wsSend({type:'back_to_lobby'});
 }
 

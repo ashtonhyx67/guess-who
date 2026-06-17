@@ -73,7 +73,7 @@ function broadcastLobby() {
   const photosMeta = photos.map(p => ({ id: p.id, src: p.src, name: p.name }));
   Object.entries(clients).forEach(([id,c]) => {
     if (c.status === 'playing') return; // FIX 1: never interrupt playing clients
-    send(id, { type: 'lobby_update', waiting, online, photos: photosMeta });
+    send(id, { type: "lobby_update", waiting, online, photos: photosMeta, myStatus: c.status });
   });
 }
 
@@ -201,6 +201,10 @@ wss.on('connection', ws => {
     if (msg.type === 'join') {
       clients[clientId] = { ws, name: (msg.name||'Player').slice(0,20), status:'lobby', gameId:null };
       send(clientId, { type:'welcome', clientId, photos });
+      // Send full lobby state to the new client right away
+      const waiting = Object.entries(clients).filter(([,c])=>c.status==='waiting').map(([id,c])=>({id,name:c.name}));
+      const online = Object.entries(clients).map(([id,c])=>({id,name:c.name,status:c.status}));
+      send(clientId, { type:'lobby_update', waiting, online, photos, myStatus:'lobby' });
       broadcastLobby();
     }
 
@@ -377,5 +381,16 @@ wss.on('connection', ws => {
     broadcastLobby();
   });
 });
+
+
+// Heartbeat: ping all clients every 15s, remove dead ones
+setInterval(() => {
+  Object.entries(clients).forEach(([id, c]) => {
+    if (c.ws.readyState !== WebSocket.OPEN) {
+      delete clients[id];
+      broadcastLobby();
+    }
+  });
+}, 15000);
 
 server.listen(PORT, '0.0.0.0', () => console.log(`Guess Who running on port ${PORT}`));
