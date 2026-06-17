@@ -113,43 +113,51 @@ body.dark #page-loading { background:linear-gradient(135deg,#111 0%,#2a0a0e 100%
 
 /* FIX 5: GAME — no scroll, all fits */
 #page-game { background:var(--off); overflow:hidden; }
-/* ── GAME LAYOUT: everything fits in one screen, no scroll ── */
+/* ── GAME LAYOUT: everything fits one screen, no scroll ── */
+#page-game { overflow:hidden; }
 .game-inner {
   flex: 1;
-  display: grid;
-  /* row 1: banner, row 2: info strip, row 3: board (takes all remaining), row 4: action buttons */
-  grid-template-rows: auto auto 1fr auto;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  padding: .5rem .75rem .5rem;
-  gap: .4rem;
+  padding: 4px 8px 6px;
+  gap: 4px;
 }
-.turn-banner { border-radius:var(--radius); padding:.45rem .85rem; font-size:13px; font-weight:700; text-align:center; }
+
+/* Turn banner — single thin line */
+.turn-banner { border-radius:8px; padding:4px 10px; font-size:12px; font-weight:700; text-align:center; flex-shrink:0; line-height:1.3; }
 .turn-banner.mine { background:#dcfce7; color:#15803d; border:1.5px solid #86efac; }
 .turn-banner.theirs { background:var(--red-lt); color:var(--red-dk); border:1.5px solid #fca5a5; }
 body.dark .turn-banner.mine { background:#14532d; color:#86efac; }
 body.dark .turn-banner.theirs { background:#450a0a; color:#fca5a5; }
 
-/* Info strip: secret + opponent side by side, compact */
-.game-info-row { display:grid; grid-template-columns:1fr 1fr; gap:.4rem; }
-.info-card { background:var(--white); border:1.5px solid var(--border); border-radius:var(--radius); padding:.45rem .65rem; }
-.info-card .lbl { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:.25rem; }
-.secret-row { display:flex; align-items:center; gap:.5rem; }
-.secret-thumb { width:30px; height:36px; border-radius:5px; overflow:hidden; border:2px solid var(--red); flex-shrink:0; }
+/* Compact single-row info strip */
+.game-info-row {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 5px 10px; flex-shrink: 0;
+}
+.info-divider { width:1px; height:24px; background:var(--border); flex-shrink:0; }
+.info-card { background:transparent; border:none; border-radius:0; padding:0; display:flex; align-items:center; gap:6px; flex:1; }
+.info-card .lbl { display:none; }
+.secret-row { display:flex; align-items:center; gap:5px; }
+.secret-thumb { width:24px; height:30px; border-radius:4px; overflow:hidden; border:1.5px solid var(--red); flex-shrink:0; }
 .secret-thumb img { width:100%; height:100%; object-fit:cover; }
-.secret-desc { font-size:10px; color:var(--muted); line-height:1.3; }
-.opp-row { display:flex; align-items:center; gap:.5rem; }
-.opp-av { width:26px; height:26px; border-radius:50%; background:var(--red-lt); color:var(--red); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
+.secret-label { font-size:10px; color:var(--muted); font-weight:600; }
+.secret-desc { display:none; }
+.opp-row { display:flex; align-items:center; gap:5px; }
+.opp-av { width:22px; height:22px; border-radius:50%; background:var(--red-lt); color:var(--red); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; }
 body.dark .opp-av { background:#2a0a0e; }
-.opp-name { font-size:12px; font-weight:700; }
-.opp-elim { font-size:10px; color:var(--muted); }
-.guess-counter { display:inline-flex; align-items:center; gap:3px; background:var(--red-lt); color:var(--red); border-radius:20px; padding:1px 7px; font-size:10px; font-weight:700; }
+.opp-name { font-size:11px; font-weight:700; }
+.opp-elim { font-size:10px; color:var(--muted); margin-left:4px; }
+.guess-counter { display:inline-flex; align-items:center; gap:2px; background:var(--red-lt); color:var(--red); border-radius:20px; padding:1px 6px; font-size:10px; font-weight:700; margin-left:4px; }
 body.dark .guess-counter { background:#450a0a; }
 
-/* Board section — fills all remaining vertical space */
-.board-section { overflow:hidden; display:flex; flex-direction:column; gap:.25rem; min-height:0; }
-.board-hint { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; flex-shrink:0; }
+/* Board takes all remaining space */
+.board-section { flex:1; overflow:hidden; display:flex; flex-direction:column; gap:3px; min-height:0; }
+.board-hint { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; flex-shrink:0; line-height:1; }
 
-/* 5x5 grid — cards fill the available height exactly */
+/* 5×5 grid fills exactly the remaining height */
 .board-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -157,30 +165,31 @@ body.dark .guess-counter { background:#450a0a; }
   gap: 4px;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
-/* Cards fill their grid cell completely — NO aspect-ratio, just fill */
-.flip-card { perspective: 800px; cursor: pointer; min-height: 0; overflow: hidden; }
-.flip-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .4s cubic-bezier(.4,0,.2,1); border-radius:6px; }
+/* Cards fill their cell — no aspect-ratio constraint */
+.flip-card { perspective:800px; cursor:pointer; overflow:hidden; min-height:0; min-width:0; }
+.flip-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .35s cubic-bezier(.4,0,.2,1); border-radius:5px; }
 .flip-card.flipped .flip-inner { transform:rotateY(180deg); }
 .flip-card.flipped { cursor:default; }
 .flip-card.blocked { cursor:not-allowed; }
-.flip-face { position:absolute; inset:0; backface-visibility:hidden; border-radius:6px; overflow:hidden; border:1.5px solid var(--border); }
+.flip-face { position:absolute; inset:0; backface-visibility:hidden; border-radius:5px; overflow:hidden; border:1px solid var(--border); }
 .flip-front { background:var(--white); display:flex; flex-direction:column; }
 .flip-front .fimg { flex:1; overflow:hidden; min-height:0; }
 .flip-front .fimg img { width:100%; height:100%; object-fit:cover; display:block; }
-.flip-front .fname { font-size:8px; font-weight:700; text-align:center; padding:2px 2px 2px; background:var(--white); color:var(--text); border-top:1px solid var(--border); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; }
-.flip-back { background:var(--red); transform:rotateY(180deg); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:2px; }
-.flip-back .xmark { font-size:1.6rem; font-weight:900; color:rgba(255,255,255,.3); line-height:1; }
-.flip-back .out-lbl { font-size:8px; color:rgba(255,255,255,.4); font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+.flip-front .fname { font-size:7px; font-weight:700; text-align:center; padding:1px 2px 2px; background:var(--white); color:var(--text); border-top:1px solid var(--border); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; line-height:1.2; }
+.flip-back { background:var(--red); transform:rotateY(180deg); display:flex; align-items:center; justify-content:center; flex-direction:column; }
+.flip-back .xmark { font-size:1.4rem; font-weight:900; color:rgba(255,255,255,.35); line-height:1; }
+.flip-back .out-lbl { font-size:7px; color:rgba(255,255,255,.45); font-weight:700; text-transform:uppercase; letter-spacing:1px; }
 
-/* Big action buttons at the bottom */
-.game-actions { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; }
-.action-btn { padding:10px; border:none; border-radius:var(--radius); font-size:14px; font-weight:800; cursor:pointer; transition:background .15s,transform .1s; letter-spacing:.3px; }
+/* Action buttons — compact but still clearly clickable */
+.game-actions { display:grid; grid-template-columns:1fr 1fr; gap:5px; flex-shrink:0; }
+.action-btn { padding:8px 10px; border:none; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; transition:background .15s,transform .1s; }
 .action-btn:active { transform:scale(.97); }
-.action-btn.end { background:var(--off); color:var(--text); border:2px solid var(--border); }
+.action-btn.end { background:var(--off); color:var(--text); border:1.5px solid var(--border); }
 .action-btn.end:hover:not(:disabled) { background:var(--border); }
-.action-btn.guess { background:var(--red); color:#fff; box-shadow:0 4px 16px rgba(245,66,81,.3); }
+.action-btn.guess { background:var(--red); color:#fff; box-shadow:0 3px 12px rgba(245,66,81,.3); }
 .action-btn.guess:hover:not(:disabled) { background:var(--red-dk); }
 .action-btn:disabled { opacity:.4; cursor:not-allowed; transform:none !important; }
 
@@ -340,23 +349,16 @@ body.dark .guess-counter { background:#450a0a; }
   <div class="game-inner">
     <div class="turn-banner mine" id="turn-banner">Your turn!</div>
     <div class="game-info-row">
-      <div class="info-card">
-        <div class="lbl">Your secret</div>
-        <div class="secret-row">
-          <div class="secret-thumb"><img id="secret-img" src="" alt=""></div>
-          <div class="secret-desc">Your opponent is guessing this</div>
-        </div>
+      <div class="secret-row">
+        <span class="secret-label">🔒 Your secret:</span>
+        <div class="secret-thumb"><img id="secret-img" src="" alt=""></div>
       </div>
-      <div class="info-card">
-        <div class="lbl">Opponent</div>
-        <div class="opp-row">
-          <div class="opp-av" id="opp-av">?</div>
-          <div>
-            <div class="opp-name" id="opp-name">—</div>
-            <div class="opp-elim" id="opp-elim">0 eliminated</div>
-            <div class="guess-counter" id="guess-counter">🎯 3 left</div>
-          </div>
-        </div>
+      <div class="info-divider"></div>
+      <div class="opp-row">
+        <div class="opp-av" id="opp-av">?</div>
+        <div class="opp-name" id="opp-name">—</div>
+        <div class="opp-elim" id="opp-elim">0 eliminated</div>
+        <div class="guess-counter" id="guess-counter">🎯 3 left</div>
       </div>
     </div>
     <div class="board-section" style="display:flex;flex-direction:column;min-height:0;flex:1;overflow:hidden;">
