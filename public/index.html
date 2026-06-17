@@ -6,255 +6,117 @@
 <title>Guess Who?</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
-  --red: #f54251;
-  --red-dk: #c0303d;
-  --red-lt: #fde8ea;
-  --white: #ffffff;
-  --off: #f5f5f5;
-  --border: #e5e5e5;
-  --text: #1a1a1a;
-  --muted: #888;
-  --radius: 12px;
-  /* dark mode overrides */
+  --red: #f54251; --red-dk: #c0303d; --red-lt: #fde8ea;
+  --white: #ffffff; --off: #f5f5f5; --border: #e5e5e5;
+  --text: #1a1a1a; --muted: #888; --radius: 12px;
 }
-body.dark {
-  --white: #111111;
-  --off: #1a1a1a;
-  --border: #2e2e2e;
-  --text: #f1f1f1;
-  --muted: #888;
-}
-
+body.dark { --white: #111; --off: #1a1a1a; --border: #2e2e2e; --text: #f1f1f1; --muted: #777; }
 html, body { height: 100%; background: var(--off); color: var(--text); font-family: 'Segoe UI', system-ui, Arial, sans-serif; overflow: hidden; transition: background .2s, color .2s; }
 
-/* ── PAGES ── */
 .page { display: none; width: 100vw; height: 100vh; flex-direction: column; }
 .page.active { display: flex; }
 
-/* ── TOPBAR ── */
-.topbar {
-  height: 56px; background: var(--red); color: #fff;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 1.5rem; flex-shrink: 0; box-shadow: 0 2px 10px rgba(245,66,81,.3);
-}
+/* TOPBAR */
+.topbar { height: 56px; background: var(--red); color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; flex-shrink: 0; box-shadow: 0 2px 10px rgba(245,66,81,.3); }
 .topbar-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 2px; }
 .topbar-sub { font-size: 11px; opacity: .75; margin-top: 2px; }
 .topbar-right { display: flex; gap: .5rem; align-items: center; }
-.pill {
-  padding: 6px 16px; border-radius: 20px; border: 1.5px solid rgba(255,255,255,.5);
-  background: transparent; color: #fff; font-size: 12px; font-weight: 600;
-  cursor: pointer; transition: background .15s; white-space: nowrap;
-}
+.pill { padding: 6px 16px; border-radius: 20px; border: 1.5px solid rgba(255,255,255,.5); background: transparent; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s; white-space: nowrap; }
 .pill:hover { background: rgba(255,255,255,.18); }
 .pill.solid { background: #fff; color: var(--red); border-color: #fff; }
 .pill.solid:hover { background: #ffe4e6; }
 .pill:disabled { opacity: .4; cursor: not-allowed; }
 
-/* ── JOIN PAGE ── */
-#page-join {
-  align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #fff 0%, #ffe8ea 100%);
-}
+/* JOIN */
+#page-join { align-items: center; justify-content: center; background: linear-gradient(135deg, #fff 0%, #ffe8ea 100%); }
 body.dark #page-join { background: linear-gradient(135deg, #111 0%, #2a0a0e 100%); }
-.join-card {
-  background: var(--white); border-radius: 20px; padding: 2.5rem;
-  width: 100%; max-width: 420px; box-shadow: 0 8px 48px rgba(245,66,81,.15);
-  border: 1.5px solid var(--border);
-}
+.join-card { background: var(--white); border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 8px 48px rgba(245,66,81,.15); border: 1.5px solid var(--border); }
 .join-logo { font-size: 3rem; font-weight: 900; color: var(--red); letter-spacing: 3px; }
 .join-tagline { color: var(--muted); font-size: 14px; margin: .25rem 0 2rem; }
 .field-lbl { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: .4rem; }
-.txt-input {
-  width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
-  border-radius: var(--radius); color: var(--text); font-size: 15px;
-  background: var(--off); outline: none; margin-bottom: 1rem; transition: border-color .15s;
-}
+.txt-input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 15px; background: var(--off); outline: none; margin-bottom: 1rem; transition: border-color .15s; }
 .txt-input:focus { border-color: var(--red); background: var(--white); }
-.big-btn {
-  width: 100%; padding: 13px; background: var(--red); color: #fff;
-  border: none; border-radius: var(--radius); font-size: 16px; font-weight: 800;
-  cursor: pointer; transition: background .15s, transform .1s; letter-spacing: .5px;
-}
+.big-btn { width: 100%; padding: 13px; background: var(--red); color: #fff; border: none; border-radius: var(--radius); font-size: 16px; font-weight: 800; cursor: pointer; transition: background .15s, transform .1s; letter-spacing: .5px; }
 .big-btn:hover { background: var(--red-dk); }
 .big-btn:active { transform: scale(.98); }
 .big-btn:disabled { background: #ccc; color: #999; cursor: not-allowed; transform: none; }
 
-/* ── LOBBY PAGE ── */
+/* LOBBY */
 #page-lobby { background: var(--off); }
-
-.lobby-body {
-  flex: 1; overflow-y: auto;
-  display: flex; flex-direction: column;
-}
-
-/* Top half: online players */
-.lobby-top {
-  padding: 1.25rem 1.5rem 1rem;
-  border-bottom: 1.5px solid var(--border);
-  background: var(--white);
-  flex-shrink: 0;
-}
-.lobby-top h3 {
-  font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
-  color: var(--muted); margin-bottom: .75rem; display: flex; align-items: center; gap: .4rem;
-}
+.lobby-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+.lobby-top { padding: 1.25rem 1.5rem 1rem; border-bottom: 1.5px solid var(--border); background: var(--white); flex-shrink: 0; }
+.lobby-top h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: .75rem; display: flex; align-items: center; gap: .4rem; }
 .dot-green { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; display: inline-block; }
 .players-row { display: flex; flex-wrap: wrap; gap: .5rem; }
-.player-chip {
-  display: flex; align-items: center; gap: .5rem;
-  background: var(--off); border: 1.5px solid var(--border);
-  border-radius: 30px; padding: 5px 12px 5px 5px;
-  font-size: 13px; font-weight: 600;
-}
-.player-chip .av {
-  width: 26px; height: 26px; border-radius: 50%;
-  background: var(--red); color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; flex-shrink: 0;
-}
-.player-chip .av.me-av { background: var(--red); }
-.player-chip .pstatus { font-size: 10px; color: var(--muted); font-weight: 400; }
-.chip-badge {
-  font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 700;
-  background: var(--red-lt); color: var(--red); margin-left: 2px;
-}
+.player-chip { display: flex; align-items: center; gap: .5rem; background: var(--off); border: 1.5px solid var(--border); border-radius: 30px; padding: 5px 12px 5px 5px; font-size: 13px; font-weight: 600; }
+.player-chip .av { width: 26px; height: 26px; border-radius: 50%; background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.chip-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 700; background: var(--red-lt); color: var(--red); margin-left: 2px; }
 .chip-badge.playing { background: #e0f2fe; color: #0369a1; }
 .chip-badge.ready { background: #dcfce7; color: #15803d; }
-
-/* Bottom half: find game section */
-.lobby-bottom {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 2rem 1.5rem;
-  gap: 1.5rem;
-}
-
+.lobby-bottom { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1.5rem; gap: 1.5rem; }
 .find-btn-wrap { text-align: center; }
-.find-game-btn {
-  padding: 18px 56px; background: var(--red); color: #fff;
-  border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 800;
-  cursor: pointer; transition: background .15s, transform .1s, box-shadow .15s;
-  box-shadow: 0 6px 24px rgba(245,66,81,.35); letter-spacing: .5px;
-}
+.find-game-btn { padding: 18px 56px; background: var(--red); color: #fff; border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: background .15s, transform .1s, box-shadow .15s; box-shadow: 0 6px 24px rgba(245,66,81,.35); letter-spacing: .5px; }
 .find-game-btn:hover { background: var(--red-dk); box-shadow: 0 8px 32px rgba(245,66,81,.45); transform: translateY(-1px); }
 .find-game-btn:active { transform: scale(.97); }
-.find-game-btn.searching {
-  background: var(--off); color: var(--red); border: 2px solid var(--red);
-  box-shadow: none; cursor: default;
-}
+.find-game-btn.searching { background: var(--off); color: var(--red); border: 2px solid var(--red); box-shadow: none; cursor: default; }
 .find-sub { font-size: 13px; color: var(--muted); margin-top: .5rem; }
-
-/* searching queue */
-.queue-area {
-  width: 100%; max-width: 540px;
-  background: var(--white); border: 1.5px solid var(--border);
-  border-radius: 16px; padding: 1.25rem;
-  display: none;
-}
+.queue-area { width: 100%; max-width: 540px; background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; padding: 1.25rem; display: none; }
 .queue-area.show { display: block; }
-.queue-title {
-  font-size: 12px; text-transform: uppercase; letter-spacing: .5px;
-  color: var(--muted); margin-bottom: .75rem; display: flex; align-items: center; gap: .5rem;
-}
+.queue-title { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: .75rem; display: flex; align-items: center; gap: .5rem; }
 .searching-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: rpulse 1s infinite; display: inline-block; }
 @keyframes rpulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
-
 .queue-list { display: flex; flex-direction: column; gap: .5rem; }
 .queue-empty { font-size: 14px; color: var(--muted); text-align: center; padding: 1rem 0; }
-.queue-item {
-  display: flex; align-items: center; gap: .75rem;
-  padding: .65rem .75rem; background: var(--off);
-  border-radius: 10px; border: 1.5px solid var(--border);
-}
-.queue-item .qav {
-  width: 34px; height: 34px; border-radius: 50%; background: var(--red);
-  color: #fff; display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 14px; flex-shrink: 0;
-}
+.queue-item { display: flex; align-items: center; gap: .75rem; padding: .65rem .75rem; background: var(--off); border-radius: 10px; border: 1.5px solid var(--border); }
+.queue-item .qav { width: 34px; height: 34px; border-radius: 50%; background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
 .queue-item .qname { font-size: 14px; font-weight: 600; }
 .queue-item .qsub { font-size: 11px; color: var(--muted); }
-.challenge-btn {
-  margin-left: auto; padding: 6px 16px; background: var(--red); color: #fff;
-  border: none; border-radius: 20px; font-size: 12px; font-weight: 700;
-  cursor: pointer; transition: background .15s; white-space: nowrap;
-}
+.challenge-btn { margin-left: auto; padding: 6px 16px; background: var(--red); color: #fff; border: none; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s; white-space: nowrap; }
 .challenge-btn:hover { background: var(--red-dk); }
-
-.cancel-find-btn {
-  padding: 8px 24px; background: transparent; color: var(--red);
-  border: 1.5px solid var(--red); border-radius: 20px; font-size: 13px;
-  font-weight: 600; cursor: pointer; transition: background .15s;
-}
+.challenge-btn.sent { background: #ccc; color: #666; cursor: not-allowed; }
+.cancel-find-btn { padding: 8px 24px; background: transparent; color: var(--red); border: 1.5px solid var(--red); border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
 .cancel-find-btn:hover { background: var(--red-lt); }
 
-/* ── LOADING PAGE ── */
-#page-loading {
-  align-items: center; justify-content: center;
-  background: linear-gradient(135deg, var(--white) 0%, var(--red-lt) 100%);
-}
-.loading-card {
-  background: var(--white); border-radius: 24px; padding: 3rem 2.5rem;
-  text-align: center; max-width: 400px; width: 92%;
-  box-shadow: 0 8px 48px rgba(245,66,81,.15); border: 1.5px solid var(--border);
-}
+/* LOADING */
+#page-loading { align-items: center; justify-content: center; background: linear-gradient(135deg, var(--white) 0%, var(--red-lt) 100%); }
+body.dark #page-loading { background: linear-gradient(135deg, #111 0%, #2a0a0e 100%); }
+.loading-card { background: var(--white); border-radius: 24px; padding: 3rem 2.5rem; text-align: center; max-width: 400px; width: 92%; box-shadow: 0 8px 48px rgba(245,66,81,.15); border: 1.5px solid var(--border); }
 .vs-line { font-size: 2rem; font-weight: 900; margin-bottom: .5rem; }
 .vs-line span { color: var(--red); }
 .loading-card h2 { font-size: 1.5rem; font-weight: 800; color: var(--red); margin-bottom: .4rem; }
 .loading-card p { color: var(--muted); font-size: 14px; margin-bottom: 2rem; }
 .prog-bar { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-.prog-fill { height: 100%; background: var(--red); border-radius: 3px; width: 0%; transition: width 4s linear; }
+.prog-fill { height: 100%; background: var(--red); border-radius: 3px; width: 0%; transition: width 3s linear; }
 .ld-dots { display: flex; justify-content: center; gap: 6px; margin-top: 1.25rem; }
 .ld-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--red); opacity: .3; animation: pulse 1.2s infinite; }
 .ld-dots span:nth-child(2) { animation-delay: .2s; }
 .ld-dots span:nth-child(3) { animation-delay: .4s; }
 @keyframes pulse { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
 
-/* ── PICK PAGE ── */
+/* PICK */
 #page-pick { background: var(--off); }
 .pick-topbar { background: var(--white); border-bottom: 1.5px solid var(--border); padding: 1rem 1.5rem; flex-shrink: 0; text-align: center; }
 .pick-topbar h2 { font-size: 1.3rem; font-weight: 800; color: var(--red); }
 .pick-topbar p { font-size: 13px; color: var(--muted); margin-top: .2rem; }
 .pick-scroll { flex: 1; overflow-y: auto; padding: 1rem; }
 .pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; max-width: 980px; margin: 0 auto; }
-.pick-card {
-  aspect-ratio: 3/4; border-radius: var(--radius); overflow: hidden;
-  border: 3px solid var(--border); cursor: pointer; position: relative;
-  transition: border-color .15s, transform .15s; background: var(--white);
-  display: flex; flex-direction: column;
-}
+.pick-card { aspect-ratio: 3/4; border-radius: var(--radius); overflow: hidden; border: 3px solid var(--border); cursor: pointer; position: relative; transition: border-color .15s, transform .15s; background: var(--white); display: flex; flex-direction: column; }
 .pick-card .pimg { flex: 1; overflow: hidden; }
 .pick-card .pimg img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.pick-card .pname {
-  font-size: 11px; font-weight: 700; text-align: center; padding: 4px 4px 5px;
-  background: var(--white); color: var(--text); white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis; border-top: 1px solid var(--border);
-}
+.pick-card .pname { font-size: 11px; font-weight: 700; text-align: center; padding: 4px 4px 5px; background: var(--white); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-top: 1px solid var(--border); }
 .pick-card:hover:not(.disabled) { border-color: var(--red); transform: scale(1.04); }
 .pick-card.chosen { border-color: var(--red); box-shadow: 0 0 0 3px rgba(245,66,81,.2); }
 .pick-card.taken { opacity: .3; cursor: not-allowed; }
-.pick-tick {
-  position: absolute; top: 6px; right: 6px; background: var(--red); color: #fff;
-  width: 24px; height: 24px; border-radius: 50%; display: none;
-  align-items: center; justify-content: center; font-size: 13px; font-weight: 900;
-}
+.pick-tick { position: absolute; top: 6px; right: 6px; background: var(--red); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; }
 .pick-card.chosen .pick-tick { display: flex; }
-.pick-footer {
-  background: var(--white); border-top: 1.5px solid var(--border);
-  padding: .85rem 1.5rem; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-}
+.pick-footer { background: var(--white); border-top: 1.5px solid var(--border); padding: .85rem 1.5rem; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .pick-status { font-size: 13px; color: var(--muted); }
-.confirm-btn {
-  padding: 10px 32px; background: var(--red); color: #fff;
-  border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700;
-  cursor: pointer; transition: background .15s;
-}
+.confirm-btn { padding: 10px 32px; background: var(--red); color: #fff; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s; }
 .confirm-btn:hover { background: var(--red-dk); }
 .confirm-btn:disabled { background: #ccc; color: #999; cursor: not-allowed; }
 
-/* ── GAME PAGE ── */
+/* GAME */
 #page-game { background: var(--off); }
 .game-body { flex: 1; overflow-y: auto; padding: 1rem 1.25rem 1.5rem; display: flex; flex-direction: column; gap: .75rem; }
 .turn-banner { border-radius: var(--radius); padding: .75rem 1rem; font-size: 14px; font-weight: 700; text-align: center; }
@@ -275,14 +137,16 @@ body.dark .turn-banner.theirs { background: #450a0a; color: #fca5a5; }
 body.dark .opp-av { background: #2a0a0e; }
 .opp-name { font-size: 14px; font-weight: 700; }
 .opp-elim { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.guess-counter { display: inline-flex; align-items: center; gap: 4px; background: var(--red-lt); color: var(--red); border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+body.dark .guess-counter { background: #450a0a; }
 .board-hint { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
-.board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
 
 /* flip card */
 .flip-card { aspect-ratio: 3/4; perspective: 900px; cursor: pointer; }
 .flip-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.4,0,.2,1); border-radius: var(--radius); }
 .flip-card.flipped .flip-inner { transform: rotateY(180deg); }
 .flip-card.flipped { cursor: default; }
+.flip-card.blocked { cursor: not-allowed; }
 .flip-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius); overflow: hidden; border: 2px solid var(--border); }
 .flip-front { background: var(--white); display: flex; flex-direction: column; }
 .flip-front .fimg { flex: 1; overflow: hidden; }
@@ -291,9 +155,10 @@ body.dark .opp-av { background: #2a0a0e; }
 .flip-back { background: var(--red); transform: rotateY(180deg); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px; }
 .flip-back .xmark { font-size: 3rem; font-weight: 900; color: rgba(255,255,255,.35); line-height: 1; }
 .flip-back .out-lbl { font-size: 10px; color: rgba(255,255,255,.45); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
 
-/* ── MODALS ── */
-.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+/* MODALS */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 .overlay.show { display: flex; }
 .modal { background: var(--white); border-radius: 20px; padding: 2rem; max-width: 420px; width: 92%; text-align: center; box-shadow: 0 24px 64px rgba(0,0,0,.18); border: 1.5px solid var(--border); animation: pop .3s cubic-bezier(.34,1.56,.64,1); }
 @keyframes pop { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:scale(1)} }
@@ -318,64 +183,51 @@ body.dark .opp-av { background: #2a0a0e; }
 .mbtn-ghost { padding: 10px 24px; background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 14px; cursor: pointer; }
 .mbtn-ghost:hover { background: var(--off); color: var(--text); }
 
-/* ── ADMIN MODAL ── */
+/* FIX 4: confirm pick modal */
+.confirm-pick-photo { width: 110px; height: 132px; border-radius: 12px; overflow: hidden; margin: 0 auto 1rem; border: 3px solid var(--red); }
+.confirm-pick-photo img { width: 100%; height: 100%; object-fit: cover; }
+.confirm-pick-name { font-size: 1.1rem; font-weight: 800; margin-bottom: .4rem; }
+
+/* FIX 2: challenge notification */
+.challenge-notif { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; padding: 1.25rem 1.5rem; box-shadow: 0 8px 32px rgba(0,0,0,.18); z-index: 300; min-width: 300px; text-align: center; animation: slideUp .3s ease; display: none; }
+.challenge-notif.show { display: block; }
+@keyframes slideUp { from{opacity:0;transform:translateX(-50%) translateY(20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+.challenge-notif h3 { font-size: 1rem; font-weight: 800; margin-bottom: .3rem; }
+.challenge-notif p { font-size: 13px; color: var(--muted); margin-bottom: 1rem; }
+.challenge-notif-btns { display: flex; gap: .5rem; justify-content: center; }
+.accept-btn { padding: 8px 22px; background: var(--red); color: #fff; border: none; border-radius: var(--radius); font-size: 13px; font-weight: 700; cursor: pointer; }
+.accept-btn:hover { background: var(--red-dk); }
+.decline-btn { padding: 8px 18px; background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 13px; cursor: pointer; }
+.decline-btn:hover { background: var(--off); }
+
+/* ADMIN */
 .admin-modal { max-width: 560px; text-align: left; max-height: 90vh; overflow-y: auto; }
-.admin-tabs { display: flex; border-bottom: 1.5px solid var(--border); margin-bottom: 1.25rem; gap: 0; }
-.admin-tab {
-  padding: 8px 20px; font-size: 13px; font-weight: 600; cursor: pointer;
-  border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; color: var(--muted);
-  background: transparent; border-top: none; border-left: none; border-right: none;
-  transition: color .15s;
-}
+.admin-tabs { display: flex; border-bottom: 1.5px solid var(--border); margin-bottom: 1.25rem; }
+.admin-tab { padding: 8px 20px; font-size: 13px; font-weight: 600; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; color: var(--muted); background: transparent; border-top: none; border-left: none; border-right: none; transition: color .15s; }
 .admin-tab.active { color: var(--red); border-bottom-color: var(--red); }
 .admin-tab-panel { display: none; }
 .admin-tab-panel.active { display: block; }
-
-/* appearance tab */
 .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: .75rem 0; border-bottom: 1px solid var(--border); }
 .toggle-row:last-child { border-bottom: none; }
 .toggle-row .tl { font-size: 14px; font-weight: 600; }
 .toggle-row .td { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
 .toggle input { opacity: 0; width: 0; height: 0; }
-.toggle-slider {
-  position: absolute; inset: 0; background: var(--border); border-radius: 12px;
-  cursor: pointer; transition: background .2s;
-}
-.toggle-slider::before {
-  content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px;
-  background: #fff; border-radius: 50%; transition: transform .2s;
-}
+.toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 12px; cursor: pointer; transition: background .2s; }
+.toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s; }
 .toggle input:checked + .toggle-slider { background: var(--red); }
 .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
-
-/* photos tab */
-.photo-upload-zone {
-  border: 2px dashed var(--red); border-radius: var(--radius); padding: 1.25rem;
-  text-align: center; cursor: pointer; background: var(--red-lt); margin-bottom: 1rem;
-  transition: background .15s;
-}
+.photo-upload-zone { border: 2px dashed var(--red); border-radius: var(--radius); padding: 1.25rem; text-align: center; cursor: pointer; background: var(--red-lt); margin-bottom: 1rem; transition: background .15s; }
 .photo-upload-zone:hover { background: #fce4e6; }
 .photo-upload-zone p { color: var(--muted); font-size: 13px; margin-top: .25rem; }
 #admin-file { display: none; }
 .photos-name-list { display: flex; flex-direction: column; gap: .5rem; max-height: 300px; overflow-y: auto; margin-bottom: .75rem; }
-.photo-name-row {
-  display: flex; align-items: center; gap: .75rem;
-  background: var(--off); border: 1px solid var(--border); border-radius: 8px; padding: .4rem .6rem;
-}
+.photo-name-row { display: flex; align-items: center; gap: .75rem; background: var(--off); border: 1px solid var(--border); border-radius: 8px; padding: .4rem .6rem; }
 .photo-name-row .pthumb { width: 36px; height: 44px; border-radius: 5px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border); }
 .photo-name-row .pthumb img { width: 100%; height: 100%; object-fit: cover; }
-.photo-name-row .name-input {
-  flex: 1; padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 8px;
-  font-size: 13px; background: var(--white); color: var(--text); outline: none;
-}
+.photo-name-row .name-input { flex: 1; padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--white); color: var(--text); outline: none; }
 .photo-name-row .name-input:focus { border-color: var(--red); }
-.photo-name-row .rm-btn {
-  width: 26px; height: 26px; border-radius: 50%; border: none; background: #fee2e2;
-  color: var(--red); font-size: 14px; cursor: pointer; display: flex; align-items: center;
-  justify-content: center; flex-shrink: 0; font-weight: 700;
-}
-.photo-name-row .rm-btn:hover { background: #fca5a5; }
+.photo-name-row .rm-btn { width: 26px; height: 26px; border-radius: 50%; border: none; background: #fee2e2; color: var(--red); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 700; }
 .admin-count-line { font-size: 12px; color: var(--muted); margin-bottom: .75rem; }
 .pass-row { display: flex; gap: .5rem; margin-bottom: .75rem; }
 .pass-row input { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text); background: var(--off); outline: none; }
@@ -387,7 +239,7 @@ body.dark .opp-av { background: #2a0a0e; }
 </head>
 <body>
 
-<!-- ══ JOIN ══ -->
+<!-- JOIN -->
 <div id="page-join" class="page active">
   <div class="join-card">
     <div class="join-logo">GUESS WHO?</div>
@@ -398,50 +250,32 @@ body.dark .opp-av { background: #2a0a0e; }
   </div>
 </div>
 
-<!-- ══ LOBBY ══ -->
+<!-- LOBBY -->
 <div id="page-lobby" class="page">
   <div class="topbar">
-    <div>
-      <div class="topbar-logo">GUESS WHO?</div>
-      <div class="topbar-sub" id="lobby-sub">Online now</div>
-    </div>
-    <div class="topbar-right">
-      <button class="pill" onclick="openAdmin()">⚙ Admin</button>
-    </div>
+    <div><div class="topbar-logo">GUESS WHO?</div><div class="topbar-sub" id="lobby-sub">Online now</div></div>
+    <div class="topbar-right"><button class="pill" onclick="openAdmin()">⚙ Admin</button></div>
   </div>
   <div class="lobby-body">
-    <!-- Online players strip -->
     <div class="lobby-top">
       <h3><span class="dot-green"></span> Online Players</h3>
-      <div class="players-row" id="players-row">
-        <span style="font-size:13px;color:var(--muted)">No one else here yet...</span>
-      </div>
+      <div class="players-row" id="players-row"><span style="font-size:13px;color:var(--muted)">No one here yet...</span></div>
     </div>
-
-    <!-- Find game section -->
     <div class="lobby-bottom">
       <div class="find-btn-wrap">
         <button class="find-game-btn" id="find-game-btn" onclick="toggleFindGame()">🎮 Find Game</button>
         <div class="find-sub" id="find-sub">Click to start searching for an opponent</div>
       </div>
-
-      <!-- Queue of searching players -->
       <div class="queue-area" id="queue-area">
-        <div class="queue-title">
-          <span class="searching-pulse"></span>
-          Searching players
-        </div>
-        <div class="queue-list" id="queue-list">
-          <div class="queue-empty">No one searching yet — be the first!</div>
-        </div>
+        <div class="queue-title"><span class="searching-pulse"></span> Players searching for a game</div>
+        <div class="queue-list" id="queue-list"><div class="queue-empty">No one searching yet...</div></div>
       </div>
-
       <button class="cancel-find-btn" id="cancel-find-btn" style="display:none" onclick="cancelFind()">✕ Cancel Search</button>
     </div>
   </div>
 </div>
 
-<!-- ══ LOADING ══ -->
+<!-- LOADING INTERMISSION -->
 <div id="page-loading" class="page">
   <div class="loading-card">
     <div class="vs-line" id="loading-vs">You <span>VS</span> Opponent</div>
@@ -452,7 +286,7 @@ body.dark .opp-av { background: #2a0a0e; }
   </div>
 </div>
 
-<!-- ══ PICK ══ -->
+<!-- PICK -->
 <div id="page-pick" class="page">
   <div class="topbar">
     <div><div class="topbar-logo">GUESS WHO?</div><div class="topbar-sub">Pick your secret character</div></div>
@@ -460,24 +294,22 @@ body.dark .opp-av { background: #2a0a0e; }
   </div>
   <div class="pick-topbar">
     <h2>🔒 Pick your secret character</h2>
-    <p>Tap one person — your opponent has to guess who this is. Don't show them your screen!</p>
+    <p>Tap one person then confirm — your opponent has to guess who this is!</p>
   </div>
-  <div class="pick-scroll">
-    <div class="pick-grid" id="pick-grid"></div>
-  </div>
+  <div class="pick-scroll"><div class="pick-grid" id="pick-grid"></div></div>
   <div class="pick-footer">
     <div class="pick-status" id="pick-status">Tap someone to choose them</div>
-    <button class="confirm-btn" id="pick-confirm" disabled onclick="confirmPick()">Lock In →</button>
+    <button class="confirm-btn" id="pick-confirm" disabled onclick="openPickConfirm()">Lock In →</button>
   </div>
 </div>
 
-<!-- ══ GAME ══ -->
+<!-- GAME -->
 <div id="page-game" class="page">
   <div class="topbar">
     <div><div class="topbar-logo">GUESS WHO?</div><div class="topbar-sub" id="game-sub">Playing</div></div>
     <div class="topbar-right">
       <button class="pill" id="end-turn-btn" onclick="endTurn()" disabled>End Turn →</button>
-      <button class="pill solid" onclick="openGuessModal()">🎯 Guess!</button>
+      <button class="pill solid" id="guess-open-btn" onclick="openGuessModal()">🎯 Guess!</button>
       <button class="pill" onclick="openAdmin()">⚙</button>
     </div>
   </div>
@@ -500,14 +332,15 @@ body.dark .opp-av { background: #2a0a0e; }
             <div class="opp-elim" id="opp-elim">0 cards eliminated</div>
           </div>
         </div>
+        <div style="margin-top:.5rem"><span class="guess-counter" id="guess-counter">🎯 3 guesses left</span></div>
       </div>
     </div>
-    <div class="board-hint">Tap a card to flip it — eliminated cards cannot be flipped back</div>
+    <div class="board-hint" id="board-hint">Tap a card to flip it — you can only flip on your turn</div>
     <div class="board-grid" id="board-grid"></div>
   </div>
 </div>
 
-<!-- ══ MODAL: ADMIN ══ -->
+<!-- MODAL: ADMIN -->
 <div class="overlay" id="modal-admin">
   <div class="modal admin-modal">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
@@ -519,67 +352,57 @@ body.dark .opp-av { background: #2a0a0e; }
       <button class="admin-tab" onclick="switchAdminTab('photos',this)">📸 Photos</button>
       <button class="admin-tab" onclick="switchAdminTab('manage',this)">🔧 Manage</button>
     </div>
-
-    <!-- APPEARANCE TAB -->
     <div class="admin-tab-panel active" id="tab-appearance">
       <div class="toggle-row">
-        <div>
-          <div class="tl">Dark Mode</div>
-          <div class="td">Black background with red accents</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="dark-toggle" onchange="toggleDark(this.checked)">
-          <span class="toggle-slider"></span>
-        </label>
+        <div><div class="tl">Dark Mode</div><div class="td">Black background with red accents</div></div>
+        <label class="toggle"><input type="checkbox" id="dark-toggle" onchange="toggleDark(this.checked)"><span class="toggle-slider"></span></label>
       </div>
       <div class="toggle-row">
-        <div>
-          <div class="tl">Show player names on cards</div>
-          <div class="td">Display the name label under each photo</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="names-toggle" checked onchange="toggleNames(this.checked)">
-          <span class="toggle-slider"></span>
-        </label>
+        <div><div class="tl">Show names on cards</div><div class="td">Display the name label under each photo</div></div>
+        <label class="toggle"><input type="checkbox" id="names-toggle" checked onchange="toggleNames(this.checked)"><span class="toggle-slider"></span></label>
       </div>
     </div>
-
-    <!-- PHOTOS TAB -->
     <div class="admin-tab-panel" id="tab-photos">
       <div class="photo-upload-zone" onclick="document.getElementById('admin-file').click()">
         <div style="font-size:2rem">📸</div>
         <strong style="font-size:14px">Click to upload photos</strong>
-        <p>Up to 40 images — JPG, PNG, WEBP. Add names beside each photo below.</p>
+        <p>Up to 40 images — JPG, PNG, WEBP. Name each person below.</p>
       </div>
       <input type="file" id="admin-file" accept="image/*" multiple>
       <div class="admin-count-line" id="admin-count"></div>
       <div class="photos-name-list" id="photos-name-list"></div>
-      <div class="pass-row">
-        <input type="password" id="admin-pass" placeholder="Admin password (default: admin123)">
-      </div>
+      <div class="pass-row"><input type="password" id="admin-pass" placeholder="Admin password (default: admin123)"></div>
       <button class="mbtn" style="width:100%" onclick="pushPhotos()">📤 Push to All Players</button>
       <div class="admin-msg-line" id="admin-msg"></div>
     </div>
-
-    <!-- MANAGE TAB -->
     <div class="admin-tab-panel" id="tab-manage">
-      <p style="margin-bottom:1rem">Use these controls to manage all active games and players.</p>
-      <div class="pass-row">
-        <input type="password" id="manage-pass" placeholder="Admin password">
-      </div>
-      <div style="display:flex;flex-direction:column;gap:.5rem">
-        <button class="mbtn" style="width:100%;background:#1a1a1a" onclick="hardReset()">🔴 Hard Reset — Send Everyone to Lobby</button>
-      </div>
+      <p style="margin-bottom:1rem">Use these controls to manage all active games.</p>
+      <div class="pass-row"><input type="password" id="manage-pass" placeholder="Admin password"></div>
+      <button class="mbtn" style="width:100%;background:#1a1a1a" onclick="hardReset()">🔴 Hard Reset — Send Everyone to Lobby</button>
       <div class="admin-msg-line" id="manage-msg"></div>
     </div>
   </div>
 </div>
 
-<!-- ══ MODAL: GUESS ══ -->
+<!-- MODAL: CONFIRM PICK (FIX 4) -->
+<div class="overlay" id="modal-confirm-pick">
+  <div class="modal">
+    <h2>Are you sure? 🤔</h2>
+    <div class="confirm-pick-photo"><img id="confirm-pick-img" src="" alt=""></div>
+    <div class="confirm-pick-name" id="confirm-pick-name"></div>
+    <p>This will be your secret character. Your opponent has to guess who this is!</p>
+    <div class="mbtns">
+      <button class="mbtn" onclick="confirmPickFinal()">Yes, lock them in!</button>
+      <button class="mbtn-ghost" onclick="closeOverlay('modal-confirm-pick')">Pick someone else</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: GUESS -->
 <div class="overlay" id="modal-guess">
   <div class="modal">
     <h2>Make your guess 🤔</h2>
-    <p>Who is your opponent's secret character?</p>
+    <p id="guess-modal-sub">Who is your opponent's secret character?</p>
     <div class="guess-grid" id="guess-grid"></div>
     <div class="mbtns">
       <button class="mbtn" id="guess-confirm-btn" disabled onclick="submitGuess()">That's them!</button>
@@ -588,26 +411,34 @@ body.dark .opp-av { background: #2a0a0e; }
   </div>
 </div>
 
-<!-- ══ MODAL: RESULT ══ -->
+<!-- MODAL: RESULT -->
 <div class="overlay" id="modal-result">
   <div class="modal">
     <div class="result-emoji" id="result-emoji">🎉</div>
     <div class="modal-photo"><img id="result-photo" src="" alt=""></div>
     <h2 id="result-title"></h2>
     <p id="result-msg"></p>
-    <div class="mbtns">
-      <button class="mbtn" onclick="backToLobby()">Back to Lobby</button>
-    </div>
+    <div class="mbtns"><button class="mbtn" onclick="backToLobby()">Back to Lobby</button></div>
   </div>
 </div>
 
-<!-- ══ MODAL: OPP LEFT ══ -->
+<!-- MODAL: OPP LEFT -->
 <div class="overlay" id="modal-opp-left">
   <div class="modal">
     <div style="font-size:3rem;margin-bottom:.5rem">🔌</div>
     <h2>Opponent disconnected</h2>
     <p>Your opponent left the game.</p>
     <div class="mbtns"><button class="mbtn" onclick="backToLobby()">Back to Lobby</button></div>
+  </div>
+</div>
+
+<!-- FIX 2: CHALLENGE NOTIFICATION (toast) -->
+<div class="challenge-notif" id="challenge-notif">
+  <h3 id="challenge-notif-title">Challenge received!</h3>
+  <p id="challenge-notif-msg">wants to play against you!</p>
+  <div class="challenge-notif-btns">
+    <button class="accept-btn" onclick="acceptChallenge()">✓ Accept</button>
+    <button class="decline-btn" onclick="declineChallenge()">✕ Decline</button>
   </div>
 </div>
 
@@ -619,13 +450,14 @@ let ws = null;
 let myId = null;
 let myName = '';
 let myStatus = 'lobby';
-let pendingPickId = null;
+let pendingPickId = null;      // selected but not confirmed
 let pendingGuessId = null;
-let adminPhotos = []; // [{ src, name }]
-let currentPhotos = []; // [{ id, src, name }]
+let adminPhotos = [];
+let currentPhotos = [];
 let currentGame = null;
 let boardBuilt = false;
 let showNames = true;
+let incomingChallengerId = null;  // FIX 2
 
 // ══════════════════════════════════════
 //  CONNECT
@@ -638,27 +470,37 @@ function connect(cb) {
   ws.onclose = () => setTimeout(() => connect(), 2500);
   ws.onerror = () => ws.close();
 }
-
 function wsSend(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
 
 // ══════════════════════════════════════
-//  MESSAGES
+//  MESSAGE HANDLER
 // ══════════════════════════════════════
 function handle(msg) {
+
   if (msg.type === 'welcome') {
     myId = msg.clientId;
     currentPhotos = msg.photos || [];
     return;
   }
+
+  // FIX 1: lobby_update only reaches this handler when on lobby pages — but we also
+  // make sure server doesn't send it to playing clients
   if (msg.type === 'lobby_update') {
     currentPhotos = msg.photos || [];
-    renderLobby(msg);
+    // Only re-render lobby if actually on lobby page
+    if (isOnPage('page-lobby') || myStatus === 'lobby' || myStatus === 'waiting') {
+      renderLobby(msg);
+    }
     return;
   }
+
+  // FIX 3: intermission — stay 3 seconds, then game_state arrives
   if (msg.type === 'matched') {
+    myStatus = 'playing';
     showLoading(msg.opponentName);
     return;
   }
+
   if (msg.type === 'game_state') {
     currentGame = msg;
     if (msg.phase === 'pick') renderPick(msg);
@@ -666,17 +508,45 @@ function handle(msg) {
     else if (msg.phase === 'gameover') renderResult(msg);
     return;
   }
+
   if (msg.type === 'go_lobby') {
-    myStatus = 'lobby'; boardBuilt = false; pendingPickId = null;
+    myStatus = 'lobby'; boardBuilt = false; pendingPickId = null; currentGame = null;
     resetFindUI();
     showPage('page-lobby');
     return;
   }
+
   if (msg.type === 'opponent_left') {
     closeOverlay('modal-result'); closeOverlay('modal-guess');
     document.getElementById('modal-opp-left').classList.add('show');
     return;
   }
+
+  // FIX 2: received a challenge
+  if (msg.type === 'challenge_received') {
+    incomingChallengerId = msg.challengerId;
+    document.getElementById('challenge-notif-title').textContent = `${esc(msg.challengerName)} wants to play!`;
+    document.getElementById('challenge-notif-msg').textContent = `${esc(msg.challengerName)} has challenged you to a game.`;
+    document.getElementById('challenge-notif').classList.add('show');
+    return;
+  }
+
+  // FIX 2: challenge you sent was declined
+  if (msg.type === 'challenge_declined') {
+    alert(`${msg.declinerName} declined your challenge.`);
+    // Re-enable challenge buttons
+    document.querySelectorAll('.challenge-btn.sent').forEach(b => {
+      b.textContent = 'Challenge!'; b.classList.remove('sent');
+      b.disabled = false;
+    });
+    return;
+  }
+
+  // FIX 2: challenge you sent was accepted — matched msg will come next
+  if (msg.type === 'challenge_sent') {
+    return; // UI already updated
+  }
+
   if (msg.type === 'error') { alert(msg.text); return; }
   if (msg.type === 'admin_ok') { showAdminMsg('admin-msg', msg.text, 'ok'); showAdminMsg('manage-msg', msg.text, 'ok'); return; }
 }
@@ -718,7 +588,6 @@ function cancelFind() {
 }
 
 function resetFindUI() {
-  myStatus = 'lobby';
   const btn = document.getElementById('find-game-btn');
   btn.textContent = '🎮 Find Game';
   btn.classList.remove('searching');
@@ -729,19 +598,17 @@ function resetFindUI() {
 }
 
 function renderLobby(msg) {
-  if (!['page-lobby','page-loading'].some(p => document.getElementById(p).classList.contains('active'))) {
-    if (myStatus === 'lobby' || myStatus === 'waiting') showPage('page-lobby');
-    else return;
-  }
+  // FIX 1: Don't redirect playing players back to lobby
+  if (myStatus === 'playing') return;
   showPage('page-lobby');
 
   const online = msg.online || [];
   const waiting = msg.waiting || [];
 
-  // Top strip — all online players
+  // Online strip
   const row = document.getElementById('players-row');
   row.innerHTML = '';
-  if (online.length === 0) {
+  if (!online.length) {
     row.innerHTML = '<span style="font-size:13px;color:var(--muted)">No one here yet...</span>';
   } else {
     online.forEach(p => {
@@ -751,55 +618,73 @@ function renderLobby(msg) {
       const init = (p.name||'?')[0].toUpperCase();
       const statusLabel = p.status === 'playing' ? 'In game' : p.status === 'waiting' ? 'Searching' : 'Browsing';
       const badgeClass = p.status === 'playing' ? 'playing' : p.status === 'waiting' ? 'ready' : '';
-      d.innerHTML = `<div class="av me-av">${init}</div><div><div style="font-size:13px;font-weight:600">${esc(p.name)}</div><div style="font-size:10px;color:var(--muted)">${statusLabel}</div></div>${isMe ? '<span class="chip-badge">YOU</span>' : `<span class="chip-badge ${badgeClass}">${statusLabel}</span>`}`;
+      d.innerHTML = `<div class="av">${init}</div><div><div style="font-size:13px;font-weight:600">${esc(p.name)}</div></div>${isMe ? '<span class="chip-badge">YOU</span>' : `<span class="chip-badge ${badgeClass}">${statusLabel}</span>`}`;
       row.appendChild(d);
     });
   }
-
   document.getElementById('lobby-sub').textContent = `${online.length} player${online.length !== 1 ? 's' : ''} online`;
 
-  // Queue list — only searching players (not me)
+  // Queue list
   const qlist = document.getElementById('queue-list');
   const others = waiting.filter(p => p.id !== myId);
   qlist.innerHTML = '';
-  if (others.length === 0) {
+  if (!others.length) {
     qlist.innerHTML = '<div class="queue-empty">No one searching yet...</div>';
   } else {
     others.forEach(p => {
       const d = document.createElement('div');
       d.className = 'queue-item';
       const init = (p.name||'?')[0].toUpperCase();
-      const hasPhotos = currentPhotos.length >= 2;
+      const canChallenge = myStatus === 'waiting' && currentPhotos.length >= 2;
       d.innerHTML = `
         <div class="qav">${init}</div>
-        <div><div class="qname">${esc(p.name)}</div><div class="qsub">Searching for a game</div></div>
-        ${myStatus === 'waiting' && hasPhotos ? `<button class="challenge-btn" onclick="challenge('${p.id}')">Challenge!</button>` : ''}`;
+        <div><div class="qname">${esc(p.name)}</div><div class="qsub">Looking for a game</div></div>
+        ${canChallenge ? `<button class="challenge-btn" id="chal-${p.id}" onclick="sendChallenge('${p.id}')">Challenge!</button>` : ''}`;
       qlist.appendChild(d);
     });
   }
 
-  // Sync my status
+  // Sync my status chip
   const me = online.find(p => p.id === myId);
-  if (me) {
-    if (me.status === 'waiting' && myStatus !== 'waiting') {
-      myStatus = 'waiting';
-    } else if (me.status === 'lobby' && myStatus !== 'lobby') {
-      resetFindUI();
-    }
+  if (me && me.status !== myStatus && myStatus !== 'playing') {
+    myStatus = me.status;
   }
 }
 
-function challenge(targetId) { wsSend({ type: 'challenge', targetId }); }
+// FIX 2: send challenge (not start immediately)
+function sendChallenge(targetId) {
+  wsSend({ type: 'challenge', targetId });
+  const btn = document.getElementById('chal-' + targetId);
+  if (btn) { btn.textContent = 'Sent ✓'; btn.classList.add('sent'); btn.disabled = true; }
+}
+
+// FIX 2: accept incoming challenge
+function acceptChallenge() {
+  document.getElementById('challenge-notif').classList.remove('show');
+  if (!incomingChallengerId) return;
+  wsSend({ type: 'accept_challenge', challengerId: incomingChallengerId });
+  incomingChallengerId = null;
+}
+
+// FIX 2: decline incoming challenge
+function declineChallenge() {
+  document.getElementById('challenge-notif').classList.remove('show');
+  if (!incomingChallengerId) return;
+  wsSend({ type: 'decline_challenge', challengerId: incomingChallengerId });
+  incomingChallengerId = null;
+}
 
 // ══════════════════════════════════════
-//  LOADING
+//  FIX 3: LOADING INTERMISSION — 3 seconds
 // ══════════════════════════════════════
 function showLoading(oppName) {
   showPage('page-loading');
   document.getElementById('loading-vs').innerHTML = `${esc(myName)} <span>VS</span> ${esc(oppName)}`;
   const bar = document.getElementById('prog-fill');
   bar.style.width = '0%';
+  // Trigger CSS transition to fill over 3s
   requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
+  // Server sends game_state after 3s — frontend just waits for it
 }
 
 // ══════════════════════════════════════
@@ -809,7 +694,6 @@ function renderPick(msg) {
   showPage('page-pick');
   const photos = msg.photos || [];
   const myLocked = msg.me?.secret !== null && msg.me?.secret !== undefined;
-  if (!myLocked && pendingPickId === null) pendingPickId = null;
   if (myLocked) pendingPickId = msg.me.secret;
 
   const grid = document.getElementById('pick-grid');
@@ -819,7 +703,7 @@ function renderPick(msg) {
     const chosen = pendingPickId === p.id;
     const d = document.createElement('div');
     d.className = 'pick-card' + (chosen ? ' chosen' : '') + (takenByOpp ? ' taken disabled' : '');
-    d.innerHTML = `<div class="pimg"><img src="${p.src}" alt="${esc(p.name||'')}"></div>${showNames ? `<div class="pname">${esc(p.name||'')}</div>` : ''}<div class="pick-tick">✓</div>`;
+    d.innerHTML = `<div class="pimg"><img src="${p.src}" alt=""></div>${showNames ? `<div class="pname">${esc(p.name||'')}</div>` : ''}<div class="pick-tick">✓</div>`;
     if (!takenByOpp && !myLocked) {
       d.onclick = () => { pendingPickId = p.id; renderPick(msg); document.getElementById('pick-confirm').disabled = false; };
     }
@@ -837,9 +721,21 @@ function renderPick(msg) {
     myLocked && oppPicked ? 'Both ready! Starting...' : 'Tap someone to choose them';
 }
 
-function confirmPick() {
+// FIX 4: open confirm modal before locking in
+function openPickConfirm() {
   if (pendingPickId === null) return;
-  wsSend({ type: 'pick_secret', photoId: pendingPickId });
+  const photo = currentPhotos.find(p => p.id === pendingPickId) || (currentGame?.photos || []).find(p => p.id === pendingPickId);
+  if (!photo) return;
+  document.getElementById('confirm-pick-img').src = photo.src;
+  document.getElementById('confirm-pick-name').textContent = photo.name || '';
+  document.getElementById('modal-confirm-pick').classList.add('show');
+}
+
+// FIX 4: actually lock in after double confirm
+function confirmPickFinal() {
+  closeOverlay('modal-confirm-pick');
+  if (pendingPickId === null) return;
+  wsSend({ type: 'pick_secret', photoId: pendingPickId, confirmed: true });
 }
 
 // ══════════════════════════════════════
@@ -849,14 +745,23 @@ function renderGame(msg) {
   showPage('page-game');
   const photos = msg.photos || [];
   const isMyTurn = msg.turn === myId;
+  const guessesLeft = msg.me?.guessesLeft ?? 3;
 
   document.getElementById('game-sub').textContent = isMyTurn ? 'Your turn' : `${msg.opponent?.name || 'Opponent'}'s turn`;
   const banner = document.getElementById('turn-banner');
   banner.className = 'turn-banner ' + (isMyTurn ? 'mine' : 'theirs');
   banner.textContent = isMyTurn
-    ? '🟢 Your turn — ask your opponent a yes/no question!'
+    ? '🟢 Your turn — ask your opponent a yes/no question, then flip cards!'
     : `⏳ ${msg.opponent?.name || 'Opponent'}'s turn — answer their question`;
+
+  // FIX 5: disable end turn and guess button when not your turn
   document.getElementById('end-turn-btn').disabled = !isMyTurn;
+  const guessBtn = document.getElementById('guess-open-btn');
+  guessBtn.disabled = !isMyTurn || guessesLeft === 0;
+
+  // FIX 7: show guess counter
+  document.getElementById('guess-counter').textContent = `🎯 ${guessesLeft} guess${guessesLeft !== 1 ? 'es' : ''} left`;
+  document.getElementById('guess-counter').style.opacity = guessesLeft === 0 ? '.5' : '1';
 
   const mySecretPhoto = photos.find(p => p.id === msg.me?.secret);
   if (mySecretPhoto) document.getElementById('secret-img').src = mySecretPhoto.src;
@@ -866,22 +771,32 @@ function renderGame(msg) {
   document.getElementById('opp-name').textContent = oppName;
   document.getElementById('opp-elim').textContent = `${(msg.opponent?.eliminated || []).length} cards eliminated`;
 
+  // FIX 5: board hint changes based on turn
+  document.getElementById('board-hint').textContent = isMyTurn
+    ? 'Tap a card to flip it — eliminated cards cannot be flipped back'
+    : "Wait for your turn to flip cards";
+
   const myElim = new Set(msg.me?.eliminated || []);
-  if (!boardBuilt) { buildBoard(photos, myElim); boardBuilt = true; }
-  else syncBoard(myElim);
+  if (!boardBuilt) {
+    buildBoard(photos, myElim, isMyTurn);
+    boardBuilt = true;
+  } else {
+    syncBoard(myElim, isMyTurn);
+  }
 }
 
-function buildBoard(photos, elimSet) {
+function buildBoard(photos, elimSet, isMyTurn) {
   const grid = document.getElementById('board-grid');
   grid.innerHTML = '';
   photos.forEach(p => {
     const isFlipped = elimSet.has(p.id);
     const c = document.createElement('div');
-    c.className = 'flip-card' + (isFlipped ? ' flipped' : '');
+    // FIX 5: add 'blocked' class when not your turn
+    c.className = 'flip-card' + (isFlipped ? ' flipped' : '') + (!isMyTurn ? ' blocked' : '');
     c.dataset.photoid = p.id;
     c.innerHTML = `<div class="flip-inner">
       <div class="flip-face flip-front">
-        <div class="fimg"><img src="${p.src}" alt="${esc(p.name||'')}"></div>
+        <div class="fimg"><img src="${p.src}" alt=""></div>
         ${showNames ? `<div class="fname">${esc(p.name||'')}</div>` : ''}
       </div>
       <div class="flip-face flip-back"><div class="xmark">✕</div><div class="out-lbl">Out</div></div>
@@ -891,15 +806,20 @@ function buildBoard(photos, elimSet) {
   });
 }
 
-function syncBoard(elimSet) {
+function syncBoard(elimSet, isMyTurn) {
   document.querySelectorAll('.flip-card').forEach(card => {
     const id = parseInt(card.dataset.photoid);
     if (elimSet.has(id) && !card.classList.contains('flipped')) card.classList.add('flipped');
+    // FIX 5: update blocked state dynamically
+    if (isMyTurn) card.classList.remove('blocked');
+    else if (!card.classList.contains('flipped')) card.classList.add('blocked');
   });
 }
 
 function flipCard(photoId, cardEl) {
   if (cardEl.classList.contains('flipped')) return;
+  // FIX 5: blocked means not your turn
+  if (cardEl.classList.contains('blocked')) return;
   cardEl.classList.add('flipped');
   wsSend({ type: 'toggle_eliminate', photoId });
 }
@@ -907,11 +827,13 @@ function flipCard(photoId, cardEl) {
 function endTurn() { wsSend({ type: 'end_turn' }); }
 
 // ══════════════════════════════════════
-//  GUESS
+//  GUESS (FIX 7: show remaining count)
 // ══════════════════════════════════════
 function openGuessModal() {
   pendingGuessId = null;
   const photos = currentGame?.photos || currentPhotos;
+  const guessesLeft = currentGame?.me?.guessesLeft ?? 3;
+  document.getElementById('guess-modal-sub').textContent = `Who is your opponent's secret character? (${guessesLeft} guess${guessesLeft !== 1 ? 'es' : ''} remaining)`;
   const grid = document.getElementById('guess-grid');
   grid.innerHTML = '';
   document.getElementById('guess-confirm-btn').disabled = true;
@@ -943,19 +865,22 @@ function renderResult(msg) {
   const r = msg.result; if (!r) return;
   const iWon = r.correct && r.guesserId === myId;
   const iGuessed = r.guesserId === myId;
+  const isAuto = r.auto;
   document.getElementById('result-emoji').textContent = iWon ? '🎉' : iGuessed ? '😬' : '😮';
   document.getElementById('result-photo').src = r.correct ? r.guessedPhotoSrc : r.actualPhotoSrc;
-  document.getElementById('result-title').textContent = iWon ? 'You win! 🎉' : iGuessed ? 'Wrong guess!' : `${esc(r.guesserName)} got you!`;
-  document.getElementById('result-msg').textContent = iWon
-    ? `You correctly guessed your opponent's character!`
-    : iGuessed ? `That wasn't the right person — your opponent wins!`
-    : `${r.guesserName} figured out who you were!`;
+  document.getElementById('result-title').textContent = iWon ? 'You win! 🎉' : iGuessed && !r.correct ? 'Wrong guess!' : `${esc(r.guesserName)} got you!`;
+  document.getElementById('result-msg').textContent =
+    isAuto && iWon ? `You eliminated everyone else — it had to be them!` :
+    iWon ? `You correctly guessed your opponent's character!` :
+    iGuessed && !r.correct ? `That wasn't right — your opponent wins!` :
+    `${r.guesserName} figured out who you were!`;
   document.getElementById('modal-result').classList.add('show');
 }
 
 function backToLobby() {
   closeOverlay('modal-result'); closeOverlay('modal-opp-left');
   boardBuilt = false; pendingPickId = null; pendingGuessId = null; currentGame = null;
+  myStatus = 'lobby';
   resetFindUI();
   wsSend({ type: 'back_to_lobby' });
 }
@@ -972,21 +897,17 @@ function switchAdminTab(name, btn) {
   document.getElementById('tab-' + name).classList.add('active');
 }
 
-function toggleDark(on) {
-  document.body.classList.toggle('dark', on);
-}
+function toggleDark(on) { document.body.classList.toggle('dark', on); }
 
 function toggleNames(on) {
   showNames = on;
-  // Rebuild board if in game
   if (boardBuilt && currentGame) {
     const myElim = new Set(currentGame.me?.eliminated || []);
-    buildBoard(currentGame.photos || [], myElim);
-    boardBuilt = true;
+    const isMyTurn = currentGame.turn === myId;
+    buildBoard(currentGame.photos || [], myElim, isMyTurn);
   }
 }
 
-// Photos tab
 document.getElementById('admin-file').addEventListener('change', e => handleAdminFiles(e.target.files));
 document.querySelector('.photo-upload-zone').addEventListener('dragover', e => e.preventDefault());
 document.querySelector('.photo-upload-zone').addEventListener('drop', e => { e.preventDefault(); handleAdminFiles(e.dataTransfer.files); });
@@ -1007,10 +928,7 @@ function renderPhotosList() {
   adminPhotos.forEach((p, i) => {
     const d = document.createElement('div');
     d.className = 'photo-name-row';
-    d.innerHTML = `
-      <div class="pthumb"><img src="${p.src}"></div>
-      <input class="name-input" type="text" value="${esc(p.name)}" placeholder="Name for this person" oninput="adminPhotos[${i}].name=this.value">
-      <button class="rm-btn" onclick="removeAdminPhoto(${i})">✕</button>`;
+    d.innerHTML = `<div class="pthumb"><img src="${p.src}"></div><input class="name-input" type="text" value="${esc(p.name)}" placeholder="Name" oninput="adminPhotos[${i}].name=this.value"><button class="rm-btn" onclick="removeAdminPhoto(${i})">✕</button>`;
     wrap.appendChild(d);
   });
   document.getElementById('admin-count').textContent = `${adminPhotos.length} / 40 photos`;
@@ -1045,6 +963,7 @@ function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
+function isOnPage(id) { return document.getElementById(id).classList.contains('active'); }
 function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>

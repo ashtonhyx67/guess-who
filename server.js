@@ -24,14 +24,19 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocket.Server({ server });
 
 // ══════════════════════════════════════
-//  GAME STATE
+//  SERVER STATE
 // ══════════════════════════════════════
-let photos = [];           // [{ id, src }]
-let clients = {};          // clientId -> { ws, name, status:'lobby'|'waiting'|'playing', gameId }
-let games = {};            // gameId -> { p1, p2, phase:'loading'|'pick'|'playing'|'gameover', turn, result }
+let photos = [];
+// clients: id -> { ws, name, status: 'lobby'|'waiting'|'playing', gameId }
+let clients = {};
+// games: id -> { p1, p2, phase: 'pick'|'playing'|'gameover', turn, result, players: { [id]: { secret, eliminated:Set, guessesLeft } } }
+let games = {};
+// pending challenges: challengerId -> { targetId, timer }
+let pendingChallenges = {};
 let nextId = 1;
 let nextGameId = 1;
 const ADMIN_PASSWORD = 'admin123';
+const MAX_GUESSES = 3;
 
 // ══════════════════════════════════════
 //  HELPERS
@@ -41,14 +46,19 @@ function send(clientId, msg) {
   if (c && c.ws.readyState === WebSocket.OPEN) c.ws.send(JSON.stringify(msg));
 }
 
+// FIX 1: Only send lobby updates to lobby/waiting players — never to players in a game
 function broadcastLobby() {
   const waiting = Object.entries(clients)
     .filter(([, c]) => c.status === 'waiting')
     .map(([id, c]) => ({ id, name: c.name }));
   const online = Object.entries(clients)
     .map(([id, c]) => ({ id, name: c.name, status: c.status }));
-  Object.keys(clients).forEach(id => {
-    send(id, { type: 'lobby_update', waiting, online, photos: photos.map(p => ({ id: p.id, src: p.src })) });
+  const photosMeta = photos.map(p => ({ id: p.id, src: p.src, name: p.name }));
+
+  Object.entries(clients).forEach(([id, c]) => {
+    // FIX 1: skip players who are in an active game
+    if (c.status === 'playing') return;
+    send(id, { type: 'lobby_update', waiting, online, photos: photosMeta });
   });
 }
 
@@ -63,8 +73,21 @@ function sendGameState(gameId) {
       type: 'game_state',
       phase: g.phase,
       photos,
-      me: { id: pid, name: clients[pid]?.name, secret: me.secret, eliminated: [...me.eliminated] },
-      opponent: { id: oppId, name: clients[oppId]?.name, secretPicked: opp.secret !== null, eliminated: [...opp.eliminated], secret: g.phase === 'gameover' ? opp.secret : null },
+      me: {
+        id: pid,
+        name: clients[pid]?.name,
+        secret: me.secret,
+        eliminated: [...me.eliminated],
+        guessesLeft: me.guessesLeft,
+      },
+      opponent: {
+        id: oppId,
+        name: clients[oppId]?.name,
+        secretPicked: opp.secret !== null,
+        eliminated: [...opp.eliminated],
+        secret: g.phase === 'gameover' ? opp.secret : null,
+        guessesLeft: opp.guessesLeft,
+      },
       turn: g.turn,
       result: g.result || null,
     });
@@ -75,12 +98,12 @@ function startGame(p1id, p2id) {
   const gameId = String(nextGameId++);
   games[gameId] = {
     p1: p1id, p2: p2id,
-    phase: 'loading',
+    phase: 'pick',
     turn: null,
     result: null,
     players: {
-      [p1id]: { secret: null, eliminated: new Set() },
-      [p2id]: { secret: null, eliminated: new Set() },
+      [p1id]: { secret: null, eliminated: new Set(), guessesLeft: MAX_GUESSES },
+      [p2id]: { secret: null, eliminated: new Set(), guessesLeft: MAX_GUESSES },
     }
   };
   clients[p1id].status = 'playing';
@@ -88,7 +111,7 @@ function startGame(p1id, p2id) {
   clients[p2id].status = 'playing';
   clients[p2id].gameId = gameId;
 
-  // Notify both of match + loading phase
+  // FIX 3: Send 'matched' for the intermission screen — server waits 3s then sends game_state(pick)
   [p1id, p2id].forEach(pid => {
     send(pid, {
       type: 'matched',
@@ -97,14 +120,14 @@ function startGame(p1id, p2id) {
     });
   });
 
+  // Update lobby for non-playing clients
   broadcastLobby();
 
-  // After 4 seconds move to pick phase
+  // FIX 3: After 3 seconds, move to pick phase
   setTimeout(() => {
     if (!games[gameId]) return;
-    games[gameId].phase = 'pick';
     sendGameState(gameId);
-  }, 4000);
+  }, 3000);
 
   return gameId;
 }
@@ -125,7 +148,7 @@ wss.on('connection', ws => {
       broadcastLobby();
     }
 
-    // ── READY TO PLAY (join waiting list) ──
+    // ── GO WAITING ──
     else if (msg.type === 'ready') {
       const c = clients[clientId];
       if (!c || c.status !== 'lobby') return;
@@ -141,7 +164,7 @@ wss.on('connection', ws => {
       broadcastLobby();
     }
 
-    // ── CHALLENGE someone ──
+    // FIX 2: CHALLENGE — send challenge request to target instead of starting immediately
     else if (msg.type === 'challenge') {
       const challenger = clients[clientId];
       const target = clients[msg.targetId];
@@ -152,10 +175,42 @@ wss.on('connection', ws => {
       if (photos.length < 2) {
         send(clientId, { type: 'error', text: 'Admin needs to upload photos first.' }); return;
       }
-      startGame(clientId, msg.targetId);
+      // Store pending challenge
+      pendingChallenges[clientId] = { targetId: msg.targetId };
+      // Notify the target they've been challenged
+      send(msg.targetId, {
+        type: 'challenge_received',
+        challengerId: clientId,
+        challengerName: challenger.name,
+      });
+      // Notify challenger that request was sent
+      send(clientId, { type: 'challenge_sent', targetName: target.name });
     }
 
-    // ── PICK SECRET ──
+    // FIX 2: ACCEPT CHALLENGE
+    else if (msg.type === 'accept_challenge') {
+      const target = clients[clientId];
+      const challengerId = msg.challengerId;
+      const challenge = pendingChallenges[challengerId];
+      if (!challenge || challenge.targetId !== clientId) {
+        send(clientId, { type: 'error', text: 'Challenge no longer valid.' }); return;
+      }
+      const challenger = clients[challengerId];
+      if (!challenger || challenger.status !== 'waiting' || target.status !== 'waiting') {
+        send(clientId, { type: 'error', text: 'Player is no longer available.' }); return;
+      }
+      delete pendingChallenges[challengerId];
+      startGame(challengerId, clientId);
+    }
+
+    // FIX 2: DECLINE CHALLENGE
+    else if (msg.type === 'decline_challenge') {
+      const challengerId = msg.challengerId;
+      delete pendingChallenges[challengerId];
+      send(challengerId, { type: 'challenge_declined', declinerName: clients[clientId]?.name });
+    }
+
+    // FIX 4: PICK SECRET — store choice but wait for confirm
     else if (msg.type === 'pick_secret') {
       const c = clients[clientId];
       if (!c) return;
@@ -163,22 +218,49 @@ wss.on('connection', ws => {
       if (!g || g.phase !== 'pick') return;
       const taken = Object.entries(g.players).find(([id, p]) => id !== clientId && p.secret === msg.photoId);
       if (taken) { send(clientId, { type: 'error', text: 'Already picked by opponent!' }); return; }
-      g.players[clientId].secret = msg.photoId;
-      // Check if both picked
-      const both = Object.values(g.players).every(p => p.secret !== null);
-      if (both) { g.phase = 'playing'; g.turn = g.p1; }
-      sendGameState(c.gameId);
+      // FIX 4: confirmed flag means final lock-in
+      if (msg.confirmed) {
+        g.players[clientId].secret = msg.photoId;
+        const both = Object.values(g.players).every(p => p.secret !== null);
+        if (both) { g.phase = 'playing'; g.turn = g.p1; }
+        sendGameState(c.gameId);
+      } else {
+        // Just acknowledge the selection (no state change needed, frontend handles preview)
+        send(clientId, { type: 'pick_ack', photoId: msg.photoId });
+      }
     }
 
-    // ── ELIMINATE ──
+    // FIX 5: ELIMINATE — only allowed on your own turn
     else if (msg.type === 'toggle_eliminate') {
       const c = clients[clientId];
       if (!c) return;
       const g = games[c.gameId];
       if (!g || g.phase !== 'playing') return;
+      // FIX 5: can only eliminate on your own turn
+      if (g.turn !== clientId) {
+        send(clientId, { type: 'error', text: "It's not your turn!" }); return;
+      }
       const elim = g.players[clientId].eliminated;
-      // One-way only — can only add, not remove
-      elim.add(msg.photoId);
+      elim.add(msg.photoId); // one-way only
+
+      // FIX 6: Auto-guess if only one card left uneliminated
+      const remaining = photos.filter(p => !elim.has(p.id));
+      if (remaining.length === 1) {
+        // auto-guess that last person
+        const oppId = clientId === g.p1 ? g.p2 : g.p1;
+        const correct = g.players[oppId].secret === remaining[0].id;
+        g.phase = 'gameover';
+        g.result = {
+          correct,
+          auto: true,
+          guesserId: clientId,
+          guesserName: clients[clientId]?.name,
+          guessedPhotoId: remaining[0].id,
+          actualPhotoId: g.players[oppId].secret,
+          guessedPhotoSrc: remaining[0].src,
+          actualPhotoSrc: photos.find(p => p.id === g.players[oppId].secret)?.src,
+        };
+      }
       sendGameState(c.gameId);
     }
 
@@ -192,27 +274,39 @@ wss.on('connection', ws => {
       sendGameState(c.gameId);
     }
 
-    // ── GUESS ──
+    // FIX 7: GUESS — max 3 guesses, only on your turn
     else if (msg.type === 'guess') {
       const c = clients[clientId];
       if (!c) return;
       const g = games[c.gameId];
       if (!g || g.phase !== 'playing' || g.turn !== clientId) return;
+      const player = g.players[clientId];
+      // FIX 7: check guess limit
+      if (player.guessesLeft <= 0) {
+        send(clientId, { type: 'error', text: 'You have no guesses left!' }); return;
+      }
+      player.guessesLeft--;
       const oppId = clientId === g.p1 ? g.p2 : g.p1;
       const correct = g.players[oppId].secret === msg.photoId;
-      g.phase = 'gameover';
-      g.result = {
-        correct, guesserId: clientId,
-        guesserName: clients[clientId]?.name,
-        guessedPhotoId: msg.photoId,
-        actualPhotoId: g.players[oppId].secret,
-        guessedPhotoSrc: photos.find(p => p.id === msg.photoId)?.src,
-        actualPhotoSrc: photos.find(p => p.id === g.players[oppId].secret)?.src,
-      };
+      if (correct || player.guessesLeft === 0) {
+        g.phase = 'gameover';
+        g.result = {
+          correct,
+          guesserId: clientId,
+          guesserName: clients[clientId]?.name,
+          guessedPhotoId: msg.photoId,
+          actualPhotoId: g.players[oppId].secret,
+          guessedPhotoSrc: photos.find(p => p.id === msg.photoId)?.src,
+          actualPhotoSrc: photos.find(p => p.id === g.players[oppId].secret)?.src,
+        };
+      } else {
+        // Wrong guess but guesses remain — swap turn
+        g.turn = oppId;
+      }
       sendGameState(c.gameId);
     }
 
-    // ── PLAY AGAIN (return to lobby) ──
+    // ── BACK TO LOBBY ──
     else if (msg.type === 'back_to_lobby') {
       const c = clients[clientId];
       if (!c) return;
@@ -233,12 +327,11 @@ wss.on('connection', ws => {
     // ── ADMIN: hard reset ──
     else if (msg.type === 'admin_reset') {
       if (msg.password !== ADMIN_PASSWORD) { send(clientId, { type: 'error', text: 'Wrong password.' }); return; }
-      // Kill all games
       Object.keys(games).forEach(gid => delete games[gid]);
-      // Return everyone to lobby
+      Object.keys(pendingChallenges).forEach(k => delete pendingChallenges[k]);
       Object.entries(clients).forEach(([id, c]) => { c.status = 'lobby'; c.gameId = null; send(id, { type: 'go_lobby' }); });
       broadcastLobby();
-      send(clientId, { type: 'admin_ok', text: 'Hard reset done — everyone sent to lobby.' });
+      send(clientId, { type: 'admin_ok', text: 'Hard reset done.' });
     }
   });
 
@@ -249,10 +342,15 @@ wss.on('connection', ws => {
       if (g) {
         const oppId = clientId === g.p1 ? g.p2 : g.p1;
         send(oppId, { type: 'opponent_left' });
-        clients[oppId] && (clients[oppId].status = 'lobby') && (clients[oppId].gameId = null);
+        if (clients[oppId]) { clients[oppId].status = 'lobby'; clients[oppId].gameId = null; }
         delete games[c.gameId];
       }
     }
+    // Clean up any pending challenges from or to this client
+    delete pendingChallenges[clientId];
+    Object.keys(pendingChallenges).forEach(k => {
+      if (pendingChallenges[k].targetId === clientId) delete pendingChallenges[k];
+    });
     delete clients[clientId];
     broadcastLobby();
   });
