@@ -225,7 +225,7 @@ wss.on('connection', ws => {
     // ── ADMIN: upload photos ──
     else if (msg.type === 'admin_photos') {
       if (msg.password !== ADMIN_PASSWORD) { send(clientId, { type: 'error', text: 'Wrong password.' }); return; }
-      photos = (msg.photos || []).slice(0, 25).map((src, i) => ({ id: i, src }));
+      photos = (msg.photos || []).slice(0, 40).map((p, i) => ({ id: i, src: p.src || p, name: p.name || '' }));
       broadcastLobby();
       send(clientId, { type: 'admin_ok', text: `${photos.length} photos uploaded!` });
     }
