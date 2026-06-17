@@ -267,7 +267,7 @@ wss.on('connection', ws => {
 //  START
 // ═══════════════════════════════════════
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🎭 Guess Who server running!`);
   console.log(`   Open http://localhost:${PORT} on both laptops`);
   console.log(`   Admin password: ${state.adminPassword}\n`);
