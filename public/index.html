@@ -13,7 +13,7 @@
 }
 body.dark { --white:#111; --off:#1a1a1a; --border:#2e2e2e; --text:#f1f1f1; --muted:#666; }
 html,body { height:100%; background:var(--off); color:var(--text); font-family:'Segoe UI',system-ui,Arial,sans-serif; overflow:hidden; }
-.page { display:none; width:100vw; height:100vh; flex-direction:column; }
+.page { display:none; width:100vw; height:100vh; height:100dvh; flex-direction:column; }
 .page.active { display:flex; }
 
 /* TOPBAR */
@@ -114,7 +114,7 @@ body.dark #page-loading { background:linear-gradient(135deg,#111 0%,#2a0a0e 100%
 /* FIX 5: GAME — no scroll, all fits */
 #page-game { background:var(--off); overflow:hidden; }
 /* ── GAME LAYOUT: everything fits one screen, no scroll ── */
-#page-game { overflow:hidden; }
+#page-game { overflow:hidden; height:100vh; height:100dvh; }
 .game-inner {
   flex: 1;
   display: flex;
@@ -122,6 +122,7 @@ body.dark #page-loading { background:linear-gradient(135deg,#111 0%,#2a0a0e 100%
   overflow: hidden;
   padding: 4px 8px 6px;
   gap: 4px;
+  min-height: 0;
 }
 
 /* Turn banner — single thin line */
@@ -157,18 +158,17 @@ body.dark .guess-counter { background:#450a0a; }
 .board-section { flex:1; overflow:hidden; display:flex; flex-direction:column; gap:3px; min-height:0; }
 .board-hint { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; flex-shrink:0; line-height:1; }
 
-/* 5×5 grid fills exactly the remaining height */
+/* Grid — columns/rows set by JS based on photo count */
 .board-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(5, 1fr);
-  gap: 4px;
+  gap: 3px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  align-content: stretch;
 }
 
-/* Cards fill their cell — no aspect-ratio constraint */
+/* Cards fill their cell exactly */
 .flip-card { perspective:800px; cursor:pointer; overflow:hidden; min-height:0; min-width:0; }
 .flip-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .35s cubic-bezier(.4,0,.2,1); border-radius:5px; }
 .flip-card.flipped .flip-inner { transform:rotateY(180deg); }
@@ -532,10 +532,22 @@ function handle(msg){
   }
   if(msg.type==='lobby_update'){
     currentPhotos=msg.photos||[];
-    // Always trust server's authoritative status for this client
-    if(msg.myStatus && msg.myStatus !== 'playing') {
-      myStatus = msg.myStatus;
-      syncFindUI(myStatus);
+    // Sync status from server — but never let a stale lobby_update
+    // flicker us back from waiting->lobby (race condition fix)
+    if(msg.myStatus) {
+      if(msg.myStatus === 'playing') {
+        // server says playing — always trust this
+        myStatus = 'playing';
+      } else if(msg.myStatus === 'waiting' && myStatus === 'lobby') {
+        // server confirmed our ready request
+        myStatus = 'waiting';
+        syncFindUI('waiting');
+      } else if(msg.myStatus === 'lobby' && myStatus === 'lobby') {
+        // both agree we're in lobby — sync UI just in case
+        syncFindUI('lobby');
+      }
+      // if myStatus==='waiting' and server says 'lobby', ignore it —
+      // our ready msg is still in flight
     }
     if(myStatus!=='playing') renderLobby(msg);
     return;
@@ -771,6 +783,19 @@ function renderGame(msg){
 function buildBoard(photos,elimSet,isMyTurn){
   const grid=document.getElementById('board-grid');
   grid.innerHTML='';
+  const n=photos.length;
+
+  // Calculate best cols/rows to fill the grid area with no overflow
+  // Pick cols so that ceil(n/cols) rows fit nicely
+  let cols, rows;
+  if(n<=12)      { cols=4; rows=Math.ceil(n/4); }
+  else if(n<=15) { cols=5; rows=3; }
+  else if(n<=20) { cols=5; rows=4; }
+  else           { cols=5; rows=5; }
+
+  grid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  grid.style.gridTemplateRows=`repeat(${rows},1fr)`;
+
   photos.forEach(p=>{
     const isFlipped=elimSet.has(p.id);
     const c=document.createElement('div');
