@@ -8,19 +8,45 @@ const ADMIN_PASSWORD = 'xzone';
 const MAX_GUESSES = 3;
 const MAX_PHOTOS = 25;
 const DATA_DIR = fs.existsSync('/data') ? '/data' : __dirname;
-const PHOTOS_FILE = path.join(DATA_DIR, 'photos.json');
+const PHOTOS_FILE   = path.join(DATA_DIR, 'photos.json');
+const PRESETS_FILE  = path.join(DATA_DIR, 'presets.json');
 
+// All uploaded photos (the master library)
+let allPhotos = [];
+// Active game photos (current preset or randomised selection)
 let photos = [];
+// Presets: [{ id, name, photoIds[] }]
+let presets = [];
+
 try {
   if (fs.existsSync(PHOTOS_FILE)) {
-    photos = JSON.parse(fs.readFileSync(PHOTOS_FILE, 'utf8'));
-    console.log(`Loaded ${photos.length} photos from ${PHOTOS_FILE}`);
+    allPhotos = JSON.parse(fs.readFileSync(PHOTOS_FILE, 'utf8'));
+    photos = allPhotos; // default: use all
+    console.log('Loaded', allPhotos.length, 'photos');
   }
 } catch(e) { console.error('Failed to load photos:', e.message); }
 
+try {
+  if (fs.existsSync(PRESETS_FILE)) {
+    presets = JSON.parse(fs.readFileSync(PRESETS_FILE, 'utf8'));
+    console.log('Loaded', presets.length, 'presets');
+  }
+} catch(e) { console.error('Failed to load presets:', e.message); }
+
 function savePhotos() {
-  try { fs.writeFileSync(PHOTOS_FILE, JSON.stringify(photos)); }
-  catch(e) { console.error('Failed to save photos:', e.message); }
+  try { fs.writeFileSync(PHOTOS_FILE, JSON.stringify(allPhotos)); } catch(e) { console.error(e.message); }
+}
+function savePresets() {
+  try { fs.writeFileSync(PRESETS_FILE, JSON.stringify(presets)); } catch(e) { console.error(e.message); }
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 const server = http.createServer((req, res) => {
@@ -350,12 +376,61 @@ wss.on('connection', ws => {
       send(clientId, { type:'go_lobby' });
     }
 
+    // Add/replace the whole photo library
     else if (msg.type === 'admin_photos') {
       if (msg.password !== ADMIN_PASSWORD) { send(clientId, { type:'error', text:'Wrong password.' }); return; }
-      photos = (msg.photos||[]).slice(0, MAX_PHOTOS).map((p,i) => ({ id:i, src:p.src||p, name:p.name||'' }));
+      allPhotos = (msg.photos||[]).map((p,i) => ({ id:i, src:p.src||p, name:p.name||'' }));
+      photos = allPhotos; // reset active to all
       savePhotos();
       broadcastLobby();
-      send(clientId, { type:'admin_ok', text:`${photos.length} photos saved!` });
+      send(clientId, { type:'admin_ok', text:`${allPhotos.length} photos saved!` });
+      send(clientId, { type:'all_photos', photos: allPhotos.map(p=>({id:p.id,name:p.name})) });
+    }
+
+    // Activate a preset (set active game photos)
+    else if (msg.type === 'admin_activate_preset') {
+      if (msg.password !== ADMIN_PASSWORD) { send(clientId, { type:'error', text:'Wrong password.' }); return; }
+      if (msg.presetId === 'all') {
+        photos = allPhotos;
+      } else if (msg.presetId === 'random') {
+        const count = Math.min(msg.count || MAX_PHOTOS, allPhotos.length);
+        photos = shuffle(allPhotos).slice(0, count).map((p,i) => ({...p, id:i}));
+      } else {
+        const preset = presets.find(p => p.id === msg.presetId);
+        if (!preset) { send(clientId, { type:'error', text:'Preset not found.' }); return; }
+        photos = preset.photoIds.map(pid => allPhotos.find(p => p.id === pid)).filter(Boolean).map((p,i)=>({...p,id:i}));
+      }
+      broadcastLobby(); // sends active photos to all lobby clients
+      send(clientId, { type:'admin_ok', text:'Game photos updated!' });
+    }
+
+    // Save a preset
+    else if (msg.type === 'admin_save_preset') {
+      if (msg.password !== ADMIN_PASSWORD) { send(clientId, { type:'error', text:'Wrong password.' }); return; }
+      const existing = presets.find(p => p.id === msg.preset.id);
+      if (existing) {
+        Object.assign(existing, msg.preset);
+      } else {
+        presets.push({ id: String(Date.now()), name: msg.preset.name, photoIds: msg.preset.photoIds });
+      }
+      savePresets();
+      send(clientId, { type:'presets_update', presets: presets.map(p=>({id:p.id,name:p.name,count:p.photoIds.length})) });
+      send(clientId, { type:'admin_ok', text:'Preset saved!' });
+    }
+
+    // Delete a preset
+    else if (msg.type === 'admin_delete_preset') {
+      if (msg.password !== ADMIN_PASSWORD) { send(clientId, { type:'error', text:'Wrong password.' }); return; }
+      presets = presets.filter(p => p.id !== msg.presetId);
+      savePresets();
+      send(clientId, { type:'presets_update', presets: presets.map(p=>({id:p.id,name:p.name,count:p.photoIds.length})) });
+      send(clientId, { type:'admin_ok', text:'Preset deleted.' });
+    }
+
+    // Request full admin data (all photos + presets)
+    else if (msg.type === 'admin_get_data') {
+      if (msg.password !== ADMIN_PASSWORD) { send(clientId, { type:'error', text:'Wrong password.' }); return; }
+      send(clientId, { type:'admin_data', allPhotos, presets });
     }
 
     else if (msg.type === 'admin_delete_photo') {

@@ -398,18 +398,34 @@ body.dark .guess-counter { background:#450a0a; }
       </div>
     </div>
     <div class="admin-tab-panel" id="tab-photos">
-      <!-- FIX 1: shows currently saved photos from server -->
-      <div style="font-size:12px;color:var(--muted);margin-bottom:.65rem;">Photos are saved on the server and persist across restarts. Add or remove below.</div>
+      <div class="pass-row" style="margin-bottom:.5rem"><input type="password" id="admin-pass" placeholder="Admin password" onchange="loadAdminData()"></div>
+
+      <!-- LIBRARY -->
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">📚 Photo Library</div>
       <div class="photo-upload-zone" onclick="document.getElementById('admin-file').click()">
-        <div style="font-size:1.75rem">📸</div>
-        <strong style="font-size:13px">Click to add more photos</strong>
-        <p>Up to 25 total — JPG, PNG, WEBP</p>
+        <div style="font-size:1.5rem">📸</div>
+        <strong style="font-size:13px">Click to upload photos</strong>
+        <p>Add as many as you want — JPG, PNG, WEBP</p>
       </div>
       <input type="file" id="admin-file" accept="image/*" multiple>
       <div class="admin-count-line" id="admin-count"></div>
       <div class="photos-name-list" id="photos-name-list"></div>
-      <div class="pass-row"><input type="password" id="admin-pass" placeholder="Admin password"></div>
-      <button class="mbtn" style="width:100%" onclick="pushPhotos()">📤 Save & Push to All Players</button>
+      <button class="mbtn" style="width:100%;margin-bottom:.75rem" onclick="pushPhotos()">📤 Save Library</button>
+
+      <!-- PRESETS -->
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:.4rem 0">🎮 Presets (up to 3 fixed sets)</div>
+      <div id="presets-list" style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:.5rem"></div>
+      <button class="mbtn-ghost" style="width:100%;font-size:12px;margin-bottom:.75rem" onclick="createPreset()">+ Create new preset</button>
+
+      <!-- ACTIVE GAME PHOTOS -->
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:.4rem 0">▶ Active game photos</div>
+      <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:.5rem">
+        <button class="mbtn-ghost" style="font-size:12px;text-align:left" onclick="activatePreset('all')">🌐 Use all library photos</button>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <button class="mbtn-ghost" style="font-size:12px;flex:1;text-align:left" onclick="activateRandom()">🔀 Randomise — pick <input id="random-count" type="number" value="25" min="2" max="100" style="width:40px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:12px;background:var(--white);color:var(--text)" onclick="event.stopPropagation()"> random cards</button>
+        </div>
+      </div>
+
       <div class="admin-msg-line" id="admin-msg"></div>
     </div>
     <div class="admin-tab-panel" id="tab-manage">
@@ -570,14 +586,15 @@ function handle(msg){
     return;
   }
   if(msg.type==='game_state'){
-    // Merge server photo metadata with locally cached srcs
-    // (server omits src to keep messages small)
-    if(msg.photos && msg.photos.length > 0 && !msg.photos[0].src) {
+    // Merge photo srcs from cache — server only sends id+name to save bandwidth
+    if(msg.photos && msg.photos.length > 0) {
       msg.photos = msg.photos.map(p => {
+        if(p.src) return p; // already has src
         const cached = currentPhotos.find(cp => cp.id === p.id);
-        return cached ? cached : p;
+        return cached ? { ...p, src: cached.src } : p;
       });
     }
+    // Never overwrite currentPhotos with stripped data — keep the full srcs
     currentGame=msg;
     if(msg.phase==='pick') renderPick(msg);
     else if(msg.phase==='playing') renderGame(msg);
@@ -631,6 +648,23 @@ function handle(msg){
   if(msg.type==='admin_ok'){
     showAdminMsg('admin-msg',msg.text,'ok');
     showAdminMsg('manage-msg',msg.text,'ok');
+    return;
+  }
+  if(msg.type==='admin_data'){
+    allLibraryPhotos=(msg.allPhotos||[]);
+    adminPhotos=allLibraryPhotos.map(p=>({src:p.src,name:p.name||''}));
+    renderPhotosList();
+    serverPresets=msg.presets||[];
+    renderPresets();
+    return;
+  }
+  if(msg.type==='presets_update'){
+    serverPresets=msg.presets||[];
+    renderPresets();
+    return;
+  }
+  if(msg.type==='all_photos'){
+    // server confirms library saved
     return;
   }
   if(msg.type==='pick_ack') return;
@@ -1003,15 +1037,31 @@ function backToLobby(){
 // ══════════════════════════════════════
 //  FIX 1: ADMIN — sync with server photos
 // ══════════════════════════════════════
-function syncAdminPhotos(serverPhotos){
-  adminPhotos=serverPhotos.map(p=>({ src:p.src, name:p.name||'' }));
-  renderPhotosList();
-}
+// ── ADMIN STATE ──
+let allLibraryPhotos = []; // full library from server (with srcs)
+let serverPresets = [];    // [{ id, name, count }]
+let editingPreset = null;  // preset being edited
 
 function openAdmin(){
-  // Refresh admin photo list from current server photos
-  syncAdminPhotos(currentPhotos);
   document.getElementById('modal-admin').classList.add('show');
+  // Sync library from currentPhotos (which has srcs from welcome)
+  if(allLibraryPhotos.length===0 && currentPhotos.length>0){
+    allLibraryPhotos=currentPhotos.map(p=>({...p}));
+    adminPhotos=allLibraryPhotos.map(p=>({src:p.src,name:p.name||''}));
+    renderPhotosList();
+  }
+}
+
+function loadAdminData(){
+  const pass=document.getElementById('admin-pass').value;
+  if(!pass) return;
+  wsSend({type:'admin_get_data', password:pass});
+}
+
+function syncAdminPhotos(serverPhotos){
+  allLibraryPhotos=serverPhotos.map(p=>({...p}));
+  adminPhotos=allLibraryPhotos.map(p=>({src:p.src,name:p.name||''}));
+  renderPhotosList();
 }
 
 function switchAdminTab(name,btn){
@@ -1072,6 +1122,68 @@ function hardReset(){
   if(!pass){ showAdminMsg('manage-msg','Enter the admin password.','err'); return; }
   if(!confirm('Hard reset — send everyone back to lobby and clear all games?')) return;
   wsSend({type:'admin_reset',password:pass});
+}
+
+function renderPresets(){
+  const wrap=document.getElementById('presets-list');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  if(!serverPresets.length){
+    wrap.innerHTML='<div style="font-size:12px;color:var(--muted);padding:.4rem 0">No presets yet. Create one below.</div>';
+    return;
+  }
+  serverPresets.forEach(p=>{
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:.5rem;background:var(--off);border:1px solid var(--border);border-radius:8px;padding:.45rem .65rem';
+    d.innerHTML=`<div style="flex:1"><div style="font-size:13px;font-weight:700">${esc(p.name)}</div><div style="font-size:11px;color:var(--muted)">${p.count} photos</div></div>
+      <button onclick="activatePreset('${p.id}')" style="padding:4px 10px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">▶ Use</button>
+      <button onclick="editPreset('${p.id}')" style="padding:4px 10px;background:var(--off);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer">✏️</button>
+      <button onclick="deletePreset('${p.id}')" style="padding:4px 10px;background:#fee2e2;color:var(--red);border:none;border-radius:6px;font-size:11px;cursor:pointer">✕</button>`;
+    wrap.appendChild(d);
+  });
+}
+
+function createPreset(){
+  const pass=document.getElementById('admin-pass').value;
+  if(!pass){ showAdminMsg('admin-msg','Enter password first.','err'); return; }
+  if(serverPresets.length>=3){ showAdminMsg('admin-msg','Max 3 presets.','err'); return; }
+  if(!allLibraryPhotos.length){ showAdminMsg('admin-msg','Upload photos to library first.','err'); return; }
+  const name=prompt('Preset name (e.g. "Game Night Set 1"):');
+  if(!name) return;
+  // Show a picker — for now just use all library photos as default
+  const photoIds=allLibraryPhotos.map(p=>p.id);
+  wsSend({type:'admin_save_preset',password:pass,preset:{name,photoIds}});
+}
+
+function editPreset(presetId){
+  const pass=document.getElementById('admin-pass').value;
+  if(!pass){ showAdminMsg('admin-msg','Enter password first.','err'); return; }
+  const preset=serverPresets.find(p=>p.id===presetId);
+  if(!preset) return;
+  const name=prompt('Rename preset:',preset.name);
+  if(!name) return;
+  // Keep same photos, just rename
+  wsSend({type:'admin_save_preset',password:pass,preset:{id:presetId,name,photoIds:allLibraryPhotos.map(p=>p.id)}});
+}
+
+function deletePreset(presetId){
+  const pass=document.getElementById('admin-pass').value;
+  if(!pass){ showAdminMsg('admin-msg','Enter password first.','err'); return; }
+  if(!confirm('Delete this preset?')) return;
+  wsSend({type:'admin_delete_preset',password:pass,presetId});
+}
+
+function activatePreset(presetId){
+  const pass=document.getElementById('admin-pass').value;
+  if(!pass){ showAdminMsg('admin-msg','Enter password first.','err'); return; }
+  wsSend({type:'admin_activate_preset',password:pass,presetId});
+}
+
+function activateRandom(){
+  const pass=document.getElementById('admin-pass').value;
+  if(!pass){ showAdminMsg('admin-msg','Enter password first.','err'); return; }
+  const count=parseInt(document.getElementById('random-count').value)||25;
+  wsSend({type:'admin_activate_preset',password:pass,presetId:'random',count});
 }
 
 function showAdminMsg(id,text,type){
