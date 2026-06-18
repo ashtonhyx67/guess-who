@@ -5,370 +5,321 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Guess Who?</title>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --red:#f54251; --red-dk:#c0303d; --red-lt:#fde8ea;
-  --white:#fff; --off:#f5f5f5; --border:#e5e5e5;
-  --text:#1a1a1a; --muted:#888; --radius:12px;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#f54251;--red-dk:#c0303d;--red-lt:#fde8ea;
+  --white:#fff;--off:#f5f5f5;--border:#e5e5e5;
+  --text:#1a1a1a;--muted:#888;--r:12px;
 }
-body.dark { --white:#111; --off:#1a1a1a; --border:#2e2e2e; --text:#f1f1f1; --muted:#666; }
-html,body { height:100%; background:var(--off); color:var(--text); font-family:'Segoe UI',system-ui,Arial,sans-serif; overflow:hidden; }
-.page { display:none; width:100vw; height:100vh; height:100dvh; flex-direction:column; }
-.page.active { display:flex; }
+body.dark{--white:#111;--off:#1a1a1a;--border:#2e2e2e;--text:#f1f1f1;--muted:#666}
+html,body{height:100%;background:var(--off);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden}
+.page{display:none;width:100vw;height:100vh;height:100dvh;flex-direction:column}
+.page.active{display:flex}
 
 /* TOPBAR */
-.topbar { height:52px; background:var(--red); color:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 1.25rem; flex-shrink:0; box-shadow:0 2px 8px rgba(245,66,81,.3); }
-.topbar-logo { font-size:1.1rem; font-weight:900; letter-spacing:2px; }
-.topbar-sub { font-size:10px; opacity:.75; margin-top:1px; }
-.topbar-right { display:flex; gap:.4rem; align-items:center; }
-.pill { padding:5px 14px; border-radius:20px; border:1.5px solid rgba(255,255,255,.5); background:transparent; color:#fff; font-size:12px; font-weight:600; cursor:pointer; transition:background .15s; white-space:nowrap; }
-.pill:hover { background:rgba(255,255,255,.18); }
-.pill.solid { background:#fff; color:var(--red); border-color:#fff; }
-.pill.solid:hover { background:#ffe4e6; }
-.pill:disabled { opacity:.4; cursor:not-allowed; }
+.tb{height:52px;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem;flex-shrink:0;box-shadow:0 2px 8px rgba(245,66,81,.3)}
+.tb-logo{font-size:1.1rem;font-weight:900;letter-spacing:2px}
+.tb-sub{font-size:10px;opacity:.75;margin-top:1px}
+.tb-right{display:flex;gap:.4rem;align-items:center}
+.pill{padding:5px 14px;border-radius:20px;border:1.5px solid rgba(255,255,255,.5);background:transparent;color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s;white-space:nowrap}
+.pill:hover{background:rgba(255,255,255,.18)}
+.pill.solid{background:#fff;color:var(--red);border-color:#fff}
+.pill.solid:hover{background:#ffe4e6}
+.pill:disabled{opacity:.4;cursor:not-allowed}
 
 /* JOIN */
-#page-join { align-items:center; justify-content:center; background:linear-gradient(135deg,#fff 0%,#ffe8ea 100%); }
-body.dark #page-join { background:linear-gradient(135deg,#111 0%,#2a0a0e 100%); }
-.join-card { background:var(--white); border-radius:20px; padding:2.5rem; width:100%; max-width:400px; box-shadow:0 8px 40px rgba(245,66,81,.15); border:1.5px solid var(--border); }
-.join-logo { font-size:2.8rem; font-weight:900; color:var(--red); letter-spacing:3px; }
-.join-tagline { color:var(--muted); font-size:13px; margin:.2rem 0 1.75rem; }
-.field-lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:.35rem; }
-.txt-input { width:100%; padding:10px 13px; border:1.5px solid var(--border); border-radius:var(--radius); color:var(--text); font-size:14px; background:var(--off); outline:none; margin-bottom:.85rem; transition:border-color .15s; }
-.txt-input:focus { border-color:var(--red); background:var(--white); }
-.big-btn { width:100%; padding:12px; background:var(--red); color:#fff; border:none; border-radius:var(--radius); font-size:15px; font-weight:800; cursor:pointer; transition:background .15s,transform .1s; }
-.big-btn:hover { background:var(--red-dk); }
-.big-btn:active { transform:scale(.98); }
-.big-btn:disabled { background:#ccc; color:#999; cursor:not-allowed; transform:none; }
+#pg-join{align-items:center;justify-content:center;background:linear-gradient(135deg,#fff,#ffe8ea)}
+body.dark #pg-join{background:linear-gradient(135deg,#111,#2a0a0e)}
+.join-box{background:var(--white);border-radius:20px;padding:2.5rem;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(245,66,81,.15);border:1.5px solid var(--border)}
+.join-logo{font-size:2.8rem;font-weight:900;color:var(--red);letter-spacing:3px}
+.join-sub{color:var(--muted);font-size:13px;margin:.25rem 0 1.75rem}
+.lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.35rem}
+.inp{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-size:14px;background:var(--off);outline:none;margin-bottom:.85rem;transition:border-color .15s}
+.inp:focus{border-color:var(--red);background:var(--white)}
+.big-btn{width:100%;padding:12px;background:var(--red);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:800;cursor:pointer;transition:background .15s,transform .1s}
+.big-btn:hover{background:var(--red-dk)}
+.big-btn:active{transform:scale(.98)}
+.big-btn:disabled{background:#ccc;color:#999;cursor:not-allowed;transform:none}
 
 /* LOBBY */
-#page-lobby { background:var(--off); }
-.lobby-body { flex:1; overflow-y:auto; display:flex; flex-direction:column; }
-.lobby-top { padding:1rem 1.25rem .85rem; border-bottom:1.5px solid var(--border); background:var(--white); flex-shrink:0; }
-.lobby-top h3 { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:.6rem; display:flex; align-items:center; gap:.35rem; }
-.dot-green { width:7px; height:7px; border-radius:50%; background:#22c55e; display:inline-block; }
-.players-row { display:flex; flex-wrap:wrap; gap:.4rem; }
-.player-chip { display:flex; align-items:center; gap:.4rem; background:var(--off); border:1.5px solid var(--border); border-radius:30px; padding:4px 11px 4px 4px; font-size:12px; font-weight:600; }
-.player-chip .av { width:24px; height:24px; border-radius:50%; background:var(--red); color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; }
-.chip-badge { font-size:10px; padding:2px 6px; border-radius:10px; font-weight:700; background:var(--red-lt); color:var(--red); margin-left:2px; }
-.chip-badge.playing { background:#e0f2fe; color:#0369a1; }
-.chip-badge.ready { background:#dcfce7; color:#15803d; }
-.lobby-bottom { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:1.5rem; gap:1.25rem; }
-.find-game-btn { padding:16px 52px; background:var(--red); color:#fff; border:none; border-radius:50px; font-size:1rem; font-weight:800; cursor:pointer; box-shadow:0 6px 24px rgba(245,66,81,.35); letter-spacing:.5px; transition:background .15s,transform .1s; }
-.find-game-btn:hover { background:var(--red-dk); transform:translateY(-1px); }
-.find-game-btn.searching { background:var(--off); color:var(--red); border:2px solid var(--red); box-shadow:none; cursor:default; }
-.find-sub { font-size:12px; color:var(--muted); margin-top:.4rem; text-align:center; }
-.queue-area { width:100%; max-width:500px; background:var(--white); border:1.5px solid var(--border); border-radius:14px; padding:1rem; display:none; }
-.queue-area.show { display:block; }
-.queue-title { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:.6rem; display:flex; align-items:center; gap:.4rem; }
-.rpulse { width:7px; height:7px; border-radius:50%; background:var(--red); animation:rp 1s infinite; display:inline-block; }
-@keyframes rp { 0%,100%{opacity:1} 50%{opacity:.3} }
-.queue-empty { font-size:13px; color:var(--muted); text-align:center; padding:.75rem 0; }
-.queue-item { display:flex; align-items:center; gap:.65rem; padding:.55rem .65rem; background:var(--off); border-radius:9px; border:1.5px solid var(--border); margin-bottom:.4rem; }
-.qav { width:30px; height:30px; border-radius:50%; background:var(--red); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0; }
-.qname { font-size:13px; font-weight:600; }
-.qsub { font-size:10px; color:var(--muted); }
-.challenge-btn { margin-left:auto; padding:5px 14px; background:var(--red); color:#fff; border:none; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap; }
-.challenge-btn:hover { background:var(--red-dk); }
-.challenge-btn.sent { background:#ccc; color:#666; cursor:not-allowed; }
-.cancel-find-btn { padding:7px 22px; background:transparent; color:var(--red); border:1.5px solid var(--red); border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; }
-.cancel-find-btn:hover { background:var(--red-lt); }
+#pg-lobby{background:var(--off)}
+.lobby-body{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.lobby-top{padding:.85rem 1.25rem;border-bottom:1.5px solid var(--border);background:var(--white);flex-shrink:0}
+.lobby-top h3{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.6rem;display:flex;align-items:center;gap:.35rem}
+.dot-g{width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block}
+.players-row{display:flex;flex-wrap:wrap;gap:.4rem}
+.pchip{display:flex;align-items:center;gap:.4rem;background:var(--off);border:1.5px solid var(--border);border-radius:30px;padding:4px 11px 4px 4px;font-size:12px;font-weight:600}
+.pchip .av{width:24px;height:24px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.cbadge{font-size:10px;padding:2px 6px;border-radius:10px;font-weight:700;background:var(--red-lt);color:var(--red);margin-left:2px}
+.cbadge.playing{background:#e0f2fe;color:#0369a1}
+.cbadge.ready{background:#dcfce7;color:#15803d}
+.lobby-bottom{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;gap:1.25rem}
+.find-btn{padding:16px 52px;background:var(--red);color:#fff;border:none;border-radius:50px;font-size:1rem;font-weight:800;cursor:pointer;box-shadow:0 6px 24px rgba(245,66,81,.35);transition:background .15s,transform .1s}
+.find-btn:hover{background:var(--red-dk);transform:translateY(-1px)}
+.find-btn.searching{background:var(--off);color:var(--red);border:2px solid var(--red);box-shadow:none;cursor:default;transform:none}
+.find-sub{font-size:12px;color:var(--muted);margin-top:.4rem;text-align:center}
+.queue-box{width:100%;max-width:500px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:1rem;display:none}
+.queue-box.show{display:block}
+.q-title{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
+.rpulse{width:7px;height:7px;border-radius:50%;background:var(--red);animation:rp 1s infinite;display:inline-block}
+@keyframes rp{0%,100%{opacity:1}50%{opacity:.3}}
+.q-empty{font-size:13px;color:var(--muted);text-align:center;padding:.75rem 0}
+.q-item{display:flex;align-items:center;gap:.65rem;padding:.55rem .65rem;background:var(--off);border-radius:9px;border:1.5px solid var(--border);margin-bottom:.4rem}
+.q-av{width:30px;height:30px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+.cancel-btn{padding:7px 22px;background:transparent;color:var(--red);border:1.5px solid var(--red);border-radius:20px;font-size:12px;font-weight:600;cursor:pointer}
+.cancel-btn:hover{background:var(--red-lt)}
+.chal-btn{margin-left:auto;padding:5px 14px;background:var(--red);color:#fff;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+.chal-btn:hover{background:var(--red-dk)}
+.chal-btn.sent{background:#ccc;color:#666;cursor:not-allowed}
 
 /* LOADING */
-#page-loading { align-items:center; justify-content:center; background:linear-gradient(135deg,var(--white) 0%,var(--red-lt) 100%); }
-body.dark #page-loading { background:linear-gradient(135deg,#111 0%,#2a0a0e 100%); }
-.loading-card { background:var(--white); border-radius:20px; padding:2.5rem 2rem; text-align:center; max-width:380px; width:92%; box-shadow:0 8px 40px rgba(245,66,81,.15); border:1.5px solid var(--border); }
-.vs-line { font-size:1.8rem; font-weight:900; margin-bottom:.4rem; }
-.vs-line span { color:var(--red); }
-.loading-card h2 { font-size:1.35rem; font-weight:800; color:var(--red); margin-bottom:.3rem; }
-.loading-card p { color:var(--muted); font-size:13px; margin-bottom:1.75rem; }
-.prog-bar { width:100%; height:5px; background:var(--border); border-radius:3px; overflow:hidden; }
-.prog-fill { height:100%; background:var(--red); border-radius:3px; width:0%; transition:width 3s linear; }
-.ld-dots { display:flex; justify-content:center; gap:5px; margin-top:1rem; }
-.ld-dots span { width:7px; height:7px; border-radius:50%; background:var(--red); opacity:.3; animation:pulse 1.2s infinite; }
-.ld-dots span:nth-child(2){animation-delay:.2s} .ld-dots span:nth-child(3){animation-delay:.4s}
-@keyframes pulse { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+#pg-load{align-items:center;justify-content:center;background:linear-gradient(135deg,var(--white),var(--red-lt))}
+body.dark #pg-load{background:linear-gradient(135deg,#111,#2a0a0e)}
+.load-box{background:var(--white);border-radius:20px;padding:2.5rem 2rem;text-align:center;max-width:380px;width:92%;box-shadow:0 8px 40px rgba(245,66,81,.15);border:1.5px solid var(--border)}
+.vs-line{font-size:1.8rem;font-weight:900;margin-bottom:.4rem}
+.vs-line span{color:var(--red)}
+.load-box h2{font-size:1.35rem;font-weight:800;color:var(--red);margin-bottom:.3rem}
+.load-box p{color:var(--muted);font-size:13px;margin-bottom:1.75rem}
+.prog{width:100%;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:var(--red);border-radius:3px;width:0%;transition:width 3s linear}
+.dots{display:flex;justify-content:center;gap:5px;margin-top:1rem}
+.dots span{width:7px;height:7px;border-radius:50%;background:var(--red);opacity:.3;animation:pulse 1.2s infinite}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{opacity:.2}40%{opacity:1}}
 
 /* PICK */
-#page-pick { background:var(--off); }
-.pick-topbar { background:var(--white); border-bottom:1.5px solid var(--border); padding:.85rem 1.25rem; flex-shrink:0; text-align:center; }
-.pick-topbar h2 { font-size:1.2rem; font-weight:800; color:var(--red); }
-.pick-topbar p { font-size:12px; color:var(--muted); margin-top:.2rem; }
-.pick-scroll { flex:1; overflow-y:auto; padding:1rem 1.25rem; }
-.pick-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; max-width:1100px; margin:0 auto; }
-.pick-card { aspect-ratio:3/4; border-radius:var(--radius); overflow:hidden; border:3px solid var(--border); cursor:pointer; position:relative; transition:border-color .15s,transform .15s; background:var(--white); display:flex; flex-direction:column; }
-.pick-card .pimg { flex:1; overflow:hidden; }
-.pick-card .pimg img { width:100%; height:100%; object-fit:cover; display:block; }
-.pick-card .pname { font-size:12px; font-weight:700; text-align:center; padding:5px 4px 6px; background:var(--white); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-top:1px solid var(--border); }
-.pick-card:hover:not(.disabled) { border-color:var(--red); transform:scale(1.04); }
-.pick-card.chosen { border-color:var(--red); box-shadow:0 0 0 3px rgba(245,66,81,.2); }
-.pick-card.taken { opacity:.3; cursor:not-allowed; }
-.pick-tick { position:absolute; top:5px; right:5px; background:var(--red); color:#fff; width:22px; height:22px; border-radius:50%; display:none; align-items:center; justify-content:center; font-size:12px; font-weight:900; }
-.pick-card.chosen .pick-tick { display:flex; }
-.pick-footer { background:var(--white); border-top:1.5px solid var(--border); padding:.75rem 1.25rem; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:1rem; }
-.pick-status { font-size:12px; color:var(--muted); }
-.confirm-btn { padding:9px 28px; background:var(--red); color:#fff; border:none; border-radius:var(--radius); font-size:13px; font-weight:700; cursor:pointer; }
-.confirm-btn:hover { background:var(--red-dk); }
-.confirm-btn:disabled { background:#ccc; color:#999; cursor:not-allowed; }
+#pg-pick{background:var(--off)}
+.pick-hdr{background:var(--white);border-bottom:1.5px solid var(--border);padding:.85rem 1.25rem;flex-shrink:0;text-align:center}
+.pick-hdr h2{font-size:1.2rem;font-weight:800;color:var(--red)}
+.pick-hdr p{font-size:12px;color:var(--muted);margin-top:.2rem}
+.pick-scroll{flex:1;overflow-y:auto;padding:.75rem}
+.pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;max-width:960px;margin:0 auto}
+.pick-card{border-radius:var(--r);overflow:hidden;border:3px solid var(--border);cursor:pointer;position:relative;transition:border-color .15s,transform .15s;background:var(--white)}
+.pick-card .pimg{aspect-ratio:3/4;overflow:hidden}
+.pick-card .pimg img{width:100%;height:100%;object-fit:cover;display:block}
+.pick-card .pname{font-size:11px;font-weight:700;text-align:center;padding:4px 4px 5px;background:var(--white);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:1px solid var(--border)}
+.pick-card:hover:not(.disabled){border-color:var(--red);transform:scale(1.03)}
+.pick-card.chosen{border-color:var(--red);box-shadow:0 0 0 3px rgba(245,66,81,.2)}
+.pick-tick{position:absolute;top:6px;right:6px;background:var(--red);color:#fff;width:22px;height:22px;border-radius:50%;display:none;align-items:center;justify-content:center;font-size:12px;font-weight:900}
+.pick-card.chosen .pick-tick{display:flex}
+.pick-foot{background:var(--white);border-top:1.5px solid var(--border);padding:.75rem 1.25rem;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.pick-status{font-size:12px;color:var(--muted)}
+.confirm-btn{padding:9px 28px;background:var(--red);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer}
+.confirm-btn:hover{background:var(--red-dk)}
+.confirm-btn:disabled{background:#ccc;color:#999;cursor:not-allowed}
 
-/* FIX 5: GAME — no scroll, all fits */
-#page-game { background:var(--off); overflow:hidden; }
-/* ── GAME LAYOUT: everything fits one screen, no scroll ── */
-#page-game { overflow:hidden; height:100vh; height:100dvh; }
-.game-inner {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding: 4px 8px 6px;
-  gap: 4px;
-  min-height: 0;
-}
-
-/* Turn banner — single thin line */
-.turn-banner { border-radius:8px; padding:4px 10px; font-size:12px; font-weight:700; text-align:center; flex-shrink:0; line-height:1.3; }
-.turn-banner.mine { background:#dcfce7; color:#15803d; border:1.5px solid #86efac; }
-.turn-banner.theirs { background:var(--red-lt); color:var(--red-dk); border:1.5px solid #fca5a5; }
-body.dark .turn-banner.mine { background:#14532d; color:#86efac; }
-body.dark .turn-banner.theirs { background:#450a0a; color:#fca5a5; }
-
-/* Compact single-row info strip */
-.game-info-row {
-  display: flex; align-items: center; gap: 6px;
-  background: var(--white); border: 1.5px solid var(--border);
-  border-radius: 8px; padding: 5px 10px; flex-shrink: 0;
-}
-.info-divider { width:1px; height:24px; background:var(--border); flex-shrink:0; }
-.info-card { background:transparent; border:none; border-radius:0; padding:0; display:flex; align-items:center; gap:6px; flex:1; }
-.info-card .lbl { display:none; }
-.secret-row { display:flex; align-items:center; gap:5px; }
-.secret-thumb { width:24px; height:30px; border-radius:4px; overflow:hidden; border:1.5px solid var(--red); flex-shrink:0; }
-.secret-thumb img { width:100%; height:100%; object-fit:cover; }
-.secret-label { font-size:10px; color:var(--muted); font-weight:600; }
-.secret-desc { display:none; }
-.opp-row { display:flex; align-items:center; gap:5px; }
-.opp-av { width:22px; height:22px; border-radius:50%; background:var(--red-lt); color:var(--red); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; }
-body.dark .opp-av { background:#2a0a0e; }
-.opp-name { font-size:11px; font-weight:700; }
-.opp-elim { font-size:10px; color:var(--muted); margin-left:4px; }
-.guess-counter { display:inline-flex; align-items:center; gap:2px; background:var(--red-lt); color:var(--red); border-radius:20px; padding:1px 6px; font-size:10px; font-weight:700; margin-left:4px; }
-body.dark .guess-counter { background:#450a0a; }
-
-/* Board — scrollable so all cards fully visible */
-.board-section { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:4px; }
-.board-hint { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; flex-shrink:0; }
-
-/* Grid — 5 columns, rows grow naturally to show full cards */
-.board-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-}
-
-/* Cards: portrait aspect ratio, fully visible including name */
-.flip-card { perspective:800px; cursor:pointer; }
-.flip-card-inner-wrap { position:relative; padding-bottom:130%; /* 3:4 ratio + name space */ }
-.flip-inner { position:absolute; inset:0; transform-style:preserve-3d; transition:transform .3s ease; border-radius:8px; }
-.flip-card.flipped .flip-inner { transform:rotateY(180deg); }
-.flip-card.flipped { cursor:default; }
-.flip-card.blocked { cursor:not-allowed; opacity:0.85; }
-.flip-card.reversible { cursor:pointer; }
-.flip-card.reversible .flip-back { background:#e85560; }
-.flip-face { position:absolute; inset:0; backface-visibility:hidden; border-radius:8px; overflow:hidden; border:1.5px solid var(--border); display:flex; flex-direction:column; }
-.flip-front { background:var(--white); }
-.flip-front .fimg { flex:1; overflow:hidden; min-height:0; }
-.flip-front .fimg img { width:100%; height:100%; object-fit:cover; display:block; }
-.flip-front .fname { font-size:10px; font-weight:700; text-align:center; padding:3px 4px 4px; background:var(--white); color:var(--text); border-top:1px solid var(--border); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; line-height:1.3; }
-.flip-back { background:var(--red); transform:rotateY(180deg); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:2px; }
-.flip-back .xmark { font-size:1.8rem; font-weight:900; color:rgba(255,255,255,.35); line-height:1; }
-.flip-back .out-lbl { font-size:8px; color:rgba(255,255,255,.45); font-weight:700; text-transform:uppercase; letter-spacing:1px; }
-
-/* Action buttons — compact but still clearly clickable */
-.game-actions { display:grid; grid-template-columns:1fr 1fr; gap:5px; flex-shrink:0; }
-.action-btn { padding:8px 10px; border:none; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; transition:background .15s,transform .1s; }
-.action-btn:active { transform:scale(.97); }
-.action-btn.end { background:var(--off); color:var(--text); border:1.5px solid var(--border); }
-.action-btn.end:hover:not(:disabled) { background:var(--border); }
-.action-btn.guess { background:var(--red); color:#fff; box-shadow:0 3px 12px rgba(245,66,81,.3); }
-.action-btn.guess:hover:not(:disabled) { background:var(--red-dk); }
-.action-btn:disabled { opacity:.4; cursor:not-allowed; transform:none !important; }
-
-/* SNIPE PHASE */
-.snipe-banner { background:#7c3aed; color:#fff; border-radius:var(--radius); padding:.7rem 1rem; font-size:13px; font-weight:700; text-align:center; flex-shrink:0; }
+/* GAME */
+#pg-game{background:var(--off);overflow:hidden}
+.game-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:5px 8px 6px;gap:4px;min-height:0}
+.turn-banner{border-radius:8px;padding:5px 10px;font-size:13px;font-weight:700;text-align:center;flex-shrink:0}
+.turn-banner.mine{background:#dcfce7;color:#15803d;border:1.5px solid #86efac}
+.turn-banner.theirs{background:var(--red-lt);color:var(--red-dk);border:1.5px solid #fca5a5}
+body.dark .turn-banner.mine{background:#14532d;color:#86efac}
+body.dark .turn-banner.theirs{background:#450a0a;color:#fca5a5}
+.info-row{display:flex;align-items:center;gap:8px;background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;flex-shrink:0}
+.secret-thumb{width:28px;height:34px;border-radius:4px;overflow:hidden;border:2px solid var(--red);flex-shrink:0;cursor:pointer}
+.secret-thumb img{width:100%;height:100%;object-fit:cover}
+.info-sep{width:1px;height:24px;background:var(--border);flex-shrink:0}
+.opp-av{width:24px;height:24px;border-radius:50%;background:var(--red-lt);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+body.dark .opp-av{background:#2a0a0e}
+.info-text{font-size:11px}
+.info-name{font-weight:700}
+.info-muted{color:var(--muted);font-size:10px}
+.gcounter{display:inline-flex;align-items:center;background:var(--red-lt);color:var(--red);border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px}
+body.dark .gcounter{background:#450a0a}
+.board-wrap{flex:1;overflow-y:auto;min-height:0}
+.board-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding-bottom:2px}
+/* Each card: portrait shape, fully visible */
+.card{position:relative;cursor:pointer}
+.card-inner{border-radius:7px;overflow:hidden;border:1.5px solid var(--border);background:var(--white);transition:opacity .2s}
+.card-img{aspect-ratio:3/4;overflow:hidden}
+.card-img img{width:100%;height:100%;object-fit:cover;display:block}
+.card-name{font-size:9px;font-weight:700;text-align:center;padding:2px 3px 3px;background:var(--white);color:var(--text);border-top:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.card.elim .card-inner{opacity:.25}
+.card.elim .card-overlay{display:flex}
+.card-overlay{display:none;position:absolute;inset:0;background:var(--red);border-radius:7px;align-items:center;justify-content:center;flex-direction:column;gap:2px}
+.card-overlay .xmark{font-size:1.6rem;font-weight:900;color:rgba(255,255,255,.5);line-height:1}
+.card-overlay .out{font-size:8px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.card.blocked{cursor:not-allowed}
+.card.reversible{cursor:pointer}
+.card.reversible .card-overlay{background:#e85560}
+.game-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px;flex-shrink:0}
+.act-btn{padding:10px;border:none;border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;transition:background .15s}
+.act-btn:disabled{opacity:.4;cursor:not-allowed}
+.act-btn.end{background:var(--off);color:var(--text);border:1.5px solid var(--border)}
+.act-btn.end:hover:not(:disabled){background:var(--border)}
+.act-btn.guess{background:var(--red);color:#fff;box-shadow:0 3px 12px rgba(245,66,81,.3)}
+.act-btn.guess:hover:not(:disabled){background:var(--red-dk)}
 
 /* MODALS */
-.overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:200; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
-.overlay.show { display:flex; }
-.modal { background:var(--white); border-radius:18px; padding:1.75rem; max-width:400px; width:92%; text-align:center; box-shadow:0 24px 64px rgba(0,0,0,.2); border:1.5px solid var(--border); animation:pop .3s cubic-bezier(.34,1.56,.64,1); }
-@keyframes pop { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:scale(1)} }
-.modal h2 { font-size:1.25rem; font-weight:800; margin-bottom:.35rem; }
-.modal p { color:var(--muted); font-size:13px; margin-bottom:1.1rem; line-height:1.5; }
-.modal-photo { width:90px; height:108px; border-radius:11px; overflow:hidden; margin:0 auto .9rem; border:3px solid var(--red); }
-.modal-photo img { width:100%; height:100%; object-fit:cover; }
-.result-emoji { font-size:3rem; margin-bottom:.4rem; }
-.guess-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(75px,1fr)); gap:7px; max-height:280px; overflow-y:auto; margin-bottom:.9rem; }
-.guess-opt { border-radius:7px; overflow:hidden; border:3px solid var(--border); cursor:pointer; position:relative; transition:border-color .15s,transform .1s; background:var(--white); }
-.guess-opt .gimg { aspect-ratio:3/4; overflow:hidden; }
-.guess-opt .gimg img { width:100%; height:100%; object-fit:cover; display:block; }
-.guess-opt .gname { font-size:9px; font-weight:700; text-align:center; padding:2px 2px 3px; border-top:1px solid var(--border); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.guess-opt:hover { border-color:var(--red); transform:scale(1.04); }
-.guess-opt.sel { border-color:var(--red); box-shadow:0 0 0 2px rgba(245,66,81,.2); }
-.guess-opt .gtick { position:absolute; top:4px; right:4px; background:var(--red); color:#fff; width:18px; height:18px; border-radius:50%; display:none; align-items:center; justify-content:center; font-size:10px; font-weight:900; }
-.guess-opt.sel .gtick { display:flex; }
-.mbtns { display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; }
-.mbtn { padding:9px 22px; background:var(--red); color:#fff; border:none; border-radius:var(--radius); font-size:13px; font-weight:700; cursor:pointer; }
-.mbtn:hover { background:var(--red-dk); }
-.mbtn:disabled { background:#ccc; color:#999; cursor:not-allowed; }
-.mbtn-ghost { padding:9px 22px; background:transparent; color:var(--muted); border:1.5px solid var(--border); border-radius:var(--radius); font-size:13px; cursor:pointer; }
-.mbtn-ghost:hover { background:var(--off); color:var(--text); }
-.confirm-pick-photo { width:100px; height:120px; border-radius:11px; overflow:hidden; margin:0 auto .9rem; border:3px solid var(--red); }
-.confirm-pick-photo img { width:100%; height:100%; object-fit:cover; }
-.confirm-pick-name { font-size:1rem; font-weight:800; margin-bottom:.35rem; }
-
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.overlay.show{display:flex}
+.modal{background:var(--white);border-radius:18px;padding:1.75rem;max-width:400px;width:92%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.2);border:1.5px solid var(--border);animation:pop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.modal h2{font-size:1.25rem;font-weight:800;margin-bottom:.35rem}
+.modal p{color:var(--muted);font-size:13px;margin-bottom:1.1rem;line-height:1.5}
+.modal-photo{width:90px;height:108px;border-radius:11px;overflow:hidden;margin:0 auto .9rem;border:3px solid var(--red)}
+.modal-photo img{width:100%;height:100%;object-fit:cover}
+.res-emoji{font-size:3rem;margin-bottom:.4rem}
+.guess-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(75px,1fr));gap:7px;max-height:300px;overflow-y:auto;margin-bottom:.9rem}
+.go{border-radius:7px;overflow:hidden;border:3px solid var(--border);cursor:pointer;position:relative;transition:border-color .15s,transform .1s;background:var(--white)}
+.go .gi{aspect-ratio:3/4;overflow:hidden}
+.go .gi img{width:100%;height:100%;object-fit:cover;display:block}
+.go .gn{font-size:9px;font-weight:700;text-align:center;padding:2px;border-top:1px solid var(--border);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.go:hover{border-color:var(--red);transform:scale(1.04)}
+.go.sel{border-color:var(--red);box-shadow:0 0 0 2px rgba(245,66,81,.2)}
+.go .gt{position:absolute;top:4px;right:4px;background:var(--red);color:#fff;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;font-size:10px;font-weight:900}
+.go.sel .gt{display:flex}
+.mbtns{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}
+.mbtn{padding:9px 22px;background:var(--red);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer}
+.mbtn:hover{background:var(--red-dk)}
+.mbtn:disabled{background:#ccc;color:#999;cursor:not-allowed}
+.mbtn-g{padding:9px 22px;background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;cursor:pointer}
+.mbtn-g:hover{background:var(--off);color:var(--text)}
+/* confirm pick */
+.cpic{width:100px;height:130px;border-radius:10px;overflow:hidden;margin:0 auto .9rem;border:3px solid var(--red)}
+.cpic img{width:100%;height:100%;object-fit:cover}
 /* challenge toast */
-.challenge-notif { position:fixed; bottom:1.25rem; left:50%; transform:translateX(-50%); background:var(--white); border:1.5px solid var(--border); border-radius:14px; padding:1.1rem 1.25rem; box-shadow:0 8px 32px rgba(0,0,0,.18); z-index:300; min-width:280px; text-align:center; display:none; animation:slideUp .3s ease; }
-.challenge-notif.show { display:block; }
-@keyframes slideUp { from{opacity:0;transform:translateX(-50%) translateY(16px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-.challenge-notif h3 { font-size:.95rem; font-weight:800; margin-bottom:.25rem; }
-.challenge-notif p { font-size:12px; color:var(--muted); margin-bottom:.85rem; }
-.chal-btns { display:flex; gap:.4rem; justify-content:center; }
-.accept-btn { padding:7px 20px; background:var(--red); color:#fff; border:none; border-radius:var(--radius); font-size:12px; font-weight:700; cursor:pointer; }
-.accept-btn:hover { background:var(--red-dk); }
-.decline-btn { padding:7px 16px; background:transparent; color:var(--muted); border:1.5px solid var(--border); border-radius:var(--radius); font-size:12px; cursor:pointer; }
-.decline-btn:hover { background:var(--off); }
+.chal-toast{position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%);background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:300;min-width:280px;text-align:center;display:none;animation:slideUp .3s ease}
+.chal-toast.show{display:block}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.chal-toast h3{font-size:.95rem;font-weight:800;margin-bottom:.25rem}
+.chal-toast p{font-size:12px;color:var(--muted);margin-bottom:.85rem}
+.chal-btns{display:flex;gap:.4rem;justify-content:center}
+.acc-btn{padding:7px 20px;background:var(--red);color:#fff;border:none;border-radius:var(--r);font-size:12px;font-weight:700;cursor:pointer}
+.dec-btn{padding:7px 16px;background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:var(--r);font-size:12px;cursor:pointer}
 
 /* ADMIN */
-.admin-modal { max-width:540px; text-align:left; max-height:90vh; overflow-y:auto; }
-.admin-tabs { display:flex; border-bottom:1.5px solid var(--border); margin-bottom:1.1rem; }
-.admin-tab { padding:7px 18px; font-size:12px; font-weight:600; cursor:pointer; border-bottom:2.5px solid transparent; margin-bottom:-1.5px; color:var(--muted); background:transparent; border-top:none; border-left:none; border-right:none; transition:color .15s; }
-.admin-tab.active { color:var(--red); border-bottom-color:var(--red); }
-.admin-tab-panel { display:none; }
-.admin-tab-panel.active { display:block; }
-.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:.65rem 0; border-bottom:1px solid var(--border); }
-.toggle-row:last-child { border-bottom:none; }
-.toggle-row .tl { font-size:13px; font-weight:600; }
-.toggle-row .td { font-size:11px; color:var(--muted); margin-top:1px; }
-.toggle { position:relative; width:42px; height:22px; flex-shrink:0; }
-.toggle input { opacity:0; width:0; height:0; }
-.toggle-slider { position:absolute; inset:0; background:var(--border); border-radius:11px; cursor:pointer; transition:background .2s; }
-.toggle-slider::before { content:''; position:absolute; width:16px; height:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform .2s; }
-.toggle input:checked + .toggle-slider { background:var(--red); }
-.toggle input:checked + .toggle-slider::before { transform:translateX(20px); }
-.photo-upload-zone { border:2px dashed var(--red); border-radius:var(--radius); padding:1.1rem; text-align:center; cursor:pointer; background:var(--red-lt); margin-bottom:.85rem; }
-.photo-upload-zone:hover { background:#fce4e6; }
-.photo-upload-zone p { color:var(--muted); font-size:12px; margin-top:.2rem; }
-#admin-file { display:none; }
-.photos-name-list { display:flex; flex-direction:column; gap:.4rem; max-height:280px; overflow-y:auto; margin-bottom:.65rem; }
-.photo-name-row { display:flex; align-items:center; gap:.6rem; background:var(--off); border:1px solid var(--border); border-radius:7px; padding:.35rem .5rem; }
-.photo-name-row .pthumb { width:32px; height:38px; border-radius:4px; overflow:hidden; flex-shrink:0; border:1px solid var(--border); }
-.photo-name-row .pthumb img { width:100%; height:100%; object-fit:cover; }
-.photo-name-row .name-input { flex:1; padding:5px 9px; border:1.5px solid var(--border); border-radius:7px; font-size:12px; background:var(--white); color:var(--text); outline:none; }
-.photo-name-row .name-input:focus { border-color:var(--red); }
-.photo-name-row .rm-btn { width:24px; height:24px; border-radius:50%; border:none; background:#fee2e2; color:var(--red); font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700; }
-.admin-count-line { font-size:11px; color:var(--muted); margin-bottom:.65rem; }
-.pass-row { display:flex; gap:.4rem; margin-bottom:.65rem; }
-.pass-row input { flex:1; padding:8px 11px; border:1.5px solid var(--border); border-radius:var(--radius); font-size:13px; color:var(--text); background:var(--off); outline:none; }
-.pass-row input:focus { border-color:var(--red); }
-.admin-msg-line { font-size:12px; margin-top:.65rem; display:none; padding:.4rem .65rem; border-radius:7px; }
-.admin-msg-line.ok { background:#dcfce7; color:#15803d; }
-.admin-msg-line.err { background:#fee2e2; color:var(--red); }
+.admin-modal{max-width:540px;text-align:left;max-height:90vh;overflow-y:auto}
+.atabs{display:flex;border-bottom:1.5px solid var(--border);margin-bottom:1rem}
+.atab{padding:7px 18px;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;color:var(--muted);background:transparent;border-top:none;border-left:none;border-right:none}
+.atab.active{color:var(--red);border-bottom-color:var(--red)}
+.apanel{display:none}
+.apanel.active{display:block}
+.tog-row{display:flex;align-items:center;justify-content:space-between;padding:.65rem 0;border-bottom:1px solid var(--border)}
+.tog-row:last-child{border-bottom:none}
+.tog-tl{font-size:13px;font-weight:600}
+.tog-td{font-size:11px;color:var(--muted);margin-top:1px}
+.tog{position:relative;width:42px;height:22px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0}
+.tog-sl{position:absolute;inset:0;background:var(--border);border-radius:11px;cursor:pointer;transition:background .2s}
+.tog-sl::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s}
+.tog input:checked+.tog-sl{background:var(--red)}
+.tog input:checked+.tog-sl::before{transform:translateX(20px)}
+.upload-zone{border:2px dashed var(--red);border-radius:var(--r);padding:1.1rem;text-align:center;cursor:pointer;background:var(--red-lt);margin-bottom:.85rem}
+.upload-zone:hover{background:#fce4e6}
+.upload-zone p{color:var(--muted);font-size:12px;margin-top:.25rem}
+#admin-file{display:none}
+.pnl{display:flex;flex-direction:column;gap:.4rem;max-height:260px;overflow-y:auto;margin-bottom:.65rem}
+.prow{display:flex;align-items:center;gap:.6rem;background:var(--off);border:1px solid var(--border);border-radius:7px;padding:.35rem .5rem}
+.pthumb{width:32px;height:38px;border-radius:4px;overflow:hidden;flex-shrink:0;border:1px solid var(--border)}
+.pthumb img{width:100%;height:100%;object-fit:cover}
+.ninp{flex:1;padding:5px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:var(--white);color:var(--text);outline:none}
+.ninp:focus{border-color:var(--red)}
+.rm-btn{width:24px;height:24px;border-radius:50%;border:none;background:#fee2e2;color:var(--red);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700}
+.pcnt{font-size:11px;color:var(--muted);margin-bottom:.65rem}
+.prow2{display:flex;gap:.4rem;margin-bottom:.75rem}
+.apass{flex:1;padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;color:var(--text);background:var(--off);outline:none}
+.apass:focus{border-color:var(--red)}
+.amsg{font-size:12px;margin-top:.65rem;display:none;padding:.4rem .65rem;border-radius:7px}
+.amsg.ok{background:#dcfce7;color:#15803d}
+.amsg.err{background:#fee2e2;color:var(--red)}
+/* gate */
+#admin-gate{display:none;text-align:center;padding:1.5rem 0}
+.preset-row{display:flex;align-items:center;gap:.5rem;background:var(--off);border:1px solid var(--border);border-radius:8px;padding:.45rem .65rem;margin-bottom:.4rem}
 </style>
 </head>
 <body>
 
 <!-- JOIN -->
-<div id="page-join" class="page active">
-  <div class="join-card">
+<div id="pg-join" class="page active">
+  <div class="join-box">
     <div class="join-logo">GUESS WHO?</div>
-    <div class="join-tagline">Multiplayer — enter your name to join.</div>
-    <div class="field-lbl">Your name</div>
-    <input class="txt-input" id="join-name" placeholder="e.g. Ashton" maxlength="20">
+    <div class="join-sub">Multiplayer — enter your name to join.</div>
+    <div class="lbl">Your name</div>
+    <input class="inp" id="join-name" placeholder="e.g. Ashton" maxlength="20">
     <button class="big-btn" onclick="joinLobby()">Enter Lobby →</button>
   </div>
 </div>
 
 <!-- LOBBY -->
-<div id="page-lobby" class="page">
-  <div class="topbar">
-    <div><div class="topbar-logo">GUESS WHO?</div><div class="topbar-sub" id="lobby-sub">Online now</div></div>
-    <div class="topbar-right"><button class="pill" onclick="openAdmin()">⚙ Admin</button></div>
+<div id="pg-lobby" class="page">
+  <div class="tb">
+    <div><div class="tb-logo">GUESS WHO?</div><div class="tb-sub" id="lobby-sub">Online now</div></div>
+    <div class="tb-right"><button class="pill" onclick="openAdmin()">⚙ Admin</button></div>
   </div>
   <div class="lobby-body">
     <div class="lobby-top">
-      <h3><span class="dot-green"></span> Online Players</h3>
+      <h3><span class="dot-g"></span> Online Players</h3>
       <div class="players-row" id="players-row"><span style="font-size:12px;color:var(--muted)">No one here yet...</span></div>
     </div>
     <div class="lobby-bottom">
-      <div>
-        <button class="find-game-btn" id="find-game-btn" onclick="toggleFindGame()">🎮 Find Game</button>
+      <div style="text-align:center">
+        <button class="find-btn" id="find-btn" onclick="toggleFind()">🎮 Find Game</button>
         <div class="find-sub" id="find-sub">Click to start searching for an opponent</div>
       </div>
-      <div class="queue-area" id="queue-area">
-        <div class="queue-title"><span class="rpulse"></span> Players searching</div>
-        <div id="queue-list"><div class="queue-empty">No one searching yet...</div></div>
+      <div class="queue-box" id="queue-box">
+        <div class="q-title"><span class="rpulse"></span> Players searching</div>
+        <div id="queue-list"><div class="q-empty">No one searching yet...</div></div>
       </div>
-      <button class="cancel-find-btn" id="cancel-find-btn" style="display:none" onclick="cancelFind()">✕ Cancel Search</button>
+      <button class="cancel-btn" id="cancel-btn" style="display:none" onclick="cancelFind()">✕ Cancel Search</button>
     </div>
   </div>
 </div>
 
 <!-- LOADING -->
-<div id="page-loading" class="page">
-  <div class="loading-card">
-    <div class="vs-line" id="loading-vs">You <span>VS</span> Opponent</div>
+<div id="pg-load" class="page">
+  <div class="load-box">
+    <div class="vs-line" id="vs-line">You <span>VS</span> Opponent</div>
     <h2>Game is loading...</h2>
     <p>Get ready to pick your secret character!</p>
-    <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
-    <div class="ld-dots"><span></span><span></span><span></span></div>
+    <div class="prog"><div class="prog-fill" id="prog-fill"></div></div>
+    <div class="dots"><span></span><span></span><span></span></div>
   </div>
 </div>
 
 <!-- PICK -->
-<div id="page-pick" class="page">
-  <div class="topbar">
-    <div><div class="topbar-logo">GUESS WHO?</div><div class="topbar-sub">Pick your secret character</div></div>
-    <div class="topbar-right"><button class="pill" onclick="openAdmin()">⚙ Admin</button></div>
+<div id="pg-pick" class="page">
+  <div class="tb">
+    <div><div class="tb-logo">GUESS WHO?</div><div class="tb-sub">Pick your secret character</div></div>
+    <div class="tb-right"><button class="pill" onclick="openAdmin()">⚙ Admin</button></div>
   </div>
-  <div class="pick-topbar">
+  <div class="pick-hdr">
     <h2>🔒 Pick your secret character</h2>
     <p>Tap one person then confirm — your opponent has to guess who this is!</p>
   </div>
   <div class="pick-scroll"><div class="pick-grid" id="pick-grid"></div></div>
-  <div class="pick-footer">
+  <div class="pick-foot">
     <div class="pick-status" id="pick-status">Tap someone to choose them</div>
     <button class="confirm-btn" id="pick-confirm" disabled onclick="openPickConfirm()">Lock In →</button>
   </div>
 </div>
 
 <!-- GAME -->
-<div id="page-game" class="page">
-  <div class="topbar">
-    <div><div class="topbar-logo">GUESS WHO?</div><div class="topbar-sub" id="game-sub">Playing</div></div>
-    <div class="topbar-right"><button class="pill" onclick="openAdmin()">⚙</button></div>
+<div id="pg-game" class="page">
+  <div class="tb">
+    <div><div class="tb-logo">GUESS WHO?</div><div class="tb-sub" id="game-sub">Playing</div></div>
+    <div class="tb-right"><button class="pill" onclick="openAdmin()">⚙</button></div>
   </div>
-  <div class="game-inner">
+  <div class="game-wrap">
     <div class="turn-banner mine" id="turn-banner">Your turn!</div>
-    <div class="game-info-row">
-      <div class="secret-row">
-        <span class="secret-label">🔒 Your secret:</span>
-        <div class="secret-thumb" onclick="expandSecret()" title="Click to expand" style="cursor:pointer"><img id="secret-img" src="" alt=""></div>
-      </div>
-      <div class="info-divider"></div>
-      <div class="opp-row">
-        <div class="opp-av" id="opp-av">?</div>
-        <div class="opp-name" id="opp-name">—</div>
-        <div class="opp-elim" id="opp-elim">0 eliminated</div>
-        <div class="guess-counter" id="guess-counter">🎯 3 left</div>
+    <div class="info-row">
+      <span style="font-size:10px;color:var(--muted);font-weight:600">🔒 Secret:</span>
+      <div class="secret-thumb" onclick="expandSecret()" title="Click to expand"><img id="secret-img" src="" alt=""></div>
+      <div class="info-sep"></div>
+      <div class="opp-av" id="opp-av">?</div>
+      <div class="info-text">
+        <div class="info-name" id="opp-name">—</div>
+        <div class="info-muted"><span id="opp-elim">0 eliminated</span><span class="gcounter" id="guess-counter">🎯 3 left</span></div>
       </div>
     </div>
-    <div class="board-section">
-      <div class="board-hint" id="board-hint">Tap to eliminate — only on your turn</div>
+    <div class="board-wrap">
       <div class="board-grid" id="board-grid"></div>
     </div>
-    <!-- FIX 5: BIG action buttons at bottom -->
     <div class="game-actions">
-      <button class="action-btn end" id="end-turn-btn" onclick="endTurn()" disabled>⏭ End Turn</button>
-      <button class="action-btn guess" id="guess-open-btn" onclick="openGuessModal()" disabled>🎯 Guess!</button>
+      <button class="act-btn end" id="end-turn-btn" onclick="endTurn()" disabled>⏭ End Turn</button>
+      <button class="act-btn guess" id="guess-btn" onclick="openGuessModal()" disabled>🎯 Guess!</button>
     </div>
   </div>
 </div>
@@ -378,86 +329,81 @@ body.dark .guess-counter { background:#450a0a; }
   <div class="modal admin-modal">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem">
       <h2 style="margin:0">⚙ Admin</h2>
-      <button class="mbtn-ghost" style="padding:5px 12px;font-size:11px" onclick="closeOverlay('modal-admin')">Close</button>
+      <button class="mbtn-g" style="padding:5px 12px;font-size:11px" onclick="closeOverlay('modal-admin')">Close</button>
     </div>
-    <div class="admin-tabs">
-      <button class="admin-tab active" id="atab-appearance" onclick="switchAdminTab('appearance',this)">🎨 Appearance</button>
-      <button class="admin-tab" id="atab-photos" onclick="requireAdminTab('photos',this)">📸 Photos</button>
-      <button class="admin-tab" id="atab-manage" onclick="requireAdminTab('manage',this)">🔧 Manage</button>
+    <div class="atabs">
+      <button class="atab active" onclick="switchTab('appearance',this)">🎨 Appearance</button>
+      <button class="atab" onclick="requireAdminTab('photos',this)">📸 Photos</button>
+      <button class="atab" onclick="requireAdminTab('manage',this)">🔧 Manage</button>
     </div>
-    <div class="admin-tab-panel active" id="tab-appearance">
-      <div class="toggle-row">
-        <div><div class="tl">Dark Mode</div><div class="td">Black background with red accents</div></div>
-        <label class="toggle"><input type="checkbox" id="dark-toggle" onchange="toggleDark(this.checked)"><span class="toggle-slider"></span></label>
+    <!-- Appearance -->
+    <div class="apanel active" id="tab-appearance">
+      <div class="tog-row">
+        <div><div class="tog-tl">Dark Mode</div><div class="tog-td">Black background with red accents</div></div>
+        <label class="tog"><input type="checkbox" id="dark-tog" onchange="document.body.classList.toggle('dark',this.checked)"><span class="tog-sl"></span></label>
       </div>
-      <div class="toggle-row">
-        <div><div class="tl">Show names on cards</div><div class="td">Display name label under each photo</div></div>
-        <label class="toggle"><input type="checkbox" id="names-toggle" checked onchange="toggleNames(this.checked)"><span class="toggle-slider"></span></label>
+      <div class="tog-row">
+        <div><div class="tog-tl">Show names on cards</div><div class="tog-td">Display name label under each photo</div></div>
+        <label class="tog"><input type="checkbox" id="names-tog" checked onchange="toggleNames(this.checked)"><span class="tog-sl"></span></label>
       </div>
     </div>
-    <!-- PASSWORD GATE (shown instead of locked tabs) -->
-    <div id="admin-gate" style="display:none;text-align:center;padding:1.5rem 0">
+    <!-- Gate -->
+    <div id="admin-gate">
       <div style="font-size:2rem;margin-bottom:.5rem">🔒</div>
       <div style="font-size:14px;font-weight:700;margin-bottom:.4rem">Admin access required</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:1rem">Enter the admin password to access this tab</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:1rem">Enter the admin password</div>
       <div style="display:flex;gap:.4rem;max-width:280px;margin:0 auto">
-        <input type="password" id="admin-gate-pass" placeholder="Password" style="flex:1;padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text);background:var(--off);outline:none" onkeydown="if(event.key==='Enter')submitAdminGate()">
-        <button class="mbtn" onclick="submitAdminGate()">Unlock</button>
+        <input type="password" id="gate-inp" placeholder="Password" class="apass" style="flex:1" onkeydown="if(event.key==='Enter')submitGate()">
+        <button class="mbtn" onclick="submitGate()">Unlock</button>
       </div>
-      <div id="gate-error" style="color:var(--red);font-size:12px;margin-top:.5rem;display:none">Wrong password</div>
+      <div id="gate-err" style="color:var(--red);font-size:12px;margin-top:.5rem;display:none">Wrong password</div>
     </div>
-
-    <div class="admin-tab-panel" id="tab-photos">
-      <!-- LIBRARY -->
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">📚 Photo Library</div>
-      <div class="photo-upload-zone" onclick="document.getElementById('admin-file').click()">
+    <!-- Photos -->
+    <div class="apanel" id="tab-photos">
+      <div class="upload-zone" onclick="document.getElementById('admin-file').click()">
         <div style="font-size:1.5rem">📸</div>
         <strong style="font-size:13px">Click to upload photos</strong>
-        <p>Add as many as you want — JPG, PNG, WEBP</p>
+        <p>Any number — JPG, PNG, WEBP</p>
       </div>
       <input type="file" id="admin-file" accept="image/*" multiple>
-      <div class="admin-count-line" id="admin-count"></div>
-      <div class="photos-name-list" id="photos-name-list"></div>
+      <div class="pcnt" id="admin-count"></div>
+      <div class="pnl" id="photo-list"></div>
       <div style="display:flex;gap:.4rem;margin-bottom:.75rem">
-        <button class="mbtn" style="flex:1" onclick="pushPhotos()">📤 Save Library</button>
-        <button class="mbtn-ghost" style="flex:0;white-space:nowrap" onclick="clearAllPhotos()">🗑 Clear All</button>
+        <button class="mbtn" style="flex:1" onclick="pushPhotos()">📤 Save & Push to All</button>
+        <button class="mbtn-g" onclick="if(confirm('Clear all?')){adminPhotos=[];renderAdminList()}">🗑 Clear</button>
       </div>
-
-      <!-- PRESETS -->
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:.4rem 0">🎮 Presets (up to 3 fixed sets)</div>
-      <div id="presets-list" style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:.5rem"></div>
-      <button class="mbtn-ghost" style="width:100%;font-size:12px;margin-bottom:.75rem" onclick="createPreset()">+ Create new preset</button>
-
-      <!-- ACTIVE GAME PHOTOS -->
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:.4rem 0">▶ Active game photos</div>
+      <!-- Presets -->
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:.5rem 0 .4rem">🎮 Presets</div>
+      <div id="presets-list" style="margin-bottom:.5rem"></div>
+      <button class="mbtn-g" style="width:100%;font-size:12px;margin-bottom:.75rem" onclick="createPreset()">+ New preset from current library</button>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">▶ Set active game photos</div>
       <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:.5rem">
-        <button class="mbtn-ghost" style="font-size:12px;text-align:left" onclick="activatePreset('all')">🌐 Use all library photos</button>
+        <button class="mbtn-g" style="font-size:12px;text-align:left" onclick="activatePreset('all')">🌐 Use all library photos</button>
         <div style="display:flex;align-items:center;gap:.5rem">
-          <button class="mbtn-ghost" style="font-size:12px;flex:1;text-align:left" onclick="activateRandom()">🔀 Randomise — pick <input id="random-count" type="number" value="25" min="2" max="100" style="width:40px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:12px;background:var(--white);color:var(--text)" onclick="event.stopPropagation()"> random cards</button>
+          <button class="mbtn-g" style="font-size:12px;flex:1" onclick="activateRandom()">🔀 Random — pick <input id="rand-n" type="number" value="25" min="2" style="width:40px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:12px;background:var(--white);color:var(--text)" onclick="event.stopPropagation()"> cards</button>
         </div>
       </div>
-
-      <div class="admin-msg-line" id="admin-msg"></div>
+      <div class="amsg" id="admin-msg"></div>
     </div>
-    <div class="admin-tab-panel" id="tab-manage">
+    <!-- Manage -->
+    <div class="apanel" id="tab-manage">
       <p style="margin-bottom:.85rem;font-size:13px">Send everyone back to the lobby and clear all active games.</p>
-      <!-- FIX 7: password not shown anywhere in UI -->
-      <button class="mbtn" style="width:100%;background:#111" onclick="hardReset()">🔴 Hard Reset — Send Everyone to Lobby</button>
-      <div class="admin-msg-line" id="manage-msg"></div>
+      <button class="mbtn" style="width:100%;background:#111" onclick="hardReset()">🔴 Hard Reset</button>
+      <div class="amsg" id="manage-msg"></div>
     </div>
   </div>
 </div>
 
 <!-- MODAL: CONFIRM PICK -->
-<div class="overlay" id="modal-confirm-pick">
+<div class="overlay" id="modal-cpick">
   <div class="modal">
     <h2>Are you sure? 🤔</h2>
-    <div class="confirm-pick-photo"><img id="confirm-pick-img" src="" alt=""></div>
-    <div class="confirm-pick-name" id="confirm-pick-name"></div>
-    <p>This will be your secret character. Your opponent has to guess who this is!</p>
+    <div class="cpic"><img id="cpick-img" src="" alt=""></div>
+    <div style="font-size:1rem;font-weight:800;margin-bottom:.4rem" id="cpick-name"></div>
+    <p>This will be your secret character!</p>
     <div class="mbtns">
-      <button class="mbtn" onclick="confirmPickFinal()">Yes, lock them in!</button>
-      <button class="mbtn-ghost" onclick="closeOverlay('modal-confirm-pick')">Pick someone else</button>
+      <button class="mbtn" onclick="confirmPick()">Yes, lock them in!</button>
+      <button class="mbtn-g" onclick="closeOverlay('modal-cpick')">Pick someone else</button>
     </div>
   </div>
 </div>
@@ -466,26 +412,25 @@ body.dark .guess-counter { background:#450a0a; }
 <div class="overlay" id="modal-guess">
   <div class="modal">
     <h2>Make your guess 🎯</h2>
-    <p id="guess-modal-sub">Who is your opponent's secret character?</p>
+    <p id="guess-sub">Who is your opponent's secret character?</p>
     <div class="guess-grid" id="guess-grid"></div>
     <div class="mbtns">
-      <button class="mbtn" id="guess-confirm-btn" disabled onclick="submitGuess()">That's them!</button>
-      <button class="mbtn-ghost" onclick="closeOverlay('modal-guess')">Cancel</button>
+      <button class="mbtn" id="guess-ok-btn" disabled onclick="submitGuess()">That's them!</button>
+      <button class="mbtn-g" onclick="closeOverlay('modal-guess')">Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: SNIPE RESPONSE (FIX 6) -->
+<!-- MODAL: SNIPE -->
 <div class="overlay" id="modal-snipe">
   <div class="modal">
     <div style="font-size:2.5rem;margin-bottom:.4rem">⚡</div>
     <h2 id="snipe-title">Snipe incoming!</h2>
     <p id="snipe-desc"></p>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:.9rem" id="snipe-guess-label" style="display:none">Or pick someone to counter-guess:</div>
     <div class="guess-grid" id="snipe-grid"></div>
     <div class="mbtns">
-      <button class="mbtn" id="snipe-confirm-btn" disabled onclick="submitSnipeGuess()">Counter-guess!</button>
-      <button class="mbtn-ghost" onclick="passSnipe()">Pass — no counter</button>
+      <button class="mbtn" id="snipe-ok-btn" disabled onclick="submitSnipe()">Counter-guess!</button>
+      <button class="mbtn-g" onclick="passSnipe()">Pass</button>
     </div>
   </div>
 </div>
@@ -493,16 +438,16 @@ body.dark .guess-counter { background:#450a0a; }
 <!-- MODAL: RESULT -->
 <div class="overlay" id="modal-result">
   <div class="modal">
-    <div class="result-emoji" id="result-emoji">🎉</div>
-    <div class="modal-photo"><img id="result-photo" src="" alt=""></div>
-    <h2 id="result-title"></h2>
-    <p id="result-msg"></p>
+    <div class="res-emoji" id="res-emoji">🎉</div>
+    <div class="modal-photo"><img id="res-photo" src="" alt=""></div>
+    <h2 id="res-title"></h2>
+    <p id="res-msg"></p>
     <div class="mbtns"><button class="mbtn" onclick="backToLobby()">Back to Lobby</button></div>
   </div>
 </div>
 
 <!-- MODAL: OPP LEFT -->
-<div class="overlay" id="modal-opp-left">
+<div class="overlay" id="modal-left">
   <div class="modal">
     <div style="font-size:2.5rem;margin-bottom:.4rem">🔌</div>
     <h2>Opponent disconnected</h2>
@@ -511,809 +456,596 @@ body.dark .guess-counter { background:#450a0a; }
   </div>
 </div>
 
-<!-- CHALLENGE TOAST (FIX 2) -->
-<div class="challenge-notif" id="challenge-notif">
-  <h3 id="chal-title">Challenge received!</h3>
-  <p id="chal-msg"></p>
-  <div class="chal-btns">
-    <button class="accept-btn" onclick="acceptChallenge()">✓ Accept</button>
-    <button class="decline-btn" onclick="declineChallenge()">✕ Decline</button>
+<!-- MODAL: SECRET EXPAND -->
+<div class="overlay" id="modal-secret" onclick="closeOverlay('modal-secret')" style="cursor:pointer">
+  <div style="max-width:320px;width:90%;text-align:center" onclick="event.stopPropagation()">
+    <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:.5rem">🔒 Your secret — tap outside to close</div>
+    <img id="secret-big" src="" style="width:100%;border-radius:14px;border:3px solid #fff;display:block">
+    <div id="secret-big-name" style="color:#fff;font-weight:700;font-size:1rem;margin-top:.75rem"></div>
   </div>
 </div>
 
-<!-- FIX 5: Secret photo expand modal -->
-<div class="overlay" id="modal-secret-expand" onclick="closeOverlay('modal-secret-expand')" style="cursor:pointer">
-  <div style="max-width:340px;width:90%;text-align:center" onclick="event.stopPropagation()">
-    <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:.5rem">🔒 Your secret character — tap outside to close</div>
-    <img id="secret-expand-img" src="" alt="" style="width:100%;border-radius:16px;border:3px solid #fff;box-shadow:0 16px 48px rgba(0,0,0,.5);display:block;">
-    <div id="secret-expand-name" style="color:#fff;font-weight:700;font-size:1.1rem;margin-top:.75rem;"></div>
+<!-- CHALLENGE TOAST -->
+<div class="chal-toast" id="chal-toast">
+  <h3 id="chal-title">Challenge received!</h3>
+  <p id="chal-msg"></p>
+  <div class="chal-btns">
+    <button class="acc-btn" onclick="acceptChallenge()">✓ Accept</button>
+    <button class="dec-btn" onclick="declineChallenge()">✕ Decline</button>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════
+// ═══ STATE ═══
 let ws=null, myId=null, myName='', myStatus='lobby';
-let pendingPickId=null, pendingGuessId=null, pendingSnipeId=null;
-let adminPhotos=[];   // local edits in admin panel
-let currentPhotos=[]; // from server (full with src)
-let photoCache={};    // id -> {id,src,name} — the definitive lookup
+let photoCache={};        // id->photo — populated by photos_data
+let currentPhotos=[];     // ordered array for display
 let currentGame=null;
-let boardBuilt=false;
-let showNames=true;
-let incomingChallengerId=null;
+let pendingPickId=null, pendingGuessId=null, pendingSnipeId=null;
+let boardBuilt=false, showNames=true;
+let localFlipped=new Set();  // flipped this turn (reversible)
+let pendingFlips=new Set();  // awaiting server ack
+let lastTurn=null;
+let incomingChalId=null;
+let pendingGS=null;          // game_state waiting for photos
+// admin
+let adminPhotos=[], adminUnlocked=false, adminPass='', serverPresets=[], pendingAdminTab=null;
+let pingTimer=null;
 
-// ══════════════════════════════════════
-//  CONNECT
-// ══════════════════════════════════════
+// ═══ CONNECT ═══
 function connect(cb){
   const h=location.host;
-  if(!h){ setTimeout(function(){ connect(cb); },1500); return; }
+  if(!h){setTimeout(()=>connect(cb),1500);return;}
   const proto=location.protocol==='https:'?'wss:':'ws:';
-  const url=proto+'//'+h;
-  try{ ws=new WebSocket(url); }
-  catch(e){ console.warn('WS fail:',e); setTimeout(function(){ connect(cb); },2000); return; }
-  ws.onopen=function(){ startPing(); if(cb) cb(); };
-  ws.onmessage=function(e){ try{ handle(JSON.parse(e.data)); }catch(err){ console.error(err); } };
-  ws.onclose=function(){ setTimeout(connect,2500); };
-  ws.onerror=function(){ try{ ws.close(); }catch(e){} };
+  try{ws=new WebSocket(proto+'//'+h);}
+  catch(e){setTimeout(()=>connect(cb),2000);return;}
+  ws.onopen=()=>{startPing();if(cb)cb();};
+  ws.onmessage=e=>{try{handle(JSON.parse(e.data));}catch(err){console.error(err);}};
+  ws.onclose=()=>setTimeout(connect,2500);
+  ws.onerror=()=>{try{ws.close();}catch(e){}};
 }
-function wsSend(obj){ if(ws&&ws.readyState===1) ws.send(JSON.stringify(obj)); }
-
-// FIX 1: keep-alive ping so phone browsers don't drop the WebSocket
-// Also handle page visibility — reconnect when phone comes back to foreground
-let pingTimer=null;
-function startPing(){
-  clearInterval(pingTimer);
-  pingTimer=setInterval(()=>{ wsSend({type:'ping'}); }, 15000);
-}
+function wsSend(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o));}
+function startPing(){clearInterval(pingTimer);pingTimer=setInterval(()=>wsSend({type:'ping'}),15000);}
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'){
-    // Phone came back — if WS is dead, reconnect and rejoin
-    if(!ws||ws.readyState!==WebSocket.OPEN){
-      connect(function(){ if(myName) wsSend({type:'join',name:myName}); });
-    } else {
-      startPing();
-    }
+    if(!ws||ws.readyState!==WebSocket.OPEN) connect(()=>{if(myName)wsSend({type:'join',name:myName});});
+    else{startPing();if(isPage('pg-lobby'))refreshLobby();}
   }
 });
 
-// ══════════════════════════════════════
-//  MESSAGES
-// ══════════════════════════════════════
+// ═══ MESSAGES ═══
 function handle(msg){
-  if(msg.type==='welcome'){
-    myId=msg.clientId;
-    _showPage('page-lobby');
-    return;
-  }
-  if(msg.type==='photos_data'){
-    currentPhotos=msg.photos||[];
-    photoCache={};
-    currentPhotos.forEach(p=>{ photoCache[p.id]=p; });
-    syncAdminPhotos(currentPhotos);
-    // If there was a game_state waiting for photos, render it now
-    if(pendingGameState){
-      const pgs=pendingGameState; pendingGameState=null;
-      pgs.photos=pgs.photoIds.map(id=>photoCache[id]).filter(Boolean);
-      currentGame=pgs;
-      if(pgs.phase==='pick') renderPick(pgs);
-      else if(pgs.phase==='playing') renderGame(pgs);
-      else if(pgs.phase==='snipe') renderSnipe(pgs);
-      else if(pgs.phase==='gameover') renderResult(pgs);
-    }
-    return;
-  }
-
-  if(msg.type==='matched'){
-    myStatus='playing';
-    boardBuilt=false; // reset board for new game
-    localFlippedThisTurn=new Set();
-    lastTurn=null;
-    showLoading(msg.opponentName);
-    return;
-  }
-  if(msg.type==='game_state'){
-    // Server confirmed state — clear all pending flips
-    pendingFlips.clear();
-    // Hydrate photos from cache using photoIds
-    if(msg.photoIds && msg.photoIds.length>0){
-      msg.photos = msg.photoIds.map(id=>photoCache[id]).filter(Boolean);
-      if(msg.photos.length===0) msg.photos = currentPhotos;
-    } else {
-      msg.photos = currentPhotos;
-    }
-    currentGame=msg;
-    // If photos failed to hydrate, request them again from server
-    if(msg.photos.length===0 && msg.photoIds && msg.photoIds.length>0){
-      wsSend({type:'request_photos'});
-      // Don't render yet — wait for photos_data then re-render
-      pendingGameState=msg;
+  switch(msg.type){
+    case 'welcome':
+      myId=msg.clientId;
+      show('pg-lobby');
       return;
-    }
-    pendingGameState=null;
-    if(msg.phase==='pick') renderPick(msg);
-    else if(msg.phase==='playing') renderGame(msg);
-    else if(msg.phase==='snipe') renderSnipe(msg);
-    else if(msg.phase==='gameover') renderResult(msg);
-    return;
-  }
-  if(msg.type==='lobby_update'){
-    // lobby_update has no src — just sync status/players
-    if(msg.myStatus){
-      if(msg.myStatus==='playing'){
-        myStatus='playing';
-      } else if(msg.myStatus==='waiting'&&myStatus==='lobby'){
-        myStatus='waiting';
-        syncFindUI('waiting');
-      } else if(msg.myStatus==='lobby'&&myStatus==='lobby'){
-        syncFindUI('lobby');
+
+    case 'photos_data':
+      currentPhotos=msg.photos||[];
+      photoCache={};
+      currentPhotos.forEach(p=>{photoCache[p.id]=p;});
+      // If game_state was waiting for photos, render it now
+      if(pendingGS){
+        const gs=pendingGS; pendingGS=null;
+        gs.photos=gs.photoIds.map(id=>photoCache[id]).filter(Boolean);
+        currentGame=gs;
+        renderPhase(gs);
       }
-    }
-    if(myStatus!=='playing') renderLobby(msg);
-    return;
+      return;
+
+    case 'lobby_update':
+      if(msg.myStatus){
+        if(msg.myStatus==='playing') myStatus='playing';
+        else if(msg.myStatus==='waiting'&&myStatus==='lobby'){myStatus='waiting';syncFindUI('waiting');}
+        else if(msg.myStatus==='lobby'&&myStatus==='lobby') syncFindUI('lobby');
+      }
+      if(myStatus!=='playing') renderLobby(msg);
+      return;
+
+    case 'matched':
+      myStatus='playing';
+      boardBuilt=false; localFlipped=new Set(); pendingFlips=new Set(); lastTurn=null; pendingGS=null;
+      showLoading(msg.opponentName);
+      return;
+
+    case 'game_state':
+      pendingFlips.clear();
+      // Hydrate photos from cache
+      if(msg.photoIds&&msg.photoIds.length>0){
+        msg.photos=msg.photoIds.map(id=>photoCache[id]).filter(Boolean);
+      } else {
+        msg.photos=currentPhotos;
+      }
+      // If photos missing, request them and wait
+      if(!msg.photos||msg.photos.length===0){
+        pendingGS=msg;
+        wsSend({type:'request_photos'});
+        return;
+      }
+      pendingGS=null;
+      currentGame=msg;
+      renderPhase(msg);
+      return;
+
+    case 'go_lobby': case 'force_lobby':
+      myStatus='lobby'; boardBuilt=false; pendingPickId=null; currentGame=null; pendingGS=null;
+      localFlipped=new Set(); pendingFlips=new Set();
+      syncFindUI('lobby');
+      ['modal-result','modal-left','modal-guess','modal-snipe'].forEach(closeOverlay);
+      show('pg-lobby');
+      return;
+
+    case 'opponent_left':
+      closeOverlay('modal-guess'); closeOverlay('modal-snipe');
+      document.getElementById('modal-left').classList.add('show');
+      return;
+
+    case 'challenge_received':
+      incomingChalId=msg.challengerId;
+      document.getElementById('chal-title').textContent=esc(msg.challengerName)+' wants to play!';
+      document.getElementById('chal-msg').textContent=esc(msg.challengerName)+' challenged you to a game.';
+      document.getElementById('chal-toast').classList.add('show');
+      return;
+
+    case 'challenge_declined':
+      alert(esc(msg.declinerName)+' declined your challenge.');
+      document.querySelectorAll('.chal-btn.sent').forEach(b=>{b.textContent='Challenge!';b.classList.remove('sent');b.disabled=false;});
+      return;
+
+    case 'error': alert(msg.text); return;
+
+    case 'admin_gate_fail':
+      document.getElementById('gate-err').style.display='block';
+      adminPass='';
+      return;
+
+    case 'admin_data':
+      adminPhotos=(msg.allPhotos||[]).map(p=>({src:p.src,name:p.name||''}));
+      renderAdminList();
+      serverPresets=msg.presets||[];
+      renderPresets();
+      onAdminUnlocked();
+      return;
+
+    case 'presets_update':
+      serverPresets=msg.presets||[];
+      renderPresets();
+      return;
+
+    case 'admin_ok':
+      showAMsg('admin-msg',msg.text,'ok');
+      showAMsg('manage-msg',msg.text,'ok');
+      return;
   }
-  if(msg.type==='go_lobby'||msg.type==='force_lobby'){ // FIX 3
-    myStatus='lobby'; boardBuilt=false; pendingPickId=null; currentGame=null;
-    resetFindUI();
-    closeOverlay('modal-result'); closeOverlay('modal-opp-left');
-    closeOverlay('modal-guess'); closeOverlay('modal-snipe');
-    showPage('page-lobby');
-    return;
-  }
-  if(msg.type==='opponent_left'){
-    closeOverlay('modal-guess'); closeOverlay('modal-snipe');
-    document.getElementById('modal-opp-left').classList.add('show');
-    return;
-  }
-  if(msg.type==='challenge_received'){
-    incomingChallengerId=msg.challengerId;
-    document.getElementById('chal-title').textContent=`${esc(msg.challengerName)} wants to play!`;
-    document.getElementById('chal-msg').textContent=`${esc(msg.challengerName)} challenged you to a game.`;
-    document.getElementById('challenge-notif').classList.add('show');
-    return;
-  }
-  if(msg.type==='challenge_declined'){
-    alert(`${esc(msg.declinerName)} declined your challenge.`);
-    document.querySelectorAll('.challenge-btn.sent').forEach(b=>{ b.textContent='Challenge!'; b.classList.remove('sent'); b.disabled=false; });
-    return;
-  }
-  if(msg.type==='challenge_sent') return;
-  if(msg.type==='error'){ alert(msg.text); return; }
-  if(msg.type==='admin_gate_fail'){
-    document.getElementById('gate-error').style.display='block';
-    adminPassword='';
-    return;
-  }
-  if(msg.type==='admin_ok'){
-    showAdminMsg('admin-msg',msg.text,'ok');
-    showAdminMsg('manage-msg',msg.text,'ok');
-    return;
-  }
-  if(msg.type==='admin_data'){
-    allLibraryPhotos=(msg.allPhotos||[]);
-    adminPhotos=allLibraryPhotos.map(p=>({src:p.src,name:p.name||''}));
-    renderPhotosList();
-    serverPresets=msg.presets||[];
-    renderPresets();
-    // Unlock gate if password was correct (server responded successfully)
-    onAdminUnlocked();
-    return;
-  }
-  if(msg.type==='presets_update'){
-    serverPresets=msg.presets||[];
-    renderPresets();
-    return;
-  }
-  if(msg.type==='all_photos'){
-    // server confirms library saved
-    return;
-  }
-  if(msg.type==='pick_ack') return;
 }
 
-// ══════════════════════════════════════
-//  JOIN
-// ══════════════════════════════════════
+function renderPhase(msg){
+  if(msg.phase==='pick') renderPick(msg);
+  else if(msg.phase==='playing') renderGame(msg);
+  else if(msg.phase==='snipe') renderSnipe(msg);
+  else if(msg.phase==='gameover') renderResult(msg);
+}
+
+// ═══ JOIN ═══
 function joinLobby(){
-  const name=document.getElementById('join-name').value.trim();
-  if(!name) return;
-  myName=name;
-  // Connect first, then send join — lobby page shown after server sends welcome+lobby_update
-  connect(()=>{ wsSend({type:'join',name}); });
+  const n=document.getElementById('join-name').value.trim();
+  if(!n) return;
+  myName=n;
+  connect(()=>wsSend({type:'join',name:n}));
 }
-document.getElementById('join-name').addEventListener('keydown',e=>{ if(e.key==='Enter') joinLobby(); });
+document.getElementById('join-name').addEventListener('keydown',e=>{if(e.key==='Enter')joinLobby();});
 
-// ══════════════════════════════════════
-//  LOBBY
-// ══════════════════════════════════════
-function toggleFindGame(){
+// ═══ LOBBY ═══
+function toggleFind(){
   if(myStatus==='waiting'||myStatus==='playing') return;
-  // Optimistically update UI, server will confirm via lobby_update
-  myStatus='waiting';
-  syncFindUI('waiting');
-  wsSend({type:'ready'});
+  myStatus='waiting'; syncFindUI('waiting'); wsSend({type:'ready'});
 }
-
 function cancelFind(){
-  // Optimistically update UI, server will confirm via lobby_update
-  myStatus='lobby';
-  syncFindUI('lobby');
-  wsSend({type:'cancel_wait'});
+  myStatus='lobby'; syncFindUI('lobby'); wsSend({type:'cancel_wait'});
 }
-
-function resetFindUI(){
-  const btn=document.getElementById('find-game-btn');
-  btn.textContent='🎮 Find Game'; btn.classList.remove('searching'); btn.onclick=toggleFindGame;
-  document.getElementById('find-sub').textContent='Click to start searching for an opponent';
-  document.getElementById('cancel-find-btn').style.display='none';
-  document.getElementById('queue-area').classList.remove('show');
-}
-
-// Sync the find-game UI to match server-authoritative status
-function syncFindUI(status){
-  const btn=document.getElementById('find-game-btn');
-  const cancelBtn=document.getElementById('cancel-find-btn');
-  const queueArea=document.getElementById('queue-area');
-  const findSub=document.getElementById('find-sub');
-  if(status==='waiting'){
+function syncFindUI(s){
+  const btn=document.getElementById('find-btn');
+  const cancel=document.getElementById('cancel-btn');
+  const qbox=document.getElementById('queue-box');
+  if(s==='waiting'){
     btn.textContent='🔍 Searching...'; btn.classList.add('searching'); btn.onclick=null;
-    findSub.textContent='Looking for opponents — challenge anyone below!';
-    cancelBtn.style.display='block';
-    queueArea.classList.add('show');
-  } else if(status==='lobby'){
-    btn.textContent='🎮 Find Game'; btn.classList.remove('searching'); btn.onclick=toggleFindGame;
-    findSub.textContent='Click to start searching for an opponent';
-    cancelBtn.style.display='none';
-    queueArea.classList.remove('show');
+    document.getElementById('find-sub').textContent='Challenge anyone below!';
+    cancel.style.display='block'; qbox.classList.add('show');
+  } else {
+    btn.textContent='🎮 Find Game'; btn.classList.remove('searching'); btn.onclick=toggleFind;
+    document.getElementById('find-sub').textContent='Click to start searching for an opponent';
+    cancel.style.display='none'; qbox.classList.remove('show');
   }
 }
-
+function refreshLobby(){if(myId&&ws&&ws.readyState===1)wsSend({type:'request_lobby'});}
 function renderLobby(msg){
   if(myStatus==='playing') return;
-  // Don't call showPage here — it triggers refreshLobby again
   const online=msg.online||[], waiting=msg.waiting||[];
   const row=document.getElementById('players-row');
   row.innerHTML='';
-  if(!online.length){ row.innerHTML='<span style="font-size:12px;color:var(--muted)">No one here yet...</span>'; }
-  else { online.forEach(p=>{ const isMe=p.id===myId; const d=document.createElement('div'); d.className='player-chip'; const init=(p.name||'?')[0].toUpperCase(); const sl=p.status==='playing'?'In game':p.status==='waiting'?'Searching':'Browsing'; const bc=p.status==='playing'?'playing':p.status==='waiting'?'ready':''; d.innerHTML=`<div class="av">${init}</div><div style="font-size:12px;font-weight:600">${esc(p.name)}</div>${isMe?'<span class="chip-badge">YOU</span>':`<span class="chip-badge ${bc}">${sl}</span>`}`; row.appendChild(d); }); }
+  if(!online.length){row.innerHTML='<span style="font-size:12px;color:var(--muted)">No one here yet...</span>';}
+  else online.forEach(p=>{
+    const isMe=p.id===myId;
+    const sl=p.status==='playing'?'In game':p.status==='waiting'?'Searching':'Browsing';
+    const bc=p.status==='playing'?'playing':p.status==='waiting'?'ready':'';
+    const d=document.createElement('div'); d.className='pchip';
+    d.innerHTML=`<div class="av">${(p.name||'?')[0].toUpperCase()}</div><div style="font-size:12px;font-weight:600">${esc(p.name)}</div>${isMe?'<span class="cbadge">YOU</span>':`<span class="cbadge ${bc}">${sl}</span>`}`;
+    row.appendChild(d);
+  });
   document.getElementById('lobby-sub').textContent=`${online.length} player${online.length!==1?'s':''} online`;
-  const qlist=document.getElementById('queue-list');
+  const ql=document.getElementById('queue-list');
   const others=waiting.filter(p=>p.id!==myId);
-  qlist.innerHTML='';
-  if(!others.length){ qlist.innerHTML='<div class="queue-empty">No one searching yet...</div>'; }
-  else { others.forEach(p=>{ const d=document.createElement('div'); d.className='queue-item'; const init=(p.name||'?')[0].toUpperCase(); const canChal=myStatus==='waiting'; d.innerHTML=`<div class="qav">${init}</div><div><div class="qname">${esc(p.name)}</div><div class="qsub">Looking for a game</div></div>${canChal?`<button class="challenge-btn" id="chal-${p.id}" onclick="sendChallenge('${p.id}')">Challenge!</button>`:''}`; qlist.appendChild(d); }); }
+  ql.innerHTML='';
+  if(!others.length){ql.innerHTML='<div class="q-empty">No one searching yet...</div>';}
+  else others.forEach(p=>{
+    const d=document.createElement('div'); d.className='q-item';
+    const canChal=myStatus==='waiting';
+    d.innerHTML=`<div class="q-av">${(p.name||'?')[0].toUpperCase()}</div><div><div style="font-size:13px;font-weight:600">${esc(p.name)}</div><div style="font-size:10px;color:var(--muted)">Looking for a game</div></div>${canChal?`<button class="chal-btn" id="chal-${p.id}" onclick="sendChallenge('${p.id}')">Challenge!</button>`:''}`;
+    ql.appendChild(d);
+  });
 }
-
-function sendChallenge(targetId){
-  wsSend({type:'challenge',targetId});
-  const btn=document.getElementById('chal-'+targetId);
-  if(btn){ btn.textContent='Sent ✓'; btn.classList.add('sent'); btn.disabled=true; }
+function sendChallenge(id){
+  wsSend({type:'challenge',targetId:id});
+  const b=document.getElementById('chal-'+id);
+  if(b){b.textContent='Sent ✓';b.classList.add('sent');b.disabled=true;}
 }
-
 function acceptChallenge(){
-  document.getElementById('challenge-notif').classList.remove('show');
-  if(!incomingChallengerId) return;
-  wsSend({type:'accept_challenge',challengerId:incomingChallengerId});
-  incomingChallengerId=null;
+  document.getElementById('chal-toast').classList.remove('show');
+  if(!incomingChalId) return;
+  wsSend({type:'accept_challenge',challengerId:incomingChalId}); incomingChalId=null;
 }
-
 function declineChallenge(){
-  document.getElementById('challenge-notif').classList.remove('show');
-  if(!incomingChallengerId) return;
-  wsSend({type:'decline_challenge',challengerId:incomingChallengerId});
-  incomingChallengerId=null;
+  document.getElementById('chal-toast').classList.remove('show');
+  if(!incomingChalId) return;
+  wsSend({type:'decline_challenge',challengerId:incomingChalId}); incomingChalId=null;
 }
 
-// ══════════════════════════════════════
-//  LOADING
-// ══════════════════════════════════════
-function showLoading(oppName){
-  showPage('page-loading');
-  document.getElementById('loading-vs').innerHTML=`${esc(myName)} <span>VS</span> ${esc(oppName)}`;
+// ═══ LOADING ═══
+function showLoading(opp){
+  show('pg-load');
+  document.getElementById('vs-line').innerHTML=`${esc(myName)} <span>VS</span> ${esc(opp)}`;
   const bar=document.getElementById('prog-fill');
   bar.style.width='0%';
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{ bar.style.width='100%'; }));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{bar.style.width='100%';}));
 }
 
-// ══════════════════════════════════════
-//  PICK
-// ══════════════════════════════════════
+// ═══ PICK ═══
 function renderPick(msg){
-  showPage('page-pick');
+  show('pg-pick');
   const photos=msg.photos||[];
-  const myLocked=msg.me?.secret!==null&&msg.me?.secret!==undefined;
-  if(myLocked) pendingPickId=msg.me.secret;
+  const locked=msg.me?.secret!==null&&msg.me?.secret!==undefined;
+  if(locked) pendingPickId=msg.me.secret;
   const grid=document.getElementById('pick-grid');
   grid.innerHTML='';
   photos.forEach(p=>{
-    // FIX 4: mark opponent's pick as taken
-    const takenByOpp=msg.opponent?.secret===p.id;
     const chosen=pendingPickId===p.id;
     const d=document.createElement('div');
-    d.className='pick-card'+(chosen?' chosen':'')+(takenByOpp?' taken disabled':'');
+    d.className='pick-card'+(chosen?' chosen':'');
     d.innerHTML=`<div class="pimg"><img src="${p.src}" alt=""></div>${showNames?`<div class="pname">${esc(p.name||'')}</div>`:''}<div class="pick-tick">✓</div>`;
-    if(!takenByOpp&&!myLocked) d.onclick=()=>{ pendingPickId=p.id; renderPick(msg); document.getElementById('pick-confirm').disabled=false; };
+    if(!locked) d.onclick=()=>{pendingPickId=p.id;renderPick(msg);document.getElementById('pick-confirm').disabled=false;};
     grid.appendChild(d);
   });
   const cb=document.getElementById('pick-confirm');
-  cb.disabled=myLocked||pendingPickId===null;
-  cb.textContent=myLocked?'✓ Locked in!':'Lock In →';
+  cb.disabled=locked||pendingPickId===null;
+  cb.textContent=locked?'✓ Locked in!':'Lock In →';
   const oppPicked=msg.opponent?.secretPicked;
   document.getElementById('pick-status').textContent=
-    myLocked&&!oppPicked?'✓ Locked in! Waiting for opponent...':
-    !myLocked&&oppPicked?'Opponent is ready — pick yours!':
-    myLocked&&oppPicked?'Both ready! Starting...':'Tap someone to choose them';
+    locked&&!oppPicked?'✓ Locked in! Waiting for opponent...':
+    !locked&&oppPicked?'Opponent ready — pick yours!':
+    locked&&oppPicked?'Both ready! Starting...':'Tap someone to choose them';
 }
-
 function openPickConfirm(){
   if(pendingPickId===null) return;
-  const photo=(currentGame?.photos||currentPhotos).find(p=>p.id===pendingPickId);
-  if(!photo) return;
-  document.getElementById('confirm-pick-img').src=photo.src;
-  document.getElementById('confirm-pick-name').textContent=photo.name||'';
-  document.getElementById('modal-confirm-pick').classList.add('show');
+  const p=(currentGame?.photos||currentPhotos).find(p=>p.id===pendingPickId);
+  if(!p) return;
+  document.getElementById('cpick-img').src=p.src;
+  document.getElementById('cpick-name').textContent=p.name||'';
+  document.getElementById('modal-cpick').classList.add('show');
 }
-
-function confirmPickFinal(){
-  closeOverlay('modal-confirm-pick');
+function confirmPick(){
+  closeOverlay('modal-cpick');
   if(pendingPickId===null) return;
   wsSend({type:'pick_secret',photoId:pendingPickId,confirmed:true});
 }
 
-// ══════════════════════════════════════
-//  GAME
-// ══════════════════════════════════════
+// ═══ GAME ═══
 function renderGame(msg){
-  showPage('page-game');
+  show('pg-game');
   closeOverlay('modal-snipe');
   const photos=msg.photos||[];
-  const isMyTurn=msg.turn===myId;
-  const guessesLeft=msg.me?.guessesLeft??3;
-  document.getElementById('game-sub').textContent=isMyTurn?'Your turn':`${msg.opponent?.name||'Opponent'}'s turn`;
+  const isMine=msg.turn===myId;
+  const gl=msg.me?.guessesLeft??3;
+  document.getElementById('game-sub').textContent=isMine?'Your turn':`${msg.opponent?.name||'Opponent'}'s turn`;
   const banner=document.getElementById('turn-banner');
-  banner.className='turn-banner '+(isMyTurn?'mine':'theirs');
-  banner.textContent=isMyTurn?'🟢 Your turn — ask a question, then flip cards!':
-    `⏳ ${msg.opponent?.name||'Opponent'}'s turn — answer their question`;
-  // FIX 5: disable buttons properly
-  document.getElementById('end-turn-btn').disabled=!isMyTurn;
-  const gBtn=document.getElementById('guess-open-btn');
-  gBtn.disabled=!isMyTurn||guessesLeft===0;
-  document.getElementById('guess-counter').textContent=`🎯 ${guessesLeft} left`;
-  document.getElementById('guess-counter').style.opacity=guessesLeft===0?'.4':'1';
-  const mySecretPhoto=photos.find(p=>p.id===msg.me?.secret);
-  if(mySecretPhoto) document.getElementById('secret-img').src=mySecretPhoto.src;
-  const oppName=msg.opponent?.name||'—';
-  document.getElementById('opp-av').textContent=oppName[0]?.toUpperCase()||'?';
-  document.getElementById('opp-name').textContent=oppName;
+  banner.className='turn-banner '+(isMine?'mine':'theirs');
+  banner.textContent=isMine?'🟢 Your turn — ask a question, then flip cards!':`⏳ ${msg.opponent?.name||'Opponent'}'s turn — answer their question`;
+  document.getElementById('end-turn-btn').disabled=!isMine;
+  document.getElementById('guess-btn').disabled=!isMine||gl===0;
+  document.getElementById('guess-counter').textContent=`🎯 ${gl} left`;
+  document.getElementById('guess-counter').style.opacity=gl===0?'.4':'1';
+  const sp=photos.find(p=>p.id===msg.me?.secret);
+  if(sp) document.getElementById('secret-img').src=sp.src;
+  const on=msg.opponent?.name||'—';
+  document.getElementById('opp-av').textContent=on[0]?.toUpperCase()||'?';
+  document.getElementById('opp-name').textContent=on;
   document.getElementById('opp-elim').textContent=`${(msg.opponent?.eliminated||[]).length} eliminated`;
-  document.getElementById('board-hint').textContent=isMyTurn?'Tap a card to eliminate — one-way only':'Waiting for opponent...';
-  // FIX 4: reset flippedThisTurn when turn changes
-  if(msg.turn !== lastTurn) {
-    localFlippedThisTurn = new Set();
-    pendingFlips = new Set();
-    lastTurn = msg.turn;
-  }
-  const myElim=new Set(msg.me?.eliminated||[]);
-  // FIX 4: flippedThisTurn not sent from server — track locally
-  // Rebuild board if not built, grid is empty, or photos just arrived
-  const gridEl = document.getElementById('board-grid');
-  const needsBuild = !boardBuilt || gridEl.children.length === 0 || (photos.length > 0 && gridEl.children.length !== photos.length);
-  if(needsBuild && photos.length > 0){
-    buildBoard(photos,myElim,isMyTurn,localFlippedThisTurn);
-    boardBuilt=true;
-  } else if(!needsBuild){
-    syncBoard(myElim,isMyTurn,localFlippedThisTurn);
-  }
+  if(msg.turn!==lastTurn){localFlipped=new Set();pendingFlips=new Set();lastTurn=msg.turn;}
+  const elim=new Set(msg.me?.eliminated||[]);
+  const grid=document.getElementById('board-grid');
+  const needsBuild=!boardBuilt||grid.children.length===0||grid.children.length!==photos.length;
+  if(needsBuild&&photos.length>0){buildBoard(photos,elim,isMine);boardBuilt=true;}
+  else syncBoard(elim,isMine);
 }
 
-function buildBoard(photos,elimSet,isMyTurn,flippedThis){
+function buildBoard(photos,elimSet,isMine){
   const grid=document.getElementById('board-grid');
   grid.innerHTML='';
-  const n=photos.length;
-  // Fixed 5 cols always — no scroll, all fit
-  const cols=5;
-  grid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
-  grid.style.gridTemplateRows='';
-
   photos.forEach(p=>{
-    const isFlipped=elimSet.has(p.id);
-    const reversible=isFlipped&&isMyTurn&&flippedThis&&flippedThis.has(p.id);
-    const blocked=!isMyTurn&&!isFlipped;
-    const c=document.createElement('div');
-    c.className='flip-card'+(isFlipped?' flipped':'')+(blocked?' blocked':'')+(reversible?' reversible':'');
-    c.dataset.photoid=p.id;
-    c.innerHTML=`<div class="flip-card-inner-wrap"><div class="flip-inner"><div class="flip-face flip-front"><div class="fimg"><img src="${p.src}" alt=""></div>${showNames?`<div class="fname">${esc(p.name||'')}</div>`:''}</div><div class="flip-face flip-back"><div class="xmark">✕</div><div class="out-lbl">Out</div></div></div></div>`;
-    c.onclick=()=>flipCard(p.id,c,isFlipped,reversible,isMyTurn);
-    grid.appendChild(c);
+    const isElim=elimSet.has(p.id);
+    const isRev=isElim&&isMine&&localFlipped.has(p.id);
+    const blocked=!isMine&&!isElim;
+    const d=document.createElement('div');
+    d.className='card'+(isElim?' elim':'')+(blocked?' blocked':'')+(isRev?' reversible':'');
+    d.dataset.id=p.id;
+    d.innerHTML=`<div class="card-inner"><div class="card-img"><img src="${p.src}" loading="lazy" alt=""></div>${showNames?`<div class="card-name">${esc(p.name||'')}</div>`:''}</div><div class="card-overlay"><div class="xmark">✕</div><div class="out">Out</div></div>`;
+    d.onclick=()=>tapCard(p.id,d,isElim,isRev,isMine);
+    grid.appendChild(d);
   });
 }
 
-function syncBoard(elimSet,isMyTurn,flippedThis){
-  document.querySelectorAll('.flip-card').forEach(card=>{
-    const id=parseInt(card.dataset.photoid);
-    const isFlipped=elimSet.has(id);
-    const reversible=isFlipped&&isMyTurn&&flippedThis&&flippedThis.has(id);
-    const blocked=!isMyTurn&&!isFlipped;
-    if(isFlipped&&!card.classList.contains('flipped')) card.classList.add('flipped');
-    if(!isFlipped&&card.classList.contains('flipped')) card.classList.remove('flipped');
-    card.classList.toggle('blocked',!!blocked);
-    card.classList.toggle('reversible',!!reversible);
-    // update onclick with new state
-    card.onclick=()=>flipCard(id,card,isFlipped,reversible,isMyTurn);
+function syncBoard(elimSet,isMine){
+  document.querySelectorAll('.card').forEach(d=>{
+    const id=parseInt(d.dataset.id);
+    const isElim=elimSet.has(id);
+    const isRev=isElim&&isMine&&localFlipped.has(id);
+    const blocked=!isMine&&!isElim;
+    d.classList.toggle('elim',isElim);
+    d.classList.toggle('blocked',blocked);
+    d.classList.toggle('reversible',isRev);
+    d.onclick=()=>tapCard(id,d,isElim,isRev,isMine);
   });
 }
 
-function flipCard(photoId,cardEl,isFlipped,reversible,isMyTurn){
-  if(!isMyTurn) return;
-  if(pendingFlips.has(photoId)) return; // waiting for server ack — ignore tap
-  if(isFlipped&&!reversible) return;
-  pendingFlips.add(photoId);
-  if(isFlipped&&reversible){
-    cardEl.classList.remove('flipped','reversible');
-    localFlippedThisTurn.delete(photoId);
-  } else if(!isFlipped){
-    cardEl.classList.add('flipped');
-    localFlippedThisTurn.add(photoId);
+function tapCard(id,el,isElim,isRev,isMine){
+  if(!isMine) return;
+  if(pendingFlips.has(id)) return;
+  if(isElim&&!isRev) return;
+  pendingFlips.add(id);
+  if(isElim&&isRev){
+    el.classList.remove('elim','reversible');
+    localFlipped.delete(id);
+  } else {
+    el.classList.add('elim');
+    el.classList.remove('blocked');
+    localFlipped.add(id);
   }
-  wsSend({type:'toggle_eliminate',photoId});
-  // Auto-clear pending after 1s in case server is slow
-  setTimeout(()=>pendingFlips.delete(photoId), 1000);
+  wsSend({type:'toggle_eliminate',photoId:id});
+  setTimeout(()=>pendingFlips.delete(id),1000);
 }
+function endTurn(){wsSend({type:'end_turn'});}
 
-function endTurn(){ wsSend({type:'end_turn'}); }
-
-// ══════════════════════════════════════
-//  GUESS
-// ══════════════════════════════════════
+// ═══ GUESS ═══
 function openGuessModal(){
   pendingGuessId=null;
   const photos=currentGame?.photos||currentPhotos;
-  const guessesLeft=currentGame?.me?.guessesLeft??3;
-  document.getElementById('guess-modal-sub').textContent=`Who is it? (${guessesLeft} guess${guessesLeft!==1?'es':''} left)`;
+  const gl=currentGame?.me?.guessesLeft??3;
+  const myElim=new Set(currentGame?.me?.eliminated||[]);
+  document.getElementById('guess-sub').textContent=`Who is it? (${gl} guess${gl!==1?'es':''} left)`;
   const grid=document.getElementById('guess-grid');
   grid.innerHTML='';
-  document.getElementById('guess-confirm-btn').disabled=true;
-  // FIX 3: exclude already-eliminated cards from the guess grid
-  const myElimSet=new Set(currentGame?.me?.eliminated||[]);
-  const availablePhotos=photos.filter(p=>!myElimSet.has(p.id));
-  availablePhotos.forEach(p=>{
-    const d=document.createElement('div'); d.className='guess-opt';
-    d.innerHTML=`<div class="gimg"><img src="${p.src}" alt=""></div>${showNames?`<div class="gname">${esc(p.name||'')}</div>`:''}<div class="gtick">✓</div>`;
-    d.onclick=()=>{ grid.querySelectorAll('.guess-opt').forEach(x=>x.classList.remove('sel')); d.classList.add('sel'); pendingGuessId=p.id; document.getElementById('guess-confirm-btn').disabled=false; };
+  document.getElementById('guess-ok-btn').disabled=true;
+  photos.filter(p=>!myElim.has(p.id)).forEach(p=>{
+    const d=document.createElement('div'); d.className='go';
+    d.innerHTML=`<div class="gi"><img src="${p.src}" alt=""></div>${showNames?`<div class="gn">${esc(p.name||'')}</div>`:''}<div class="gt">✓</div>`;
+    d.onclick=()=>{grid.querySelectorAll('.go').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');pendingGuessId=p.id;document.getElementById('guess-ok-btn').disabled=false;};
     grid.appendChild(d);
   });
   document.getElementById('modal-guess').classList.add('show');
 }
-
 function submitGuess(){
   if(pendingGuessId===null) return;
   closeOverlay('modal-guess');
   wsSend({type:'guess',photoId:pendingGuessId});
 }
 
-// ══════════════════════════════════════
-//  FIX 6: SNIPE PHASE
-// ══════════════════════════════════════
+// ═══ SNIPE ═══
 function renderSnipe(msg){
-  showPage('page-game');
-  renderGame({...msg,phase:'playing'}); // keep board visible
+  show('pg-game');
   const snipe=msg.snipe;
   if(!snipe) return;
-  const amInitiator=snipe.initiatorId===myId;
-  if(amInitiator){
-    // Initiator already guessed — wait for opponent response
-    const banner=document.getElementById('turn-banner');
-    banner.className='turn-banner theirs';
-    banner.textContent=`⚡ Snipe sent! Waiting for ${msg.opponent?.name||'opponent'} to respond...`;
+  // First render the game board in background
+  renderGame({...msg,phase:'playing'});
+  const amI=snipe.initiatorId===myId;
+  if(amI){
+    const b=document.getElementById('turn-banner');
+    b.className='turn-banner theirs';
+    b.textContent=`⚡ Snipe sent! Waiting for ${msg.opponent?.name||'opponent'} to respond...`;
     document.getElementById('end-turn-btn').disabled=true;
-    document.getElementById('guess-open-btn').disabled=true;
+    document.getElementById('guess-btn').disabled=true;
     return;
   }
   // Responder: show snipe modal
-  // Never reveal what the initiator guessed — keep it private
-  document.getElementById('snipe-title').textContent=`⚡ ${esc(snipe.initiatorName)} is making a guess!`;
-  document.getElementById('snipe-desc').textContent=`${esc(snipe.initiatorName)} thinks they know who your secret character is. Do you want to counter-guess their character before the result is revealed?`;
   pendingSnipeId=null;
+  document.getElementById('snipe-title').textContent=`⚡ ${esc(snipe.initiatorName)} is making a guess!`;
+  document.getElementById('snipe-desc').textContent=`${esc(snipe.initiatorName)} thinks they know your secret character. Counter-guess their character?`;
   const grid=document.getElementById('snipe-grid');
   grid.innerHTML='';
-  document.getElementById('snipe-confirm-btn').disabled=true;
+  document.getElementById('snipe-ok-btn').disabled=true;
   (msg.photos||[]).forEach(p=>{
-    const d=document.createElement('div'); d.className='guess-opt';
-    d.innerHTML=`<div class="gimg"><img src="${p.src}" alt=""></div>${showNames?`<div class="gname">${esc(p.name||'')}</div>`:''}<div class="gtick">✓</div>`;
-    d.onclick=()=>{ grid.querySelectorAll('.guess-opt').forEach(x=>x.classList.remove('sel')); d.classList.add('sel'); pendingSnipeId=p.id; document.getElementById('snipe-confirm-btn').disabled=false; };
+    const d=document.createElement('div'); d.className='go';
+    d.innerHTML=`<div class="gi"><img src="${p.src}" alt=""></div>${showNames?`<div class="gn">${esc(p.name||'')}</div>`:''}<div class="gt">✓</div>`;
+    d.onclick=()=>{grid.querySelectorAll('.go').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');pendingSnipeId=p.id;document.getElementById('snipe-ok-btn').disabled=false;};
     grid.appendChild(d);
   });
   document.getElementById('modal-snipe').classList.add('show');
 }
+function submitSnipe(){closeOverlay('modal-snipe');wsSend({type:'snipe_respond',photoId:pendingSnipeId});}
+function passSnipe(){closeOverlay('modal-snipe');wsSend({type:'snipe_respond',photoId:null});}
 
-function submitSnipeGuess(){
-  closeOverlay('modal-snipe');
-  wsSend({type:'snipe_respond',photoId:pendingSnipeId});
-}
-
-function passSnipe(){
-  closeOverlay('modal-snipe');
-  wsSend({type:'snipe_respond',photoId:null});
-}
-
-// ══════════════════════════════════════
-//  RESULT
-// ══════════════════════════════════════
+// ═══ RESULT ═══
 function renderResult(msg){
-  showPage('page-game');
+  show('pg-game');
   closeOverlay('modal-snipe');
   const r=msg.result; if(!r) return;
-  let emoji='🎉', title='', resultMsg='', photoSrc='';
+  let emoji='🎉',title='',body='',src='';
   if(r.snipeResult){
-    const iAmInitiator=r.initiatorId===myId;
-    const iAmResponder=r.responderId===myId;
-    if(r.snipeResult==='tie'){
-      emoji='🤝'; title='It\'s a tie!';
-      resultMsg='Both of you guessed correctly at the same time!';
-      photoSrc=iAmInitiator?r.actualPhotoSrc:r.p1SecretSrc||r.actualPhotoSrc;
-    } else if((r.snipeResult==='initiator'&&iAmInitiator)||(r.snipeResult==='responder'&&iAmResponder)){
-      emoji='🎉'; title='You win!';
-      resultMsg='You guessed correctly!';
-      photoSrc=r.guessedPhotoSrc;
-    } else {
-      emoji='😬'; title='You lose!';
-      resultMsg='Your opponent guessed right. Better luck next time!';
-      photoSrc=r.actualPhotoSrc;
-    }
+    const iAmI=r.initiatorId===myId, iAmR=r.responderId===myId;
+    if(r.snipeResult==='tie'){emoji='🤝';title="It's a tie!";body='Both of you guessed correctly!';src=r.guessedPhotoSrc||'';}
+    else if((r.snipeResult==='initiator'&&iAmI)||(r.snipeResult==='responder'&&iAmR)){emoji='🎉';title='You win!';body='You guessed correctly!';src=r.guessedPhotoSrc||'';}
+    else{emoji='😬';title='You lose!';body='Your opponent guessed right.';src=r.actualPhotoSrc||'';}
   } else {
-    const iWon=r.correct&&r.guesserId===myId;
-    const iGuessed=r.guesserId===myId;
+    const iWon=r.correct&&r.guesserId===myId, iGuessed=r.guesserId===myId;
     emoji=iWon?'🎉':iGuessed?'😬':'😮';
     title=iWon?'You win! 🎉':iGuessed?'Wrong guess!':`${esc(r.guesserName)} got you!`;
-    resultMsg=iWon?'You correctly guessed your opponent\'s character!':
-      iGuessed?'That wasn\'t right — your opponent wins!':
-      `${r.guesserName} figured out who you were!`;
-    photoSrc=r.correct?r.guessedPhotoSrc:r.actualPhotoSrc;
+    body=iWon?'You correctly guessed your opponent!':iGuessed?'Wrong — your opponent wins!':r.guesserName+' figured out who you were!';
+    src=r.correct?r.guessedPhotoSrc:r.actualPhotoSrc;
   }
-  document.getElementById('result-emoji').textContent=emoji;
-  document.getElementById('result-photo').src=photoSrc||'';
-  document.getElementById('result-title').textContent=title;
-  document.getElementById('result-msg').textContent=resultMsg;
+  // look up src from cache if missing
+  if(!src){
+    const id=r.guessedPhotoId||r.actualPhotoId;
+    src=photoCache[id]?.src||'';
+  }
+  document.getElementById('res-emoji').textContent=emoji;
+  document.getElementById('res-photo').src=src;
+  document.getElementById('res-title').textContent=title;
+  document.getElementById('res-msg').textContent=body;
   document.getElementById('modal-result').classList.add('show');
 }
-
 function backToLobby(){
-  closeOverlay('modal-result'); closeOverlay('modal-opp-left');
-  boardBuilt=false; pendingPickId=null; pendingGuessId=null; currentGame=null;
-  myStatus='lobby'; syncFindUI('lobby');
+  ['modal-result','modal-left'].forEach(closeOverlay);
+  boardBuilt=false; pendingPickId=null; currentGame=null; pendingGS=null;
+  localFlipped=new Set(); pendingFlips=new Set(); myStatus='lobby'; syncFindUI('lobby');
   wsSend({type:'back_to_lobby'});
 }
 
-// ══════════════════════════════════════
-//  FIX 1: ADMIN — sync with server photos
-// ══════════════════════════════════════
-// ── ADMIN STATE ──
-let allLibraryPhotos = [];
-let serverPresets = [];
-let editingPreset = null;
-let adminUnlocked = false;
-let adminPassword = '';
-let pendingAdminTab = null; // tab to open after unlock
-
-function requireAdminTab(tabName, btn){
-  if(adminUnlocked){
-    switchAdminTab(tabName, btn);
-  } else {
-    pendingAdminTab = { name: tabName, btn };
-    // Hide all tab panels, show gate
-    document.querySelectorAll('.admin-tab-panel').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('admin-gate').style.display='block';
-    document.getElementById('gate-error').style.display='none';
-    setTimeout(()=>document.getElementById('admin-gate-pass').focus(), 100);
-  }
+// ═══ SECRET EXPAND ═══
+function expandSecret(){
+  const img=document.getElementById('secret-img');
+  if(!img.src||img.src===location.href) return;
+  document.getElementById('secret-big').src=img.src;
+  const p=(currentGame?.photos||currentPhotos).find(p=>p.id===currentGame?.me?.secret);
+  document.getElementById('secret-big-name').textContent=p?.name||'';
+  document.getElementById('modal-secret').classList.add('show');
 }
 
-function submitAdminGate(){
-  const pass = document.getElementById('admin-gate-pass').value;
-  if(!pass) return;
-  // Try to verify by requesting admin data
-  adminPassword = pass;
-  wsSend({type:'admin_get_data', password:pass});
-}
-
-function onAdminUnlocked(){
-  adminUnlocked = true;
+// ═══ ADMIN ═══
+function openAdmin(){document.getElementById('modal-admin').classList.add('show');if(adminUnlocked)wsSend({type:'admin_get_data',password:adminPass});}
+function switchTab(n,btn){
+  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.apanel').forEach(p=>p.classList.remove('active'));
   document.getElementById('admin-gate').style.display='none';
-  document.getElementById('admin-gate-pass').value='';
-  if(pendingAdminTab){
-    switchAdminTab(pendingAdminTab.name, pendingAdminTab.btn);
-    pendingAdminTab = null;
-  }
-}
-
-function loadAdminData(){
-  const pass=adminPassword||document.getElementById('admin-gate-pass')?.value;
-  if(!pass) return;
-  wsSend({type:'admin_get_data', password:pass});
-}
-
-function openAdmin(){
-  document.getElementById('modal-admin').classList.add('show');
-  // If already unlocked, refresh from server
-  if(adminUnlocked) loadAdminData();
-  // If library is empty and we have photos, pre-populate
-  else if(allLibraryPhotos.length===0 && currentPhotos.length>0){
-    allLibraryPhotos=currentPhotos.map(p=>({...p}));
-    adminPhotos=allLibraryPhotos.map(p=>({src:p.src,name:p.name||''}));
-    renderPhotosList();
-  }
-}
-
-function loadAdminData(){
-  const pass=document.getElementById('admin-pass').value;
-  if(!pass) return;
-  wsSend({type:'admin_get_data', password:pass});
-}
-
-function syncAdminPhotos(serverPhotos){
-  allLibraryPhotos=serverPhotos.map(p=>({...p}));
-  adminPhotos=allLibraryPhotos.map(p=>({src:p.src,name:p.name||''}));
-  renderPhotosList();
-}
-
-function switchAdminTab(name,btn){
-  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.admin-tab-panel').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('tab-'+n).classList.add('active');
 }
-
-function toggleDark(on){ document.body.classList.toggle('dark',on); }
-
+function requireAdminTab(n,btn){
+  if(adminUnlocked){switchTab(n,btn);return;}
+  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.apanel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('admin-gate').style.display='block';
+  document.getElementById('gate-err').style.display='none';
+  pendingAdminTab={n,btn};
+  setTimeout(()=>document.getElementById('gate-inp').focus(),100);
+}
+function submitGate(){
+  const p=document.getElementById('gate-inp').value;
+  if(!p) return;
+  adminPass=p;
+  wsSend({type:'admin_get_data',password:p});
+}
+function onAdminUnlocked(){
+  adminUnlocked=true;
+  document.getElementById('admin-gate').style.display='none';
+  document.getElementById('gate-inp').value='';
+  if(pendingAdminTab){switchTab(pendingAdminTab.n,pendingAdminTab.btn);pendingAdminTab=null;}
+}
 function toggleNames(on){
   showNames=on;
   if(boardBuilt&&currentGame){
-    const myElim=new Set(currentGame.me?.eliminated||[]);
-    const isMyTurn=currentGame.turn===myId;
-    buildBoard(currentGame.photos||[],myElim,isMyTurn);
+    const e=new Set(currentGame.me?.eliminated||[]);
+    buildBoard(currentGame.photos||[],e,currentGame.turn===myId);
   }
 }
-
-document.getElementById('admin-file').addEventListener('change',e=>handleAdminFiles(e.target.files));
-document.querySelector('.photo-upload-zone').addEventListener('dragover',e=>e.preventDefault());
-document.querySelector('.photo-upload-zone').addEventListener('drop',e=>{ e.preventDefault(); handleAdminFiles(e.dataTransfer.files); });
-
-function handleAdminFiles(files){
-  const slots=999;
-  Array.from(files).slice(0,slots).forEach(f=>{
+// Photo uploads
+document.getElementById('admin-file').addEventListener('change',e=>addFiles(e.target.files));
+document.querySelector('.upload-zone').addEventListener('dragover',e=>e.preventDefault());
+document.querySelector('.upload-zone').addEventListener('drop',e=>{e.preventDefault();addFiles(e.dataTransfer.files);});
+function addFiles(files){
+  Array.from(files).forEach(f=>{
     if(!f.type.startsWith('image/')) return;
     const r=new FileReader();
-    r.onload=ev=>{ adminPhotos.push({src:ev.target.result,name:f.name.replace(/\.[^.]+$/,'')}); renderPhotosList(); };
+    r.onload=ev=>{adminPhotos.push({src:ev.target.result,name:f.name.replace(/\.[^.]+$/,'')});renderAdminList();};
     r.readAsDataURL(f);
   });
 }
-
-function renderPhotosList(){
-  const wrap=document.getElementById('photos-name-list');
+function renderAdminList(){
+  const wrap=document.getElementById('photo-list');
   wrap.innerHTML='';
   adminPhotos.forEach((p,i)=>{
-    const d=document.createElement('div'); d.className='photo-name-row';
-    d.innerHTML=`<div class="pthumb"><img src="${p.src}"></div><input class="name-input" type="text" value="${esc(p.name)}" placeholder="Name" oninput="adminPhotos[${i}].name=this.value"><button class="rm-btn" onclick="removeAdminPhoto(${i})">✕</button>`;
+    const d=document.createElement('div'); d.className='prow';
+    d.innerHTML=`<div class="pthumb"><img src="${p.src}"></div><input class="ninp" type="text" value="${esc(p.name)}" placeholder="Name" oninput="adminPhotos[${i}].name=this.value"><button class="rm-btn" onclick="adminPhotos.splice(${i},1);renderAdminList()">✕</button>`;
     wrap.appendChild(d);
   });
   document.getElementById('admin-count').textContent=`${adminPhotos.length} photos`;
 }
-
-function removeAdminPhoto(i){ adminPhotos.splice(i,1); renderPhotosList(); }
-
 function pushPhotos(){
-  if(!adminUnlocked){ showAdminMsg('admin-msg','Not unlocked.','err'); return; }
-  if(adminPhotos.length<1){ showAdminMsg('admin-msg','Upload at least 1 photo.','err'); return; }
-  wsSend({type:'admin_photos',password:adminPassword,photos:adminPhotos.map(p=>({src:p.src,name:p.name}))});
+  if(!adminUnlocked){showAMsg('admin-msg','Unlock admin first.','err');return;}
+  if(adminPhotos.length<1){showAMsg('admin-msg','Add at least 1 photo.','err');return;}
+  wsSend({type:'admin_photos',password:adminPass,photos:adminPhotos});
 }
-
-// FIX 3: hard reset
-function hardReset(){
-  if(!adminUnlocked){ showAdminMsg('manage-msg','Not unlocked.','err'); return; }
-  if(!confirm('Hard reset — send everyone back to lobby and clear all games?')) return;
-  wsSend({type:'admin_reset',password:adminPassword});
-}
-
-function clearAllPhotos(){
-  if(!confirm('Remove all photos from the list?')) return;
-  adminPhotos=[];
-  renderPhotosList();
-}
-
 function renderPresets(){
   const wrap=document.getElementById('presets-list');
   if(!wrap) return;
   wrap.innerHTML='';
-  if(!serverPresets.length){
-    wrap.innerHTML='<div style="font-size:12px;color:var(--muted);padding:.4rem 0">No presets yet. Create one below.</div>';
-    return;
-  }
+  if(!serverPresets.length){wrap.innerHTML='<div style="font-size:12px;color:var(--muted);padding:.3rem 0">No presets yet.</div>';return;}
   serverPresets.forEach(p=>{
-    const d=document.createElement('div');
-    d.style.cssText='display:flex;align-items:center;gap:.5rem;background:var(--off);border:1px solid var(--border);border-radius:8px;padding:.45rem .65rem';
-    d.innerHTML=`<div style="flex:1"><div style="font-size:13px;font-weight:700">${esc(p.name)}</div><div style="font-size:11px;color:var(--muted)">${p.count} photos</div></div>
-      <button onclick="activatePreset('${p.id}')" style="padding:4px 10px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">▶ Use</button>
-      <button onclick="editPreset('${p.id}')" style="padding:4px 10px;background:var(--off);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer">✏️</button>
-      <button onclick="deletePreset('${p.id}')" style="padding:4px 10px;background:#fee2e2;color:var(--red);border:none;border-radius:6px;font-size:11px;cursor:pointer">✕</button>`;
+    const d=document.createElement('div'); d.className='preset-row';
+    d.innerHTML=`<div style="flex:1"><div style="font-size:13px;font-weight:700">${esc(p.name)}</div><div style="font-size:10px;color:var(--muted)">${p.count} photos</div></div><button onclick="activatePreset('${p.id}')" style="padding:4px 10px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">▶ Use</button><button onclick="deletePreset('${p.id}')" style="padding:4px 10px;background:#fee2e2;color:var(--red);border:none;border-radius:6px;font-size:11px;cursor:pointer;margin-left:4px">✕</button>`;
     wrap.appendChild(d);
   });
 }
-
 function createPreset(){
   if(!adminUnlocked) return;
-  if(serverPresets.length>=3){ showAdminMsg('admin-msg','Max 3 presets.','err'); return; }
-  if(!allLibraryPhotos.length){ showAdminMsg('admin-msg','Upload photos to library first.','err'); return; }
-  const name=prompt('Preset name (e.g. "Game Night Set 1"):');
-  if(!name) return;
-  const photoIds=allLibraryPhotos.map(p=>p.id);
-  wsSend({type:'admin_save_preset',password:adminPassword,preset:{name,photoIds}});
+  if(serverPresets.length>=3){showAMsg('admin-msg','Max 3 presets.','err');return;}
+  const n=prompt('Preset name:'); if(!n) return;
+  wsSend({type:'admin_save_preset',password:adminPass,preset:{name:n,photoIds:adminPhotos.map((_,i)=>i)}});
 }
-
-function editPreset(presetId){
-  if(!adminUnlocked) return;
-  const preset=serverPresets.find(p=>p.id===presetId);
-  if(!preset) return;
-  const name=prompt('Rename preset:',preset.name);
-  if(!name) return;
-  wsSend({type:'admin_save_preset',password:adminPassword,preset:{id:presetId,name,photoIds:allLibraryPhotos.map(p=>p.id)}});
-}
-
-function deletePreset(presetId){
+function deletePreset(id){
   if(!adminUnlocked) return;
   if(!confirm('Delete this preset?')) return;
-  wsSend({type:'admin_delete_preset',password:adminPassword,presetId});
+  wsSend({type:'admin_delete_preset',password:adminPass,presetId:id});
 }
-
-function activatePreset(presetId){
+function activatePreset(id){
   if(!adminUnlocked) return;
-  wsSend({type:'admin_activate_preset',password:adminPassword,presetId});
+  wsSend({type:'admin_activate_preset',password:adminPass,presetId:id});
 }
-
 function activateRandom(){
   if(!adminUnlocked) return;
-  const count=parseInt(document.getElementById('random-count').value)||25;
-  wsSend({type:'admin_activate_preset',password:adminPassword,presetId:'random',count});
+  const n=parseInt(document.getElementById('rand-n').value)||25;
+  wsSend({type:'admin_activate_preset',password:adminPass,presetId:'random',count:n});
+}
+function hardReset(){
+  if(!adminUnlocked){showAMsg('manage-msg','Unlock admin first.','err');return;}
+  if(!confirm('Hard reset everyone to lobby?')) return;
+  wsSend({type:'admin_reset',password:adminPass});
+}
+function showAMsg(id,txt,t){
+  const e=document.getElementById(id);
+  if(!e) return;
+  e.textContent=txt; e.className='amsg '+t; e.style.display='block';
+  setTimeout(()=>e.style.display='none',4000);
 }
 
-function showAdminMsg(id,text,type){
-  const el=document.getElementById(id);
-  el.textContent=text; el.className='admin-msg-line '+type; el.style.display='block';
-  setTimeout(()=>el.style.display='none',4000);
-}
-
-// ══════════════════════════════════════
-//  UTILS
-// ══════════════════════════════════════
-// FIX 5: expand secret photo
-function expandSecret(){
-  const img=document.getElementById('secret-img');
-  const expandImg=document.getElementById('secret-expand-img');
-  const expandName=document.getElementById('secret-expand-name');
-  if(!img.src) return;
-  expandImg.src=img.src;
-  // find name
-  const secretPhoto=(currentGame?.photos||currentPhotos).find(p=>p.id===currentGame?.me?.secret);
-  expandName.textContent=secretPhoto?.name||'';
-  document.getElementById('modal-secret-expand').classList.add('show');
-}
-
-// Internal page switch — no side effects
-function _showPage(id){
+// ═══ UTILS ═══
+function show(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  if(id==='pg-lobby'&&myId) refreshLobby();
 }
-// Public page switch — requests lobby refresh when going to lobby
-function showPage(id){
-  _showPage(id);
-  // Request fresh lobby state when navigating TO lobby (but only if connected & joined)
-  if(id==='page-lobby' && myId) refreshLobby();
-}
-function closeOverlay(id){ document.getElementById(id).classList.remove('show'); }
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function isPage(id){return document.getElementById(id).classList.contains('active');}
+function closeOverlay(id){document.getElementById(id).classList.remove('show');}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 </script>
 </body>
 </html>
