@@ -128,22 +128,23 @@ body.dark .opp-av{background:#2a0a0e}
 .info-muted{color:var(--muted);font-size:10px}
 .gcounter{display:inline-flex;align-items:center;background:var(--red-lt);color:var(--red);border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px}
 body.dark .gcounter{background:#450a0a}
-.board-wrap{flex:1;overflow-y:auto;min-height:0}
-.board-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding-bottom:2px}
-/* Each card: portrait shape, fully visible */
-.card{position:relative;cursor:pointer}
-.card-inner{border-radius:7px;overflow:hidden;border:1.5px solid var(--border);background:var(--white);transition:opacity .2s}
+.board-wrap{flex:1;overflow-y:auto;min-height:0;padding:.5rem .25rem}
+.board-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;max-width:960px;margin:0 auto}
+/* Cards identical to pick screen */
+.card{position:relative;cursor:pointer;border-radius:var(--r);overflow:hidden;border:3px solid var(--border);background:var(--white);transition:border-color .15s,transform .1s}
+.card:hover:not(.blocked){border-color:var(--red)}
+.card-inner{position:relative}
 .card-img{aspect-ratio:3/4;overflow:hidden}
 .card-img img{width:100%;height:100%;object-fit:cover;display:block}
-.card-name{font-size:9px;font-weight:700;text-align:center;padding:2px 3px 3px;background:var(--white);color:var(--text);border-top:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
-.card.elim .card-inner{opacity:.25}
+.card-name{font-size:11px;font-weight:700;text-align:center;padding:4px 4px 5px;background:var(--white);color:var(--text);border-top:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card.elim{opacity:.3}
 .card.elim .card-overlay{display:flex}
-.card-overlay{display:none;position:absolute;inset:0;background:var(--red);border-radius:7px;align-items:center;justify-content:center;flex-direction:column;gap:2px}
-.card-overlay .xmark{font-size:1.6rem;font-weight:900;color:rgba(255,255,255,.5);line-height:1}
-.card-overlay .out{font-size:8px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.card-overlay{display:none;position:absolute;inset:0;background:rgba(245,66,81,.85);align-items:center;justify-content:center;flex-direction:column;gap:2px}
+.card-overlay .xmark{font-size:2rem;font-weight:900;color:#fff;line-height:1}
+.card-overlay .out{font-size:9px;color:rgba(255,255,255,.85);font-weight:700;text-transform:uppercase;letter-spacing:1px}
 .card.blocked{cursor:not-allowed}
 .card.reversible{cursor:pointer}
-.card.reversible .card-overlay{background:#e85560}
+.card.reversible .card-overlay{background:rgba(180,30,50,.8)}
 .game-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px;flex-shrink:0}
 .act-btn{padding:10px;border:none;border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;transition:background .15s}
 .act-btn:disabled{opacity:.4;cursor:not-allowed}
@@ -788,7 +789,7 @@ function buildBoard(photos,elimSet,isMine){
     const d=document.createElement('div');
     d.className='card'+(isElim?' elim':'')+(blocked?' blocked':'')+(isRev?' reversible':'');
     d.dataset.id=p.id;
-    d.innerHTML=`<div class="card-inner"><div class="card-img"><img src="${p.src}" loading="lazy" alt=""></div>${showNames?`<div class="card-name">${esc(p.name||'')}</div>`:''}</div><div class="card-overlay"><div class="xmark">✕</div><div class="out">Out</div></div>`;
+    d.innerHTML=`<div class="card-inner"><div class="card-img"><img src="${p.src}" loading="lazy" alt=""></div>${showNames?`<div class="card-name">${esc(p.name||'')}</div>`:''}<div class="card-overlay"><div class="xmark">✕</div><div class="out">Out</div></div></div>`;
     d.onclick=()=>tapCard(p.id,d,isElim,isRev,isMine);
     grid.appendChild(d);
   });
