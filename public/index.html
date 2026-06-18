@@ -154,22 +154,28 @@ body.dark .opp-av { background:#2a0a0e; }
 .guess-counter { display:inline-flex; align-items:center; gap:2px; background:var(--red-lt); color:var(--red); border-radius:20px; padding:1px 6px; font-size:10px; font-weight:700; margin-left:4px; }
 body.dark .guess-counter { background:#450a0a; }
 
-/* Board — scrollable */
-.board-section { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:4px; min-height:0; }
+/* Board — no scroll, fixed fit */
+.board-section { flex:1; overflow:hidden; display:flex; flex-direction:column; gap:4px; min-height:0; }
 .board-hint { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; flex-shrink:0; line-height:1; }
 
-/* Grid — columns set by JS, rows grow naturally with card size */
+/* Grid — 5 cols, 5 rows, fills available space exactly */
 .board-grid {
   display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
   gap: 5px;
+  flex: 1;
+  min-height: 0;
 }
 
-/* Cards have a proper aspect ratio so they look good */
-.flip-card { aspect-ratio:3/4; perspective:800px; cursor:pointer; overflow:hidden; }
-.flip-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .35s cubic-bezier(.4,0,.2,1); border-radius:8px; }
+/* Cards fill their cell — no aspect ratio */
+.flip-card { perspective:800px; cursor:pointer; overflow:hidden; min-height:0; min-width:0; }
+.flip-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .35s cubic-bezier(.4,0,.2,1); border-radius:6px; }
 .flip-card.flipped .flip-inner { transform:rotateY(180deg); }
 .flip-card.flipped { cursor:default; }
 .flip-card.blocked { cursor:not-allowed; }
+.flip-card.reversible { cursor:pointer; }
+.flip-card.reversible .flip-back { background:#e85560; } /* slightly lighter red = reversible */
 .flip-face { position:absolute; inset:0; backface-visibility:hidden; border-radius:8px; overflow:hidden; border:1.5px solid var(--border); }
 .flip-front { background:var(--white); display:flex; flex-direction:column; }
 .flip-front .fimg { flex:1; overflow:hidden; }
@@ -347,7 +353,7 @@ body.dark .guess-counter { background:#450a0a; }
     <div class="game-info-row">
       <div class="secret-row">
         <span class="secret-label">🔒 Your secret:</span>
-        <div class="secret-thumb"><img id="secret-img" src="" alt=""></div>
+        <div class="secret-thumb" onclick="expandSecret()" style="cursor:pointer;title='Click to expand'"><img id="secret-img" src="" alt=""></div>
       </div>
       <div class="info-divider"></div>
       <div class="opp-row">
@@ -489,6 +495,15 @@ body.dark .guess-counter { background:#450a0a; }
   </div>
 </div>
 
+<!-- FIX 5: Secret photo expand modal -->
+<div class="overlay" id="modal-secret-expand" onclick="closeOverlay('modal-secret-expand')" style="cursor:pointer">
+  <div style="max-width:340px;width:90%;text-align:center" onclick="event.stopPropagation()">
+    <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:.5rem">🔒 Your secret character — tap outside to close</div>
+    <img id="secret-expand-img" src="" alt="" style="width:100%;border-radius:16px;border:3px solid #fff;box-shadow:0 16px 48px rgba(0,0,0,.5);display:block;">
+    <div id="secret-expand-name" style="color:#fff;font-weight:700;font-size:1.1rem;margin-top:.75rem;"></div>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════
 //  STATE
@@ -514,6 +529,25 @@ function connect(cb){
   ws.onerror=()=>ws.close();
 }
 function wsSend(obj){ if(ws&&ws.readyState===1) ws.send(JSON.stringify(obj)); }
+
+// FIX 1: keep-alive ping so phone browsers don't drop the WebSocket
+// Also handle page visibility — reconnect when phone comes back to foreground
+let pingTimer=null;
+function startPing(){
+  clearInterval(pingTimer);
+  pingTimer=setInterval(()=>{ wsSend({type:'ping'}); }, 15000);
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'){
+    // Phone came back — if WS is dead, reconnect and rejoin
+    if(!ws||ws.readyState!==1){
+      connect(()=>{
+        if(myName) wsSend({type:'join',name:myName});
+      });
+    }
+    startPing();
+  }
+});
 
 // ══════════════════════════════════════
 //  MESSAGES
@@ -771,46 +805,69 @@ function renderGame(msg){
   document.getElementById('opp-name').textContent=oppName;
   document.getElementById('opp-elim').textContent=`${(msg.opponent?.eliminated||[]).length} eliminated`;
   document.getElementById('board-hint').textContent=isMyTurn?'Tap a card to eliminate — one-way only':'Waiting for opponent...';
+  // FIX 4: reset flippedThisTurn when turn changes
+  if(msg.turn !== lastTurn) {
+    localFlippedThisTurn = new Set();
+    lastTurn = msg.turn;
+  }
   const myElim=new Set(msg.me?.eliminated||[]);
-  if(!boardBuilt){ buildBoard(photos,myElim,isMyTurn); boardBuilt=true; }
-  else syncBoard(myElim,isMyTurn);
+  // FIX 4: flippedThisTurn not sent from server — track locally
+  if(!boardBuilt){ buildBoard(photos,myElim,isMyTurn,localFlippedThisTurn); boardBuilt=true; }
+  else syncBoard(myElim,isMyTurn,localFlippedThisTurn);
 }
 
-function buildBoard(photos,elimSet,isMyTurn){
+function buildBoard(photos,elimSet,isMyTurn,flippedThis){
   const grid=document.getElementById('board-grid');
   grid.innerHTML='';
   const n=photos.length;
-
-  // Set columns only — rows grow naturally, board scrolls if needed
-  // On mobile use 4 cols, desktop 5
-  const isMobile=window.innerWidth<600;
-  const cols=isMobile?4:5;
+  // Fixed 5 cols always — no scroll, all fit
+  const cols=5;
   grid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
-  grid.style.gridTemplateRows=''; // let it grow naturally
+  grid.style.gridTemplateRows='';
 
   photos.forEach(p=>{
     const isFlipped=elimSet.has(p.id);
+    // FIX 4: reversible = flipped this turn AND it's my turn
+    const reversible=isFlipped&&isMyTurn&&flippedThis&&flippedThis.has(p.id);
+    const blocked=!isMyTurn&&!isFlipped;
     const c=document.createElement('div');
-    c.className='flip-card'+(isFlipped?' flipped':'')+((!isMyTurn&&!isFlipped)?' blocked':'');
+    c.className='flip-card'+(isFlipped?' flipped':'')+(blocked?' blocked':'')+(reversible?' reversible':'');
     c.dataset.photoid=p.id;
     c.innerHTML=`<div class="flip-inner"><div class="flip-face flip-front"><div class="fimg"><img src="${p.src}" alt=""></div>${showNames?`<div class="fname">${esc(p.name||'')}</div>`:''}</div><div class="flip-face flip-back"><div class="xmark">✕</div><div class="out-lbl">Out</div></div></div>`;
-    c.onclick=()=>flipCard(p.id,c);
+    c.onclick=()=>flipCard(p.id,c,isFlipped,reversible,isMyTurn);
     grid.appendChild(c);
   });
 }
 
-function syncBoard(elimSet,isMyTurn){
+function syncBoard(elimSet,isMyTurn,flippedThis){
   document.querySelectorAll('.flip-card').forEach(card=>{
     const id=parseInt(card.dataset.photoid);
-    if(elimSet.has(id)&&!card.classList.contains('flipped')) card.classList.add('flipped');
-    if(!card.classList.contains('flipped')){ if(isMyTurn) card.classList.remove('blocked'); else card.classList.add('blocked'); }
+    const isFlipped=elimSet.has(id);
+    const reversible=isFlipped&&isMyTurn&&flippedThis&&flippedThis.has(id);
+    const blocked=!isMyTurn&&!isFlipped;
+    if(isFlipped&&!card.classList.contains('flipped')) card.classList.add('flipped');
+    if(!isFlipped&&card.classList.contains('flipped')) card.classList.remove('flipped');
+    card.classList.toggle('blocked',!!blocked);
+    card.classList.toggle('reversible',!!reversible);
+    // update onclick with new state
+    card.onclick=()=>flipCard(id,card,isFlipped,reversible,isMyTurn);
   });
 }
 
-function flipCard(photoId,cardEl){
-  if(cardEl.classList.contains('flipped')||cardEl.classList.contains('blocked')) return;
-  cardEl.classList.add('flipped');
-  wsSend({type:'toggle_eliminate',photoId});
+function flipCard(photoId,cardEl,isFlipped,reversible,isMyTurn){
+  if(!isMyTurn) return; // not your turn
+  if(isFlipped&&!reversible) return; // old flip, can't undo
+  if(isFlipped&&reversible){
+    // unflip
+    cardEl.classList.remove('flipped','reversible');
+    localFlippedThisTurn.delete(photoId);
+    wsSend({type:'toggle_eliminate',photoId});
+  } else if(!isFlipped){
+    // flip down
+    cardEl.classList.add('flipped');
+    localFlippedThisTurn.add(photoId);
+    wsSend({type:'toggle_eliminate',photoId});
+  }
 }
 
 function endTurn(){ wsSend({type:'end_turn'}); }
@@ -826,7 +883,10 @@ function openGuessModal(){
   const grid=document.getElementById('guess-grid');
   grid.innerHTML='';
   document.getElementById('guess-confirm-btn').disabled=true;
-  photos.forEach(p=>{
+  // FIX 3: exclude already-eliminated cards from the guess grid
+  const myElimSet=new Set(currentGame?.me?.eliminated||[]);
+  const availablePhotos=photos.filter(p=>!myElimSet.has(p.id));
+  availablePhotos.forEach(p=>{
     const d=document.createElement('div'); d.className='guess-opt';
     d.innerHTML=`<div class="gimg"><img src="${p.src}" alt=""></div>${showNames?`<div class="gname">${esc(p.name||'')}</div>`:''}<div class="gtick">✓</div>`;
     d.onclick=()=>{ grid.querySelectorAll('.guess-opt').forEach(x=>x.classList.remove('sel')); d.classList.add('sel'); pendingGuessId=p.id; document.getElementById('guess-confirm-btn').disabled=false; };
@@ -1017,6 +1077,19 @@ function showAdminMsg(id,text,type){
 // ══════════════════════════════════════
 //  UTILS
 // ══════════════════════════════════════
+// FIX 5: expand secret photo
+function expandSecret(){
+  const img=document.getElementById('secret-img');
+  const expandImg=document.getElementById('secret-expand-img');
+  const expandName=document.getElementById('secret-expand-name');
+  if(!img.src) return;
+  expandImg.src=img.src;
+  // find name
+  const secretPhoto=(currentGame?.photos||currentPhotos).find(p=>p.id===currentGame?.me?.secret);
+  expandName.textContent=secretPhoto?.name||'';
+  document.getElementById('modal-secret-expand').classList.add('show');
+}
+
 function showPage(id){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 function closeOverlay(id){ document.getElementById(id).classList.remove('show'); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
