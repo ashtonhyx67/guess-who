@@ -584,7 +584,7 @@ let lastTurn=null;
 let incomingChalId=null;
 let pendingGS=null;          // game_state waiting for photos
 // admin
-let adminPhotos=[], adminUnlocked=false, adminPass='', serverPresets=[], pendingAdminTab=null;
+let adminPhotos=[], adminUnlocked=false, adminPass='', serverPresets=[], pendingAdminTab=null, pendingPresetName=null;
 let pingTimer=null;
 
 // ═══ CONNECT ═══
@@ -715,6 +715,12 @@ function handle(msg){
       showAMsg('manage-msg',msg.text,'ok');
       // Update active count in PM
       updateActiveCount();
+      // If we were waiting to create a preset, the server now has the photos
+      // saved (allPhotos), so it's safe to save the preset referencing them.
+      if(pendingPresetName){
+        const name=pendingPresetName; pendingPresetName=null;
+        wsSend({type:'admin_save_preset',password:adminPass,preset:{name,photoIds:adminPhotos.map((_,i)=>i)}});
+      }
       return;
   }
 }
@@ -1117,8 +1123,14 @@ function renderPresets(){
 function createPreset(){
   if(!adminUnlocked) return;
   if(serverPresets.length>=3){showAMsg('admin-msg','Max 3 presets.','err');return;}
+  if(adminPhotos.length<1){showAMsg('admin-msg','Add at least 1 photo first.','err');return;}
   const n=prompt('Preset name:'); if(!n) return;
-  wsSend({type:'admin_save_preset',password:adminPass,preset:{name:n,photoIds:adminPhotos.map((_,i)=>i)}});
+  // IMPORTANT: push the current library to the server FIRST, and only create
+  // the preset once the server confirms it has these exact photos saved.
+  // Otherwise the preset's photoIds can point at photos the server doesn't have yet.
+  pendingPresetName = n;
+  showAMsg('admin-msg','Saving photos before creating preset...','ok');
+  wsSend({type:'admin_photos',password:adminPass,photos:adminPhotos});
 }
 function deletePreset(id){
   if(!adminUnlocked) return;
@@ -1300,16 +1312,23 @@ function pmDeleteSelected() {
 
 // Add files from upload
 document.getElementById('pm-file').addEventListener('change', e => {
-  Array.from(e.target.files).forEach(f => {
-    if (!f.type.startsWith('image/')) return;
+  const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+  e.target.value = '';
+  if (files.length === 0) return;
+  let loaded = 0;
+  files.forEach(f => {
     const r = new FileReader();
     r.onload = ev => {
       pmLibrary.push({ id: pmLibrary.length, src: ev.target.result, name: f.name.replace(/\.[^.]+$/, '') });
+      loaded++;
       renderPMGrid();
+      // Once every selected file has been read, push the updated library to
+      // the server right away. This keeps pmLibrary and the server's
+      // allPhotos in sync so presets built right after never go stale.
+      if (loaded === files.length) pmSaveLibrary();
     };
     r.readAsDataURL(f);
   });
-  e.target.value = '';
 });
 
 function pmSaveLibrary() {
@@ -1358,6 +1377,7 @@ function pmNewPreset() {
 }
 
 function pmNewPresetFromSel() {
+  if (pmLibrary.length < 1) { alert('Upload some photos first.'); return; }
   const name = prompt('Preset name:');
   if (!name) return;
   const photoIds = [...pmSelected];
@@ -1403,7 +1423,7 @@ function pmActivate(presetId) {
 }
 
 function pmActivateRandom() {
-  const n = parseInt(document.getElementById('rand-count').value) || 40;
+  const n = parseInt(document.getElementById('rand-count').value) || 25;
   wsSend({ type: 'admin_activate_preset', password: adminPass, presetId: 'random', count: n });
   pmActiveLabel = `${n} random photos`;
   updateActiveCount();
