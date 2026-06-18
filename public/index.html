@@ -154,32 +154,31 @@ body.dark .opp-av { background:#2a0a0e; }
 .guess-counter { display:inline-flex; align-items:center; gap:2px; background:var(--red-lt); color:var(--red); border-radius:20px; padding:1px 6px; font-size:10px; font-weight:700; margin-left:4px; }
 body.dark .guess-counter { background:#450a0a; }
 
-/* Board — no scroll, fixed fit */
-.board-section { flex:1; overflow:hidden; display:flex; flex-direction:column; gap:4px; min-height:0; overflow-y:auto; }
-.board-hint { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; flex-shrink:0; line-height:1; }
+/* Board — scrollable so all cards fully visible */
+.board-section { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:4px; }
+.board-hint { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; flex-shrink:0; }
 
-/* Grid — 5 cols, 5 rows, fills available space exactly */
+/* Grid — 5 columns, rows grow naturally to show full cards */
 .board-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 5px;
-  overflow-y: auto;
-  align-content: start;
+  gap: 6px;
 }
 
-/* Cards keep portrait shape — they do NOT fill height */
-.flip-card { perspective:800px; cursor:pointer; overflow:hidden; aspect-ratio: 3/4; }
-.flip-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .35s cubic-bezier(.4,0,.2,1); border-radius:6px; }
+/* Cards: portrait aspect ratio, fully visible including name */
+.flip-card { perspective:800px; cursor:pointer; }
+.flip-card-inner-wrap { position:relative; padding-bottom:130%; /* 3:4 ratio + name space */ }
+.flip-inner { position:absolute; inset:0; transform-style:preserve-3d; transition:transform .3s ease; border-radius:8px; }
 .flip-card.flipped .flip-inner { transform:rotateY(180deg); }
 .flip-card.flipped { cursor:default; }
-.flip-card.blocked { cursor:not-allowed; }
+.flip-card.blocked { cursor:not-allowed; opacity:0.85; }
 .flip-card.reversible { cursor:pointer; }
-.flip-card.reversible .flip-back { background:#e85560; } /* slightly lighter red = reversible */
-.flip-face { position:absolute; inset:0; backface-visibility:hidden; border-radius:8px; overflow:hidden; border:1.5px solid var(--border); }
-.flip-front { background:var(--white); display:flex; flex-direction:column; }
-.flip-front .fimg { flex:1; overflow:hidden; }
+.flip-card.reversible .flip-back { background:#e85560; }
+.flip-face { position:absolute; inset:0; backface-visibility:hidden; border-radius:8px; overflow:hidden; border:1.5px solid var(--border); display:flex; flex-direction:column; }
+.flip-front { background:var(--white); }
+.flip-front .fimg { flex:1; overflow:hidden; min-height:0; }
 .flip-front .fimg img { width:100%; height:100%; object-fit:cover; display:block; }
-.flip-front .fname { font-size:9px; font-weight:700; text-align:center; padding:2px 3px 3px; background:var(--white); color:var(--text); border-top:1px solid var(--border); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; line-height:1.3; }
+.flip-front .fname { font-size:10px; font-weight:700; text-align:center; padding:3px 4px 4px; background:var(--white); color:var(--text); border-top:1px solid var(--border); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; line-height:1.3; }
 .flip-back { background:var(--red); transform:rotateY(180deg); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:2px; }
 .flip-back .xmark { font-size:1.8rem; font-weight:900; color:rgba(255,255,255,.35); line-height:1; }
 .flip-back .out-lbl { font-size:8px; color:rgba(255,255,255,.45); font-weight:700; text-transform:uppercase; letter-spacing:1px; }
@@ -538,7 +537,8 @@ body.dark .guess-counter { background:#450a0a; }
 let ws=null, myId=null, myName='', myStatus='lobby';
 let pendingPickId=null, pendingGuessId=null, pendingSnipeId=null;
 let adminPhotos=[];   // local edits in admin panel
-let currentPhotos=[]; // from server
+let currentPhotos=[]; // from server (full with src)
+let photoCache={};    // id -> {id,src,name} — the definitive lookup
 let currentGame=null;
 let boardBuilt=false;
 let showNames=true;
@@ -585,11 +585,15 @@ document.addEventListener('visibilitychange',()=>{
 function handle(msg){
   if(msg.type==='welcome'){
     myId=msg.clientId;
-    currentPhotos=msg.photos||[];
-    syncAdminPhotos(currentPhotos);
-    // Show lobby page — server sends lobby_update right after this
-    // Use _showPage (no refresh) to avoid sending request_lobby before we're registered
     _showPage('page-lobby');
+    return;
+  }
+  if(msg.type==='photos_data'){
+    // Full photo data — store in cache and currentPhotos
+    currentPhotos=msg.photos||[];
+    photoCache={};
+    currentPhotos.forEach(p=>{ photoCache[p.id]=p; });
+    syncAdminPhotos(currentPhotos);
     return;
   }
 
@@ -602,9 +606,14 @@ function handle(msg){
     return;
   }
   if(msg.type==='game_state'){
-    // Photos now include full src from server — update cache too
-    if(msg.photos && msg.photos.length>0 && msg.photos[0].src){
-      currentPhotos = msg.photos;
+    // Server confirmed state — clear all pending flips
+    pendingFlips.clear();
+    // Hydrate photos from cache using photoIds
+    if(msg.photoIds && msg.photoIds.length>0){
+      msg.photos = msg.photoIds.map(id=>photoCache[id]).filter(Boolean);
+      if(msg.photos.length===0) msg.photos = currentPhotos;
+    } else {
+      msg.photos = currentPhotos;
     }
     currentGame=msg;
     if(msg.phase==='pick') renderPick(msg);
@@ -614,11 +623,7 @@ function handle(msg){
     return;
   }
   if(msg.type==='lobby_update'){
-    // Only update currentPhotos if the data has src (full data, not stripped)
-    const incomingPhotos = msg.photos||[];
-    if(incomingPhotos.length>0 && incomingPhotos[0].src) {
-      currentPhotos = incomingPhotos;
-    }
+    // lobby_update has no src — just sync status/players
     if(msg.myStatus){
       if(msg.myStatus==='playing'){
         myStatus='playing';
@@ -801,8 +806,6 @@ function showLoading(oppName){
 function renderPick(msg){
   showPage('page-pick');
   const photos=msg.photos||[];
-  // Ensure currentPhotos is populated for later use in game
-  if(photos.length>0 && photos[0].src) currentPhotos=photos;
   const myLocked=msg.me?.secret!==null&&msg.me?.secret!==undefined;
   if(myLocked) pendingPickId=msg.me.secret;
   const grid=document.getElementById('pick-grid');
@@ -848,12 +851,7 @@ function confirmPickFinal(){
 function renderGame(msg){
   showPage('page-game');
   closeOverlay('modal-snipe');
-  // Always prefer msg.photos; fallback to currentPhotos if msg.photos is empty/missing srcs
-  let photos=msg.photos||[];
-  if(photos.length===0 || !photos[0]?.src){
-    photos=currentPhotos;
-  }
-  if(photos.length>0 && photos[0]?.src) currentPhotos=photos;
+  const photos=msg.photos||[];
   const isMyTurn=msg.turn===myId;
   const guessesLeft=msg.me?.guessesLeft??3;
   document.getElementById('game-sub').textContent=isMyTurn?'Your turn':`${msg.opponent?.name||'Opponent'}'s turn`;
@@ -877,6 +875,7 @@ function renderGame(msg){
   // FIX 4: reset flippedThisTurn when turn changes
   if(msg.turn !== lastTurn) {
     localFlippedThisTurn = new Set();
+    pendingFlips = new Set();
     lastTurn = msg.turn;
   }
   const myElim=new Set(msg.me?.eliminated||[]);
@@ -903,13 +902,12 @@ function buildBoard(photos,elimSet,isMyTurn,flippedThis){
 
   photos.forEach(p=>{
     const isFlipped=elimSet.has(p.id);
-    // FIX 4: reversible = flipped this turn AND it's my turn
     const reversible=isFlipped&&isMyTurn&&flippedThis&&flippedThis.has(p.id);
     const blocked=!isMyTurn&&!isFlipped;
     const c=document.createElement('div');
     c.className='flip-card'+(isFlipped?' flipped':'')+(blocked?' blocked':'')+(reversible?' reversible':'');
     c.dataset.photoid=p.id;
-    c.innerHTML=`<div class="flip-inner"><div class="flip-face flip-front"><div class="fimg"><img src="${p.src}" alt=""></div>${showNames?`<div class="fname">${esc(p.name||'')}</div>`:''}</div><div class="flip-face flip-back"><div class="xmark">✕</div><div class="out-lbl">Out</div></div></div>`;
+    c.innerHTML=`<div class="flip-card-inner-wrap"><div class="flip-inner"><div class="flip-face flip-front"><div class="fimg"><img src="${p.src}" alt=""></div>${showNames?`<div class="fname">${esc(p.name||'')}</div>`:''}</div><div class="flip-face flip-back"><div class="xmark">✕</div><div class="out-lbl">Out</div></div></div></div>`;
     c.onclick=()=>flipCard(p.id,c,isFlipped,reversible,isMyTurn);
     grid.appendChild(c);
   });
@@ -931,19 +929,20 @@ function syncBoard(elimSet,isMyTurn,flippedThis){
 }
 
 function flipCard(photoId,cardEl,isFlipped,reversible,isMyTurn){
-  if(!isMyTurn) return; // not your turn
-  if(isFlipped&&!reversible) return; // old flip, can't undo
+  if(!isMyTurn) return;
+  if(pendingFlips.has(photoId)) return; // waiting for server ack — ignore tap
+  if(isFlipped&&!reversible) return;
+  pendingFlips.add(photoId);
   if(isFlipped&&reversible){
-    // unflip
     cardEl.classList.remove('flipped','reversible');
     localFlippedThisTurn.delete(photoId);
-    wsSend({type:'toggle_eliminate',photoId});
   } else if(!isFlipped){
-    // flip down
     cardEl.classList.add('flipped');
     localFlippedThisTurn.add(photoId);
-    wsSend({type:'toggle_eliminate',photoId});
   }
+  wsSend({type:'toggle_eliminate',photoId});
+  // Auto-clear pending after 1s in case server is slow
+  setTimeout(()=>pendingFlips.delete(photoId), 1000);
 }
 
 function endTurn(){ wsSend({type:'end_turn'}); }

@@ -5,478 +5,323 @@ const WebSocket = require('ws');
 
 const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = 'xzone';
-const MAX_GUESSES = 3;
-const MAX_PHOTOS = 1000; // no practical limit
 const DATA_DIR = fs.existsSync('/data') ? '/data' : __dirname;
-const PHOTOS_FILE   = path.join(DATA_DIR, 'photos.json');
-const PRESETS_FILE  = path.join(DATA_DIR, 'presets.json');
+const PHOTOS_FILE  = path.join(DATA_DIR, 'photos.json');
+const PRESETS_FILE = path.join(DATA_DIR, 'presets.json');
 
-// All uploaded photos (the master library)
-let allPhotos = [];
-// Active game photos (current preset or randomised selection)
-let photos = [];
-// Presets: [{ id, name, photoIds[] }]
+let allPhotos = [];  // master library
+let photos = [];     // active game set
 let presets = [];
-
-try {
-  if (fs.existsSync(PHOTOS_FILE)) {
-    allPhotos = JSON.parse(fs.readFileSync(PHOTOS_FILE, 'utf8'));
-    photos = allPhotos; // default: use all
-    console.log('Loaded', allPhotos.length, 'photos');
-  }
-} catch(e) { console.error('Failed to load photos:', e.message); }
-
-try {
-  if (fs.existsSync(PRESETS_FILE)) {
-    presets = JSON.parse(fs.readFileSync(PRESETS_FILE, 'utf8'));
-    console.log('Loaded', presets.length, 'presets');
-  }
-} catch(e) { console.error('Failed to load presets:', e.message); }
-
-function savePhotos() {
-  try { fs.writeFileSync(PHOTOS_FILE, JSON.stringify(allPhotos)); } catch(e) { console.error(e.message); }
-}
-function savePresets() {
-  try { fs.writeFileSync(PRESETS_FILE, JSON.stringify(presets)); } catch(e) { console.error(e.message); }
-}
-
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-const server = http.createServer((req, res) => {
-  let filePath = path.join(__dirname, 'public', req.url === '/' ? 'index.html' : req.url);
-  fs.readFile(filePath, (err, data) => {
-    const ext = path.extname(filePath);
-    const mime = { '.html':'text/html', '.js':'text/javascript', '.css':'text/css' };
-    if (err) {
-      fs.readFile(path.join(__dirname, 'public', 'index.html'), (e, d) => {
-        res.writeHead(200, { 'Content-Type': 'text/html' }); res.end(d);
-      });
-    } else {
-      res.writeHead(200, { 'Content-Type': mime[ext] || 'text/plain' }); res.end(data);
-    }
-  });
-});
-
-const wss = new WebSocket.Server({ server });
-
 let clients = {};
 let games = {};
 let pendingChallenges = {};
 let nextId = 1;
 let nextGameId = 1;
 
-// FIX 1: Track which clients are alive via ping/pong
-// We give phones a 30s grace period before marking dead
-const PING_INTERVAL = 20000;  // ping every 20s
-const PING_TIMEOUT  = 35000;  // dead if no pong within 35s
+try {
+  if (fs.existsSync(PHOTOS_FILE)) {
+    allPhotos = JSON.parse(fs.readFileSync(PHOTOS_FILE, 'utf8'));
+    photos = allPhotos;
+    console.log('Loaded', allPhotos.length, 'photos');
+  }
+} catch(e) { console.error(e.message); }
 
-function send(clientId, msg) {
-  const c = clients[clientId];
+try {
+  if (fs.existsSync(PRESETS_FILE)) {
+    presets = JSON.parse(fs.readFileSync(PRESETS_FILE, 'utf8'));
+  }
+} catch(e) { console.error(e.message); }
+
+function savePhotos()  { try { fs.writeFileSync(PHOTOS_FILE,  JSON.stringify(allPhotos)); } catch(e) { console.error(e.message); } }
+function savePresets() { try { fs.writeFileSync(PRESETS_FILE, JSON.stringify(presets));   } catch(e) { console.error(e.message); } }
+function shuffle(arr)  { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+const server = http.createServer((req, res) => {
+  let fp = path.join(__dirname, 'public', req.url === '/' ? 'index.html' : req.url);
+  fs.readFile(fp, (err, data) => {
+    const ext = path.extname(fp);
+    const mime = {'.html':'text/html','.js':'text/javascript','.css':'text/css'};
+    if (err) { fs.readFile(path.join(__dirname,'public','index.html'),(_,d)=>{ res.writeHead(200,{'Content-Type':'text/html'}); res.end(d); }); }
+    else { res.writeHead(200,{'Content-Type':mime[ext]||'text/plain'}); res.end(data); }
+  });
+});
+
+const wss = new WebSocket.Server({ server });
+
+function send(id, msg) {
+  const c = clients[id];
   if (c && c.ws.readyState === WebSocket.OPEN) c.ws.send(JSON.stringify(msg));
 }
 
+// Send photos to a single client — full data with src
+function sendPhotos(clientId) {
+  send(clientId, { type: 'photos_data', photos });
+}
+
+// Broadcast lobby — NO photo src data, just metadata
 function broadcastLobby() {
-  const waiting = Object.entries(clients)
-    .filter(([,c]) => c.status === 'waiting')
-    .map(([id,c]) => ({ id, name: c.name }));
-  const online = Object.entries(clients)
-    .map(([id,c]) => ({ id, name: c.name, status: c.status }));
-  const photosMeta = photos.map(p => ({ id: p.id, src: p.src, name: p.name }));
+  const waiting = Object.entries(clients).filter(([,c])=>c.status==='waiting').map(([id,c])=>({id,name:c.name}));
+  const online  = Object.entries(clients).map(([id,c])=>({id,name:c.name,status:c.status}));
+  const meta    = photos.map(p=>({id:p.id,name:p.name})); // NO src
   Object.entries(clients).forEach(([id,c]) => {
     if (c.status === 'playing') return;
-    send(id, { type: 'lobby_update', waiting, online, photos: photosMeta, myStatus: c.status });
+    send(id, { type:'lobby_update', waiting, online, photosMeta:meta, myStatus:c.status });
   });
 }
 
+// Game state — NO photo src, just IDs. Client uses cached photos.
 function sendGameState(gameId) {
   const g = games[gameId];
   if (!g) return;
+  const photoIds = photos.map(p=>p.id); // just ids — client already has full photos
   [g.p1, g.p2].forEach(pid => {
-    const me = g.players[pid];
-    const oppId = pid === g.p1 ? g.p2 : g.p1;
-    const opp = g.players[oppId];
-    let snipeInfo = null;
-    if (g.phase === 'snipe') {
-      const amInitiator = pid === g.snipe.initiatorId;
-      snipeInfo = {
-        initiatorId: g.snipe.initiatorId,
-        initiatorName: clients[g.snipe.initiatorId]?.name,
-        initiatorGuessId: amInitiator ? g.snipe.initiatorGuessId : null,
-        myChoice: g.snipe.choices[pid] ?? null,
-        oppChoice: g.snipe.choices[oppId] ?? null,
-      };
+    const me  = g.players[pid];
+    const opp = g.players[pid===g.p1?g.p2:g.p1];
+    const oppId = pid===g.p1?g.p2:g.p1;
+    let snipe = null;
+    if (g.phase==='snipe') {
+      const amI = pid===g.snipe.initiatorId;
+      snipe = { initiatorId:g.snipe.initiatorId, initiatorName:clients[g.snipe.initiatorId]?.name,
+                initiatorGuessId: amI?g.snipe.initiatorGuessId:null,
+                myChoice:g.snipe.choices[pid]??null, oppChoice:g.snipe.choices[oppId]??null };
     }
     send(pid, {
-      type: 'game_state',
-      phase: g.phase,
-      photos,  // send full photo data including src
-      me: { id: pid, name: clients[pid]?.name, secret: me.secret, eliminated: [...me.eliminated], guessesLeft: me.guessesLeft },
-      opponent: { id: oppId, name: clients[oppId]?.name, secretPicked: opp.secret !== null, eliminated: [...opp.eliminated], secret: (g.phase === 'gameover') ? opp.secret : null },
-      turn: g.turn,
-      result: g.result || null,
-      snipe: snipeInfo,
+      type:'game_state', phase:g.phase, photoIds,
+      me:  { id:pid, secret:me.secret, eliminated:[...me.eliminated], guessesLeft:me.guessesLeft },
+      opponent: { id:oppId, name:clients[oppId]?.name, secretPicked:opp.secret!==null,
+                  eliminated:[...opp.eliminated], secret:g.phase==='gameover'?opp.secret:null },
+      turn:g.turn, result:g.result||null, snipe
     });
   });
 }
 
-function startGame(p1id, p2id) {
-  const gameId = String(nextGameId++);
-  games[gameId] = {
-    p1: p1id, p2: p2id,
-    phase: 'pick',
-    turn: null, result: null, snipe: null,
-    // FIX 4: track which cards were flipped this turn
-    flippedThisTurn: { [p1id]: new Set(), [p2id]: new Set() },
-    players: {
-      [p1id]: { secret: null, eliminated: new Set(), guessesLeft: MAX_GUESSES },
-      [p2id]: { secret: null, eliminated: new Set(), guessesLeft: MAX_GUESSES },
-    }
+function startGame(p1, p2) {
+  const gid = String(nextGameId++);
+  games[gid] = {
+    p1, p2, phase:'pick', turn:null, result:null, snipe:null,
+    flippedThisTurn:{ [p1]:new Set(), [p2]:new Set() },
+    players:{ [p1]:{secret:null,eliminated:new Set(),guessesLeft:3}, [p2]:{secret:null,eliminated:new Set(),guessesLeft:3} }
   };
-  clients[p1id].status = 'playing'; clients[p1id].gameId = gameId;
-  clients[p2id].status = 'playing'; clients[p2id].gameId = gameId;
-  [p1id, p2id].forEach(pid => {
-    send(pid, { type: 'matched', gameId, opponentName: clients[pid === p1id ? p2id : p1id]?.name });
-  });
+  clients[p1].status='playing'; clients[p1].gameId=gid;
+  clients[p2].status='playing'; clients[p2].gameId=gid;
+  [p1,p2].forEach(pid => send(pid, {type:'matched',gameId:gid,opponentName:clients[pid===p1?p2:p1]?.name}));
   broadcastLobby();
-  setTimeout(() => { if (games[gameId]) sendGameState(gameId); }, 3000);
-  return gameId;
+  // Send full photos to both players right now before game starts
+  [p1,p2].forEach(pid => sendPhotos(pid));
+  setTimeout(() => { if(games[gid]) sendGameState(gid); }, 3000);
 }
 
-function resolveSnipe(gameId) {
-  const g = games[gameId];
-  if (!g || g.phase !== 'snipe') return;
-  const { initiatorId, initiatorGuessId, choices } = g.snipe;
-  const responderId = initiatorId === g.p1 ? g.p2 : g.p1;
-  const responderChoice = choices[responderId];
-  const initiatorCorrect = g.players[responderId].secret === initiatorGuessId;
-  const responderGuessed = responderChoice && responderChoice !== 'pass';
-  const responderCorrect = responderGuessed && g.players[initiatorId].secret === responderChoice;
-
-  if (!initiatorCorrect && !responderCorrect) {
+function resolveSnipe(gid) {
+  const g = games[gid]; if(!g||g.phase!=='snipe') return;
+  const {initiatorId,initiatorGuessId,choices} = g.snipe;
+  const responderId = initiatorId===g.p1?g.p2:g.p1;
+  const iCorrect = g.players[responderId].secret===initiatorGuessId;
+  const rChoice  = choices[responderId];
+  const rGuessed = rChoice&&rChoice!=='pass';
+  const rCorrect = rGuessed&&g.players[initiatorId].secret===rChoice;
+  if (!iCorrect&&!rCorrect) {
     g.players[initiatorId].eliminated.add(initiatorGuessId);
-    if (responderGuessed) g.players[responderId].eliminated.add(responderChoice);
-    g.snipe = null;
-    g.phase = 'playing';
-    g.turn = responderId;
-    // FIX 4: reset flippedThisTurn for new turn
-    g.flippedThisTurn[responderId] = new Set();
-    sendGameState(gameId);
-    return;
+    if(rGuessed) g.players[responderId].eliminated.add(rChoice);
+    g.snipe=null; g.phase='playing'; g.turn=responderId;
+    g.flippedThisTurn[responderId]=new Set();
+    sendGameState(gid); return;
   }
-
-  g.phase = 'gameover';
-  const resultMsg = initiatorCorrect && responderCorrect ? 'tie' : initiatorCorrect ? 'initiator' : 'responder';
+  const sr = iCorrect&&rCorrect?'tie':iCorrect?'initiator':'responder';
+  g.phase='gameover';
   g.result = {
-    snipeResult: resultMsg,
-    initiatorId, responderId,
-    initiatorName: clients[initiatorId]?.name,
-    responderName: clients[responderId]?.name,
-    initiatorGuessId,
-    responderGuessId: responderGuessed ? responderChoice : null,
-    initiatorCorrect, responderCorrect,
-    p1SecretSrc: photos.find(p => p.id === g.players[g.p1].secret)?.src,
-    p2SecretSrc: photos.find(p => p.id === g.players[g.p2].secret)?.src,
-    correct: initiatorCorrect,
-    guesserId: initiatorId,
-    guesserName: clients[initiatorId]?.name,
-    guessedPhotoId: initiatorGuessId,
-    actualPhotoId: g.players[responderId].secret,
-    guessedPhotoSrc: photos.find(p => p.id === initiatorGuessId)?.src,
-    actualPhotoSrc: photos.find(p => p.id === g.players[responderId].secret)?.src,
+    snipeResult:sr, initiatorId, responderId,
+    initiatorName:clients[initiatorId]?.name, responderName:clients[responderId]?.name,
+    initiatorGuessId, responderGuessId:rGuessed?rChoice:null,
+    initiatorCorrect:iCorrect, responderCorrect:rCorrect,
+    correct:iCorrect, guesserId:initiatorId, guesserName:clients[initiatorId]?.name,
+    guessedPhotoId:initiatorGuessId, actualPhotoId:g.players[responderId].secret,
   };
-  sendGameState(gameId);
+  sendGameState(gid);
 }
 
-// FIX 2: handle disconnect with grace period
 function handleDisconnect(clientId) {
-  const c = clients[clientId];
-  if (!c) return;
+  const c = clients[clientId]; if(!c) return;
   if (c.gameId) {
     const g = games[c.gameId];
     if (g) {
-      const oppId = clientId === g.p1 ? g.p2 : g.p1;
-      // FIX 2: send opponent back to lobby
-      if (clients[oppId]) {
-        clients[oppId].status = 'lobby';
-        clients[oppId].gameId = null;
-        send(oppId, { type: 'opponent_left' });
-      }
+      const oppId = clientId===g.p1?g.p2:g.p1;
+      if(clients[oppId]) { clients[oppId].status='lobby'; clients[oppId].gameId=null; send(oppId,{type:'opponent_left'}); }
       delete games[c.gameId];
     }
   }
   delete pendingChallenges[clientId];
-  Object.keys(pendingChallenges).forEach(k => {
-    if (pendingChallenges[k]?.targetId === clientId) delete pendingChallenges[k];
-  });
+  Object.keys(pendingChallenges).forEach(k=>{ if(pendingChallenges[k]?.targetId===clientId) delete pendingChallenges[k]; });
   delete clients[clientId];
   broadcastLobby();
 }
 
 wss.on('connection', ws => {
   const clientId = String(nextId++);
-
-  // FIX 1: ping/pong to keep phone connections alive
   ws.isAlive = true;
-  ws.on('pong', () => { ws.isAlive = true; });
+  ws.on('pong', ()=>{ ws.isAlive=true; });
 
   ws.on('message', raw => {
-    ws.isAlive = true; // any message = still alive
-    let msg; try { msg = JSON.parse(raw); } catch { return; }
+    ws.isAlive = true;
+    let msg; try { msg=JSON.parse(raw); } catch { return; }
 
-    if (msg.type === 'join') {
-      clients[clientId] = { ws, name: (msg.name||'Player').slice(0,20), status:'lobby', gameId:null };
-      send(clientId, { type:'welcome', clientId, photos });
-      // Immediately send full lobby state to the new client
-      const waiting0 = Object.entries(clients).filter(([,c])=>c.status==='waiting').map(([id,c])=>({id,name:c.name}));
-      const online0 = Object.entries(clients).map(([id,c])=>({id,name:c.name,status:c.status}));
-      send(clientId, { type:'lobby_update', waiting:waiting0, online:online0, photos, myStatus:'lobby' });
+    if (msg.type==='join') {
+      clients[clientId] = {ws, name:(msg.name||'Player').slice(0,20), status:'lobby', gameId:null};
+      // Send full photos immediately on join
+      send(clientId, {type:'welcome', clientId});
+      sendPhotos(clientId);
+      const w=Object.entries(clients).filter(([,c])=>c.status==='waiting').map(([id,c])=>({id,name:c.name}));
+      const o=Object.entries(clients).map(([id,c])=>({id,name:c.name,status:c.status}));
+      send(clientId, {type:'lobby_update',waiting:w,online:o,photosMeta:photos.map(p=>({id:p.id,name:p.name})),myStatus:'lobby'});
       broadcastLobby();
     }
-
-    else if (msg.type === 'ready') {
-      const c = clients[clientId];
-      if (!c || c.status !== 'lobby') return;
-      c.status = 'waiting';
-      broadcastLobby();
+    else if (msg.type==='ready') {
+      const c=clients[clientId]; if(!c||c.status!=='lobby') return;
+      c.status='waiting'; broadcastLobby();
     }
-
-    else if (msg.type === 'cancel_wait') {
-      const c = clients[clientId];
-      if (!c) return;
-      c.status = 'lobby';
-      delete pendingChallenges[clientId];
-      broadcastLobby();
+    else if (msg.type==='cancel_wait') {
+      const c=clients[clientId]; if(!c) return;
+      c.status='lobby'; delete pendingChallenges[clientId]; broadcastLobby();
     }
-
-    else if (msg.type === 'challenge') {
-      const challenger = clients[clientId];
-      const target = clients[msg.targetId];
-      if (!challenger || !target) { send(clientId, { type:'error', text:'Player not found.' }); return; }
-      if (challenger.status !== 'waiting') { send(clientId, { type:'error', text:'You must be searching to challenge.' }); return; }
-      if (target.status !== 'waiting') { send(clientId, { type:'error', text:'That player is no longer searching.' }); return; }
-      if (photos.length < 2) { send(clientId, { type:'error', text:'Admin needs to upload photos first.' }); return; }
-      pendingChallenges[clientId] = { targetId: msg.targetId, timestamp: Date.now() };
-      send(msg.targetId, { type:'challenge_received', challengerId: clientId, challengerName: challenger.name });
-      send(clientId, { type:'challenge_sent', targetName: target.name });
+    else if (msg.type==='challenge') {
+      const cr=clients[clientId],tg=clients[msg.targetId];
+      if(!cr||!tg) { send(clientId,{type:'error',text:'Player not found.'}); return; }
+      if(cr.status!=='waiting') { send(clientId,{type:'error',text:'You must be searching.'}); return; }
+      if(tg.status!=='waiting') { send(clientId,{type:'error',text:'Player no longer searching.'}); return; }
+      if(photos.length<2) { send(clientId,{type:'error',text:'Admin needs to upload photos first.'}); return; }
+      pendingChallenges[clientId]={targetId:msg.targetId,timestamp:Date.now()};
+      send(msg.targetId,{type:'challenge_received',challengerId:clientId,challengerName:cr.name});
+      send(clientId,{type:'challenge_sent',targetName:tg.name});
     }
-
-    else if (msg.type === 'accept_challenge') {
-      const target = clients[clientId];
-      const challengerId = msg.challengerId;
-      const challenge = pendingChallenges[challengerId];
-      if (!challenge || challenge.targetId !== clientId) { send(clientId, { type:'error', text:'Challenge expired.' }); return; }
-      const challenger = clients[challengerId];
-      if (!challenger || challenger.status !== 'waiting' || !target || target.status !== 'waiting') {
-        send(clientId, { type:'error', text:'Player no longer available.' }); return;
-      }
-      delete pendingChallenges[challengerId];
-      startGame(challengerId, clientId);
-    }
-
-    else if (msg.type === 'decline_challenge') {
+    else if (msg.type==='accept_challenge') {
+      const tg=clients[clientId],ch=pendingChallenges[msg.challengerId];
+      if(!ch||ch.targetId!==clientId) { send(clientId,{type:'error',text:'Challenge expired.'}); return; }
+      const cr=clients[msg.challengerId];
+      if(!cr||cr.status!=='waiting'||!tg||tg.status!=='waiting') { send(clientId,{type:'error',text:'Player no longer available.'}); return; }
       delete pendingChallenges[msg.challengerId];
-      send(msg.challengerId, { type:'challenge_declined', declinerName: clients[clientId]?.name });
+      startGame(msg.challengerId,clientId);
     }
-
-    else if (msg.type === 'pick_secret') {
-      const c = clients[clientId]; if (!c) return;
-      const g = games[c.gameId]; if (!g || g.phase !== 'pick') return;
-      if (!msg.confirmed) return;
-      g.players[clientId].secret = msg.photoId;
-      const both = Object.values(g.players).every(p => p.secret !== null);
-      if (both) { g.phase = 'playing'; g.turn = g.p1; }
+    else if (msg.type==='decline_challenge') {
+      delete pendingChallenges[msg.challengerId];
+      send(msg.challengerId,{type:'challenge_declined',declinerName:clients[clientId]?.name});
+    }
+    else if (msg.type==='pick_secret') {
+      const c=clients[clientId]; if(!c) return;
+      const g=games[c.gameId]; if(!g||g.phase!=='pick'||!msg.confirmed) return;
+      g.players[clientId].secret=msg.photoId;
+      if(Object.values(g.players).every(p=>p.secret!==null)) { g.phase='playing'; g.turn=g.p1; }
       sendGameState(c.gameId);
     }
-
-    else if (msg.type === 'toggle_eliminate') {
-      const c = clients[clientId]; if (!c) return;
-      const g = games[c.gameId]; if (!g || g.phase !== 'playing') return;
-      if (g.turn !== clientId) return;
-      const pid = clientId;
-      const elim = g.players[pid].eliminated;
-      const flippedThis = g.flippedThisTurn[pid];
-
-      // FIX 4: can only flip back cards flipped THIS turn
-      if (elim.has(msg.photoId)) {
-        if (flippedThis.has(msg.photoId)) {
-          // Flipped this turn — allow unflip
-          elim.delete(msg.photoId);
-          flippedThis.delete(msg.photoId);
-        }
-        // else: flipped a previous turn — ignore
-      } else {
-        elim.add(msg.photoId);
-        flippedThis.add(msg.photoId);
+    else if (msg.type==='toggle_eliminate') {
+      const c=clients[clientId]; if(!c) return;
+      const g=games[c.gameId]; if(!g||g.phase!=='playing'||g.turn!==clientId) return;
+      const elim=g.players[clientId].eliminated, ft=g.flippedThisTurn[clientId];
+      if(elim.has(msg.photoId)) { if(ft.has(msg.photoId)){ elim.delete(msg.photoId); ft.delete(msg.photoId); } }
+      else { elim.add(msg.photoId); ft.add(msg.photoId); }
+      const remaining=photos.filter(p=>!elim.has(p.id));
+      if(remaining.length===1) {
+        const oppId=clientId===g.p1?g.p2:g.p1;
+        g.phase='snipe'; g.snipe={initiatorId:clientId,initiatorGuessId:remaining[0].id,choices:{[clientId]:remaining[0].id}};
       }
-
-      const remaining = photos.filter(p => !elim.has(p.id));
-      if (remaining.length === 1) {
-        const oppId = clientId === g.p1 ? g.p2 : g.p1;
-        g.phase = 'snipe';
-        g.snipe = { initiatorId: clientId, initiatorGuessId: remaining[0].id, choices: { [clientId]: remaining[0].id } };
-        sendGameState(c.gameId);
-      } else {
-        sendGameState(c.gameId);
-      }
-    }
-
-    else if (msg.type === 'end_turn') {
-      const c = clients[clientId]; if (!c) return;
-      const g = games[c.gameId]; if (!g || g.phase !== 'playing' || g.turn !== clientId) return;
-      const nextPlayer = clientId === g.p1 ? g.p2 : g.p1;
-      g.turn = nextPlayer;
-      // FIX 4: reset flippedThisTurn for the new current player
-      g.flippedThisTurn[nextPlayer] = new Set();
       sendGameState(c.gameId);
     }
-
-    else if (msg.type === 'guess') {
-      const c = clients[clientId]; if (!c) return;
-      const g = games[c.gameId]; if (!g || g.phase !== 'playing' || g.turn !== clientId) return;
-      const player = g.players[clientId];
-      if (player.guessesLeft <= 0) { send(clientId, { type:'error', text:'No guesses left!' }); return; }
-      player.guessesLeft--;
-      g.phase = 'snipe';
-      g.snipe = { initiatorId: clientId, initiatorGuessId: msg.photoId, choices: { [clientId]: msg.photoId } };
+    else if (msg.type==='end_turn') {
+      const c=clients[clientId]; if(!c) return;
+      const g=games[c.gameId]; if(!g||g.phase!=='playing'||g.turn!==clientId) return;
+      const next=clientId===g.p1?g.p2:g.p1;
+      g.turn=next; g.flippedThisTurn[next]=new Set();
       sendGameState(c.gameId);
     }
-
-    else if (msg.type === 'snipe_respond') {
-      const c = clients[clientId]; if (!c) return;
-      const g = games[c.gameId]; if (!g || g.phase !== 'snipe') return;
-      if (g.snipe.initiatorId === clientId) return;
-      g.snipe.choices[clientId] = msg.photoId || 'pass';
+    else if (msg.type==='guess') {
+      const c=clients[clientId]; if(!c) return;
+      const g=games[c.gameId]; if(!g||g.phase!=='playing'||g.turn!==clientId) return;
+      const pl=g.players[clientId];
+      if(pl.guessesLeft<=0) { send(clientId,{type:'error',text:'No guesses left!'}); return; }
+      pl.guessesLeft--;
+      g.phase='snipe'; g.snipe={initiatorId:clientId,initiatorGuessId:msg.photoId,choices:{[clientId]:msg.photoId}};
+      sendGameState(c.gameId);
+    }
+    else if (msg.type==='snipe_respond') {
+      const c=clients[clientId]; if(!c) return;
+      const g=games[c.gameId]; if(!g||g.phase!=='snipe'||g.snipe.initiatorId===clientId) return;
+      g.snipe.choices[clientId]=msg.photoId||'pass';
       resolveSnipe(c.gameId);
     }
-
-    // Client requesting a fresh lobby state (e.g. on page focus)
-    else if (msg.type === 'request_lobby') {
-      const c = clients[clientId];
-      if (!c || c.status === 'playing') return;
-      const waiting = Object.entries(clients).filter(([,c])=>c.status==='waiting').map(([id,c])=>({id,name:c.name}));
-      const online = Object.entries(clients).map(([id,c])=>({id,name:c.name,status:c.status}));
-      const photosMeta = photos.map(p=>({id:p.id,src:p.src,name:p.name}));
-      send(clientId, { type:'lobby_update', waiting, online, photos:photosMeta, myStatus:c.status });
+    else if (msg.type==='back_to_lobby') {
+      const c=clients[clientId]; if(!c) return;
+      c.status='lobby'; c.gameId=null; broadcastLobby(); send(clientId,{type:'go_lobby'});
     }
-
-    // Keep-alive ping from client — just ignore, ws.isAlive already set above
-    else if (msg.type === 'ping') { /* no-op */ }
-
-    else if (msg.type === 'back_to_lobby') {
-      const c = clients[clientId]; if (!c) return;
-      c.status = 'lobby'; c.gameId = null;
+    else if (msg.type==='request_lobby') {
+      const c=clients[clientId]; if(!c||c.status==='playing') return;
+      const w=Object.entries(clients).filter(([,c2])=>c2.status==='waiting').map(([id,c2])=>({id,name:c2.name}));
+      const o=Object.entries(clients).map(([id,c2])=>({id,name:c2.name,status:c2.status}));
+      send(clientId,{type:'lobby_update',waiting:w,online:o,photosMeta:photos.map(p=>({id:p.id,name:p.name})),myStatus:c.status});
+    }
+    else if (msg.type==='ping') { /* keepalive */ }
+    else if (msg.type==='admin_get_data') {
+      if(msg.password!==ADMIN_PASSWORD) { send(clientId,{type:'admin_gate_fail'}); return; }
+      send(clientId,{type:'admin_data',allPhotos,presets});
+    }
+    else if (msg.type==='admin_photos') {
+      if(msg.password!==ADMIN_PASSWORD) { send(clientId,{type:'error',text:'Wrong password.'}); return; }
+      allPhotos=(msg.photos||[]).map((p,i)=>({id:i,src:p.src||p,name:p.name||''}));
+      photos=allPhotos; savePhotos();
+      // Push new photos to all non-playing clients
+      Object.entries(clients).forEach(([id,c])=>{ if(c.status!=='playing') sendPhotos(id); });
       broadcastLobby();
-      send(clientId, { type:'go_lobby' });
+      send(clientId,{type:'admin_ok',text:`${allPhotos.length} photos saved!`});
     }
-
-    // Add/replace the whole photo library
-    else if (msg.type === 'admin_photos') {
-      if (msg.password !== ADMIN_PASSWORD) { send(clientId, { type:'error', text:'Wrong password.' }); return; }
-      allPhotos = (msg.photos||[]).map((p,i) => ({ id:i, src:p.src||p, name:p.name||'' }));
-      photos = allPhotos; // reset active to all
-      savePhotos();
-      broadcastLobby();
-      send(clientId, { type:'admin_ok', text:`${allPhotos.length} photos saved!` });
-      send(clientId, { type:'all_photos', photos: allPhotos.map(p=>({id:p.id,name:p.name})) });
-    }
-
-    // Activate a preset (set active game photos)
-    else if (msg.type === 'admin_activate_preset') {
-      if (msg.password !== ADMIN_PASSWORD) { send(clientId, { type:'error', text:'Wrong password.' }); return; }
-      if (msg.presetId === 'all') {
-        photos = allPhotos;
-      } else if (msg.presetId === 'random') {
-        const count = Math.min(msg.count || MAX_PHOTOS, allPhotos.length);
-        photos = shuffle(allPhotos).slice(0, count).map((p,i) => ({...p, id:i}));
+    else if (msg.type==='admin_activate_preset') {
+      if(msg.password!==ADMIN_PASSWORD) { send(clientId,{type:'error',text:'Wrong password.'}); return; }
+      if(msg.presetId==='all') { photos=allPhotos; }
+      else if(msg.presetId==='random') {
+        const n=Math.min(msg.count||25,allPhotos.length);
+        photos=shuffle(allPhotos).slice(0,n).map((p,i)=>({...p,id:i}));
       } else {
-        const preset = presets.find(p => p.id === msg.presetId);
-        if (!preset) { send(clientId, { type:'error', text:'Preset not found.' }); return; }
-        photos = preset.photoIds.map(pid => allPhotos.find(p => p.id === pid)).filter(Boolean).map((p,i)=>({...p,id:i}));
+        const pr=presets.find(p=>p.id===msg.presetId);
+        if(!pr) { send(clientId,{type:'error',text:'Preset not found.'}); return; }
+        photos=pr.photoIds.map(pid=>allPhotos.find(p=>p.id===pid)).filter(Boolean).map((p,i)=>({...p,id:i}));
       }
-      broadcastLobby(); // sends active photos to all lobby clients
-      send(clientId, { type:'admin_ok', text:'Game photos updated!' });
-    }
-
-    // Save a preset
-    else if (msg.type === 'admin_save_preset') {
-      if (msg.password !== ADMIN_PASSWORD) { send(clientId, { type:'error', text:'Wrong password.' }); return; }
-      const existing = presets.find(p => p.id === msg.preset.id);
-      if (existing) {
-        Object.assign(existing, msg.preset);
-      } else {
-        presets.push({ id: String(Date.now()), name: msg.preset.name, photoIds: msg.preset.photoIds });
-      }
-      savePresets();
-      send(clientId, { type:'presets_update', presets: presets.map(p=>({id:p.id,name:p.name,count:p.photoIds.length})) });
-      send(clientId, { type:'admin_ok', text:'Preset saved!' });
-    }
-
-    // Delete a preset
-    else if (msg.type === 'admin_delete_preset') {
-      if (msg.password !== ADMIN_PASSWORD) { send(clientId, { type:'error', text:'Wrong password.' }); return; }
-      presets = presets.filter(p => p.id !== msg.presetId);
-      savePresets();
-      send(clientId, { type:'presets_update', presets: presets.map(p=>({id:p.id,name:p.name,count:p.photoIds.length})) });
-      send(clientId, { type:'admin_ok', text:'Preset deleted.' });
-    }
-
-    // Request full admin data (all photos + presets)
-    else if (msg.type === 'admin_get_data') {
-      if (msg.password !== ADMIN_PASSWORD) {
-        send(clientId, { type:'admin_gate_fail' }); return;
-      }
-      send(clientId, { type:'admin_data', allPhotos, presets });
-    }
-
-    else if (msg.type === 'admin_delete_photo') {
-      if (msg.password !== ADMIN_PASSWORD) { send(clientId, { type:'error', text:'Wrong password.' }); return; }
-      photos = photos.filter(p => p.id !== msg.photoId).map((p,i) => ({ ...p, id:i }));
-      savePhotos();
+      Object.entries(clients).forEach(([id,c])=>{ if(c.status!=='playing') sendPhotos(id); });
       broadcastLobby();
-      send(clientId, { type:'admin_ok', text:'Photo removed.' });
+      send(clientId,{type:'admin_ok',text:'Game photos updated!'});
     }
-
-    else if (msg.type === 'admin_reset') {
-      if (msg.password !== ADMIN_PASSWORD) { send(clientId, { type:'error', text:'Wrong password.' }); return; }
-      Object.keys(games).forEach(gid => delete games[gid]);
-      Object.keys(pendingChallenges).forEach(k => delete pendingChallenges[k]);
-      Object.entries(clients).forEach(([id, c]) => {
-        c.status = 'lobby'; c.gameId = null;
-        send(id, { type: 'force_lobby' });
-      });
-      setTimeout(broadcastLobby, 100);
-      send(clientId, { type:'admin_ok', text:'Hard reset done.' });
+    else if (msg.type==='admin_save_preset') {
+      if(msg.password!==ADMIN_PASSWORD) { send(clientId,{type:'error',text:'Wrong password.'}); return; }
+      const ex=presets.find(p=>p.id===msg.preset.id);
+      if(ex) Object.assign(ex,msg.preset);
+      else presets.push({id:String(Date.now()),name:msg.preset.name,photoIds:msg.preset.photoIds});
+      savePresets();
+      send(clientId,{type:'presets_update',presets:presets.map(p=>({id:p.id,name:p.name,count:p.photoIds.length}))});
+      send(clientId,{type:'admin_ok',text:'Preset saved!'});
+    }
+    else if (msg.type==='admin_delete_preset') {
+      if(msg.password!==ADMIN_PASSWORD) { send(clientId,{type:'error',text:'Wrong password.'}); return; }
+      presets=presets.filter(p=>p.id!==msg.presetId); savePresets();
+      send(clientId,{type:'presets_update',presets:presets.map(p=>({id:p.id,name:p.name,count:p.photoIds.length}))});
+      send(clientId,{type:'admin_ok',text:'Preset deleted.'});
+    }
+    else if (msg.type==='admin_reset') {
+      if(msg.password!==ADMIN_PASSWORD) { send(clientId,{type:'error',text:'Wrong password.'}); return; }
+      Object.keys(games).forEach(g=>delete games[g]);
+      Object.keys(pendingChallenges).forEach(k=>delete pendingChallenges[k]);
+      Object.entries(clients).forEach(([id,c])=>{ c.status='lobby'; c.gameId=null; send(id,{type:'force_lobby'}); });
+      setTimeout(broadcastLobby,100);
+      send(clientId,{type:'admin_ok',text:'Hard reset done.'});
     }
   });
 
-  ws.on('close', () => { handleDisconnect(clientId); });
-  ws.on('error', () => { handleDisconnect(clientId); });
+  ws.on('close', ()=>handleDisconnect(clientId));
+  ws.on('error', ()=>handleDisconnect(clientId));
 });
 
-// FIX 1: Ping all clients every 20s — phones that go to background still respond to pings
-// Give a 35s window before declaring dead (handles phone sleep)
-setInterval(() => {
-  Object.entries(clients).forEach(([id, c]) => {
-    if (c.ws.readyState !== WebSocket.OPEN) {
-      handleDisconnect(id); return;
-    }
-    if (c.ws.isAlive === false) {
-      // Missed a full ping cycle — disconnect them
-      console.log(`Client ${id} (${c.name}) timed out`);
-      c.ws.terminate();
-      handleDisconnect(id);
-      return;
-    }
-    c.ws.isAlive = false;
-    try { c.ws.ping(); } catch(e) {}
+// Ping every 20s to keep connections alive
+setInterval(()=>{
+  Object.entries(clients).forEach(([id,c])=>{
+    if(c.ws.readyState!==WebSocket.OPEN){ handleDisconnect(id); return; }
+    if(!c.ws.isAlive){ c.ws.terminate(); handleDisconnect(id); return; }
+    c.ws.isAlive=false;
+    try{ c.ws.ping(); }catch(e){}
   });
-}, PING_INTERVAL);
+},20000);
 
-server.listen(PORT, '0.0.0.0', () => console.log(`Guess Who running on port ${PORT}`));
+server.listen(PORT,'0.0.0.0',()=>console.log(`Guess Who on port ${PORT}`));
