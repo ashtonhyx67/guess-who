@@ -20,11 +20,26 @@ let nextGameId = 1;
 
 try {
   if (fs.existsSync(PHOTOS_FILE)) {
-    allPhotos = JSON.parse(fs.readFileSync(PHOTOS_FILE, 'utf8'));
-    photos = allPhotos;
-    console.log('Loaded', allPhotos.length, 'photos');
+    const raw = fs.readFileSync(PHOTOS_FILE, 'utf8');
+    if (raw && raw.trim()) {
+      allPhotos = JSON.parse(raw);
+      photos = allPhotos; // active set = full library by default
+      console.log('Loaded', allPhotos.length, 'photos from disk');
+    }
+  } else {
+    console.log('No photos file yet — will create on first upload');
   }
-} catch(e) { console.error(e.message); }
+} catch(e) {
+  console.error('Failed to load photos:', e.message);
+  // Try backup
+  try {
+    if (fs.existsSync(PHOTOS_FILE + '.bak')) {
+      allPhotos = JSON.parse(fs.readFileSync(PHOTOS_FILE + '.bak', 'utf8'));
+      photos = allPhotos;
+      console.log('Loaded', allPhotos.length, 'photos from backup');
+    }
+  } catch(e2) { console.error('Backup also failed:', e2.message); }
+}
 
 try {
   if (fs.existsSync(PRESETS_FILE)) {
@@ -32,7 +47,15 @@ try {
   }
 } catch(e) { console.error(e.message); }
 
-function savePhotos()  { try { fs.writeFileSync(PHOTOS_FILE,  JSON.stringify(allPhotos)); } catch(e) { console.error(e.message); } }
+function savePhotos() {
+  try {
+    const data = JSON.stringify(allPhotos);
+    fs.writeFileSync(PHOTOS_FILE, data);
+    // Also write backup
+    fs.writeFileSync(PHOTOS_FILE + '.bak', data);
+    console.log('Saved', allPhotos.length, 'photos to disk');
+  } catch(e) { console.error('Failed to save photos:', e.message); }
+}
 function savePresets() { try { fs.writeFileSync(PRESETS_FILE, JSON.stringify(presets));   } catch(e) { console.error(e.message); } }
 function shuffle(arr)  { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 
@@ -192,7 +215,12 @@ wss.on('connection', ws => {
       if(!cr||!tg) { send(clientId,{type:'error',text:'Player not found.'}); return; }
       if(cr.status!=='waiting') { send(clientId,{type:'error',text:'You must be searching.'}); return; }
       if(tg.status!=='waiting') { send(clientId,{type:'error',text:'Player no longer searching.'}); return; }
-      if(photos.length<2) { send(clientId,{type:'error',text:'Admin needs to upload photos first.'}); return; }
+      // Use allPhotos as fallback if active set is empty
+      if(photos.length === 0 && allPhotos.length > 0) {
+        photos = allPhotos;
+        console.log('Fallback: using allPhotos for game');
+      }
+      if(photos.length<2) { send(clientId,{type:'error',text:`No photos loaded yet — admin must upload photos first (current: ${allPhotos.length} in library, ${photos.length} active).`}); return; }
       pendingChallenges[clientId]={targetId:msg.targetId,timestamp:Date.now()};
       send(msg.targetId,{type:'challenge_received',challengerId:clientId,challengerName:cr.name});
       send(clientId,{type:'challenge_sent',targetName:tg.name});
@@ -273,7 +301,8 @@ wss.on('connection', ws => {
     else if (msg.type==='admin_photos') {
       if(msg.password!==ADMIN_PASSWORD) { send(clientId,{type:'error',text:'Wrong password.'}); return; }
       allPhotos=(msg.photos||[]).map((p,i)=>({id:i,src:p.src||p,name:p.name||''}));
-      photos=allPhotos; savePhotos();
+      photos=allPhotos; // reset active to full library
+      savePhotos();
       // Push new photos to all non-playing clients
       Object.entries(clients).forEach(([id,c])=>{ if(c.status!=='playing') sendPhotos(id); });
       broadcastLobby();
@@ -292,7 +321,8 @@ wss.on('connection', ws => {
       }
       Object.entries(clients).forEach(([id,c])=>{ if(c.status!=='playing') sendPhotos(id); });
       broadcastLobby();
-      send(clientId,{type:'admin_ok',text:'Game photos updated!'});
+      console.log('Active game photos set to', photos.length, 'photos');
+      send(clientId,{type:'admin_ok',text:`Active set: ${photos.length} photos ready!`});
     }
     else if (msg.type==='admin_save_preset') {
       if(msg.password!==ADMIN_PASSWORD) { send(clientId,{type:'error',text:'Wrong password.'}); return; }
