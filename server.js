@@ -268,7 +268,7 @@ wss.on('connection', ws => {
     }
     else if (msg.type==='admin_get_data') {
       if(msg.password!==ADMIN_PASSWORD) { send(clientId,{type:'admin_gate_fail'}); return; }
-      send(clientId,{type:'admin_data',allPhotos,presets});
+      send(clientId,{type:'admin_data',allPhotos,presets:presets.map(p=>({id:p.id,name:p.name,photoIds:p.photoIds,count:p.photoIds.length}))});
     }
     else if (msg.type==='admin_photos') {
       if(msg.password!==ADMIN_PASSWORD) { send(clientId,{type:'error',text:'Wrong password.'}); return; }
@@ -300,13 +300,13 @@ wss.on('connection', ws => {
       if(ex) Object.assign(ex,msg.preset);
       else presets.push({id:String(Date.now()),name:msg.preset.name,photoIds:msg.preset.photoIds});
       savePresets();
-      send(clientId,{type:'presets_update',presets:presets.map(p=>({id:p.id,name:p.name,count:p.photoIds.length}))});
+      send(clientId,{type:'presets_update',presets:presets.map(p=>({id:p.id,name:p.name,photoIds:p.photoIds,count:p.photoIds.length}))});
       send(clientId,{type:'admin_ok',text:'Preset saved!'});
     }
     else if (msg.type==='admin_delete_preset') {
       if(msg.password!==ADMIN_PASSWORD) { send(clientId,{type:'error',text:'Wrong password.'}); return; }
       presets=presets.filter(p=>p.id!==msg.presetId); savePresets();
-      send(clientId,{type:'presets_update',presets:presets.map(p=>({id:p.id,name:p.name,count:p.photoIds.length}))});
+      send(clientId,{type:'presets_update',presets:presets.map(p=>({id:p.id,name:p.name,photoIds:p.photoIds,count:p.photoIds.length}))});
       send(clientId,{type:'admin_ok',text:'Preset deleted.'});
     }
     else if (msg.type==='admin_reset') {

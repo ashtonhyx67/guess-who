@@ -706,8 +706,7 @@ function handle(msg){
     case 'presets_update':
       serverPresets=msg.presets||[];
       renderPresets();
-      // Update PM presets too
-      pmPresets=(msg.presets||[]).map(p=>({...p}));
+      pmPresets=(msg.presets||[]).map(p=>({id:p.id,name:p.name,photoIds:p.photoIds||[]}));
       renderPresetsPanel();
       return;
 
@@ -1193,7 +1192,7 @@ function closePM() {
 // Called when admin_data arrives
 function pmOnData(allPhotos, presets) {
   pmLibrary = allPhotos.map(p => ({ ...p }));
-  pmPresets = presets.map(p => ({ ...p }));
+  pmPresets = presets.map(p => ({ id:p.id, name:p.name, photoIds:p.photoIds||[] }));
   pmSelected = new Set();
   renderPMGrid();
   renderPresetsPanel();
@@ -1351,11 +1350,8 @@ function renderPresetsPanel() {
 function pmNewPreset() {
   const name = prompt('Preset name (e.g. "Game Night 1"):');
   if (!name) return;
-  // Start empty, user can add photos via selection
-  const preset = { id: String(Date.now()), name, photoIds: [] };
-  pmPresets.push(preset);
   wsSend({ type: 'admin_save_preset', password: adminPass, preset: { name, photoIds: [] } });
-  renderPresetsPanel();
+  // renderPresetsPanel will be called when presets_update arrives
 }
 
 function pmNewPresetFromSel() {
@@ -1365,17 +1361,19 @@ function pmNewPresetFromSel() {
   wsSend({ type: 'admin_save_preset', password: adminPass, preset: { name, photoIds } });
   pmSelected = new Set();
   renderPMGrid();
+  // renderPresetsPanel called when presets_update arrives from server
 }
 
 function pmAddToPreset(presetId) {
   const pr = pmPresets.find(p => p.id === presetId);
   if (!pr) return;
-  const toAdd = [...pmSelected].filter(id => !pr.photoIds.includes(id));
-  pr.photoIds = [...pr.photoIds, ...toAdd];
+  const existing = new Set(pr.photoIds);
+  [...pmSelected].forEach(id => existing.add(id));
+  pr.photoIds = [...existing];
   wsSend({ type: 'admin_save_preset', password: adminPass, preset: { id: presetId, name: pr.name, photoIds: pr.photoIds } });
   pmSelected = new Set();
   renderPMGrid();
-  renderPresetsPanel();
+  // renderPresetsPanel called when presets_update arrives
 }
 
 function pmRenamePreset(id, name) {
