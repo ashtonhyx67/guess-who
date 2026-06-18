@@ -305,6 +305,7 @@ body.dark .gcounter{background:#450a0a}
   </div>
   <div class="game-wrap">
     <div class="turn-banner mine" id="turn-banner">Your turn!</div>
+    <button id="overview-btn" onclick="openOverview()" style="background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;flex-shrink:0;transition:background .15s" onmouseover="this.style.background='var(--off)'" onmouseout="this.style.background='var(--white)'">👁 Overview</button>
     <div class="info-row">
       <span style="font-size:10px;color:var(--muted);font-weight:600">🔒 Secret:</span>
       <div class="secret-thumb" onclick="expandSecret()" title="Click to expand"><img id="secret-img" src="" alt=""></div>
@@ -364,7 +365,7 @@ body.dark .gcounter{background:#450a0a}
       <div class="upload-zone" onclick="document.getElementById('admin-file').click()">
         <div style="font-size:1.5rem">📸</div>
         <strong style="font-size:13px">Click to upload photos</strong>
-        <p>Any number — JPG, PNG, WEBP</p>
+        <p>No limit — select as many as you want at once (JPG, PNG, WEBP)</p>
       </div>
       <input type="file" id="admin-file" accept="image/*" multiple>
       <div class="pcnt" id="admin-count"></div>
@@ -463,6 +464,17 @@ body.dark .gcounter{background:#450a0a}
     <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:.5rem">🔒 Your secret — tap outside to close</div>
     <img id="secret-big" src="" style="width:100%;border-radius:14px;border:3px solid #fff;display:block">
     <div id="secret-big-name" style="color:#fff;font-weight:700;font-size:1rem;margin-top:.75rem"></div>
+  </div>
+</div>
+
+<!-- MODAL: OVERVIEW -->
+<div class="overlay" id="modal-overview" onclick="closeOverlay('modal-overview')" style="align-items:flex-start;padding:1rem;overflow-y:auto">
+  <div style="background:var(--white);border-radius:16px;width:100%;max-width:1100px;margin:auto;padding:1.25rem;box-shadow:0 24px 64px rgba(0,0,0,.25)" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div style="font-size:1rem;font-weight:800">👁 Overview — All Cards</div>
+      <button onclick="closeOverlay('modal-overview')" style="padding:5px 14px;background:var(--off);border:1.5px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-weight:600">Close</button>
+    </div>
+    <div id="overview-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px"></div>
   </div>
 </div>
 
@@ -1036,6 +1048,22 @@ function showAMsg(id,txt,t){
   if(!e) return;
   e.textContent=txt; e.className='amsg '+t; e.style.display='block';
   setTimeout(()=>e.style.display='none',4000);
+}
+
+// ═══ OVERVIEW ═══
+function openOverview(){
+  const photos=currentGame?.photos||currentPhotos;
+  const myElim=new Set(currentGame?.me?.eliminated||[]);
+  const grid=document.getElementById('overview-grid');
+  grid.innerHTML='';
+  photos.forEach(p=>{
+    const isElim=myElim.has(p.id);
+    const d=document.createElement('div');
+    d.style.cssText='position:relative;border-radius:8px;overflow:hidden;border:2px solid '+(isElim?'var(--red)':'var(--border)')+';opacity:'+(isElim?'.35':'1');
+    d.innerHTML=`<div style="aspect-ratio:3/4;overflow:hidden"><img src="${p.src}" style="width:100%;height:100%;object-fit:cover;display:block" alt=""></div><div style="font-size:10px;font-weight:700;text-align:center;padding:3px 4px 4px;background:var(--white);color:var(--text);border-top:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name||'')}</div>${isElim?`<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(245,66,81,.15)"><span style="font-size:1.4rem;font-weight:900;color:var(--red)">✕</span></div>`:''}`;
+    grid.appendChild(d);
+  });
+  document.getElementById('modal-overview').classList.add('show');
 }
 
 // ═══ UTILS ═══

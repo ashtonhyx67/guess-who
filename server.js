@@ -46,7 +46,7 @@ const server = http.createServer((req, res) => {
   });
 });
 
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ server, maxPayload: 500 * 1024 * 1024 }); // 500MB max
 
 function send(id, msg) {
   const c = clients[id];
