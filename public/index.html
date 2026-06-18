@@ -521,12 +521,16 @@ let incomingChallengerId=null;
 //  CONNECT
 // ══════════════════════════════════════
 function connect(cb){
+  const h=location.host;
+  if(!h){ setTimeout(function(){ connect(cb); },1500); return; }
   const proto=location.protocol==='https:'?'wss:':'ws:';
-  ws=new WebSocket(`${proto}//${location.host}`);
-  ws.onopen=()=>cb&&cb();
-  ws.onmessage=e=>handle(JSON.parse(e.data));
-  ws.onclose=()=>setTimeout(connect,2500);
-  ws.onerror=()=>ws.close();
+  const url=proto+'//'+h;
+  try{ ws=new WebSocket(url); }
+  catch(e){ console.warn('WS fail:',e); setTimeout(function(){ connect(cb); },2000); return; }
+  ws.onopen=function(){ startPing(); if(cb) cb(); };
+  ws.onmessage=function(e){ try{ handle(JSON.parse(e.data)); }catch(err){ console.error(err); } };
+  ws.onclose=function(){ setTimeout(connect,2500); };
+  ws.onerror=function(){ try{ ws.close(); }catch(e){} };
 }
 function wsSend(obj){ if(ws&&ws.readyState===1) ws.send(JSON.stringify(obj)); }
 
@@ -540,12 +544,11 @@ function startPing(){
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'){
     // Phone came back — if WS is dead, reconnect and rejoin
-    if(!ws||ws.readyState!==1){
-      connect(()=>{
-        if(myName) wsSend({type:'join',name:myName});
-      });
+    if(!ws||ws.readyState!==WebSocket.OPEN){
+      connect(function(){ if(myName) wsSend({type:'join',name:myName}); });
+    } else {
+      startPing();
     }
-    startPing();
   }
 });
 
