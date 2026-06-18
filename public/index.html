@@ -1403,7 +1403,7 @@ function pmActivate(presetId) {
 }
 
 function pmActivateRandom() {
-  const n = parseInt(document.getElementById('rand-count').value) || 25;
+  const n = parseInt(document.getElementById('rand-count').value) || 40;
   wsSend({ type: 'admin_activate_preset', password: adminPass, presetId: 'random', count: n });
   pmActiveLabel = `${n} random photos`;
   updateActiveCount();
