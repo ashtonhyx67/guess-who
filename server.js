@@ -90,7 +90,7 @@ function sendGameState(gameId) {
     send(pid, {
       type: 'game_state',
       phase: g.phase,
-      photos,
+      photos: photos.map(p => ({ id: p.id, name: p.name })), // no src — client already has it
       me: { id: pid, name: clients[pid]?.name, secret: me.secret, eliminated: [...me.eliminated], guessesLeft: me.guessesLeft },
       opponent: { id: oppId, name: clients[oppId]?.name, secretPicked: opp.secret !== null, eliminated: [...opp.eliminated], secret: (g.phase === 'gameover') ? opp.secret : null },
       turn: g.turn,

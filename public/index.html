@@ -588,6 +588,14 @@ function handle(msg){
     return;
   }
   if(msg.type==='game_state'){
+    // Merge server photo metadata with locally cached srcs
+    // (server omits src to keep messages small)
+    if(msg.photos && msg.photos.length > 0 && !msg.photos[0].src) {
+      msg.photos = msg.photos.map(p => {
+        const cached = currentPhotos.find(cp => cp.id === p.id);
+        return cached ? cached : p;
+      });
+    }
     currentGame=msg;
     if(msg.phase==='pick') renderPick(msg);
     else if(msg.phase==='playing') renderGame(msg);
