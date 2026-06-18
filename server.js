@@ -116,7 +116,7 @@ function sendGameState(gameId) {
     send(pid, {
       type: 'game_state',
       phase: g.phase,
-      photos: photos.map(p => ({ id: p.id, name: p.name })), // no src — client already has it
+      photos,  // send full photo data including src
       me: { id: pid, name: clients[pid]?.name, secret: me.secret, eliminated: [...me.eliminated], guessesLeft: me.guessesLeft },
       opponent: { id: oppId, name: clients[oppId]?.name, secretPicked: opp.secret !== null, eliminated: [...opp.eliminated], secret: (g.phase === 'gameover') ? opp.secret : null },
       turn: g.turn,
@@ -429,7 +429,9 @@ wss.on('connection', ws => {
 
     // Request full admin data (all photos + presets)
     else if (msg.type === 'admin_get_data') {
-      if (msg.password !== ADMIN_PASSWORD) { send(clientId, { type:'error', text:'Wrong password.' }); return; }
+      if (msg.password !== ADMIN_PASSWORD) {
+        send(clientId, { type:'admin_gate_fail' }); return;
+      }
       send(clientId, { type:'admin_data', allPhotos, presets });
     }
 

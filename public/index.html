@@ -383,9 +383,9 @@ body.dark .guess-counter { background:#450a0a; }
       <button class="mbtn-ghost" style="padding:5px 12px;font-size:11px" onclick="closeOverlay('modal-admin')">Close</button>
     </div>
     <div class="admin-tabs">
-      <button class="admin-tab active" onclick="switchAdminTab('appearance',this)">🎨 Appearance</button>
-      <button class="admin-tab" onclick="switchAdminTab('photos',this)">📸 Photos</button>
-      <button class="admin-tab" onclick="switchAdminTab('manage',this)">🔧 Manage</button>
+      <button class="admin-tab active" id="atab-appearance" onclick="switchAdminTab('appearance',this)">🎨 Appearance</button>
+      <button class="admin-tab" id="atab-photos" onclick="requireAdminTab('photos',this)">📸 Photos</button>
+      <button class="admin-tab" id="atab-manage" onclick="requireAdminTab('manage',this)">🔧 Manage</button>
     </div>
     <div class="admin-tab-panel active" id="tab-appearance">
       <div class="toggle-row">
@@ -397,9 +397,19 @@ body.dark .guess-counter { background:#450a0a; }
         <label class="toggle"><input type="checkbox" id="names-toggle" checked onchange="toggleNames(this.checked)"><span class="toggle-slider"></span></label>
       </div>
     </div>
-    <div class="admin-tab-panel" id="tab-photos">
-      <div class="pass-row" style="margin-bottom:.5rem"><input type="password" id="admin-pass" placeholder="Admin password" onchange="loadAdminData()"></div>
+    <!-- PASSWORD GATE (shown instead of locked tabs) -->
+    <div id="admin-gate" style="display:none;text-align:center;padding:1.5rem 0">
+      <div style="font-size:2rem;margin-bottom:.5rem">🔒</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:.4rem">Admin access required</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:1rem">Enter the admin password to access this tab</div>
+      <div style="display:flex;gap:.4rem;max-width:280px;margin:0 auto">
+        <input type="password" id="admin-gate-pass" placeholder="Password" style="flex:1;padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text);background:var(--off);outline:none" onkeydown="if(event.key==='Enter')submitAdminGate()">
+        <button class="mbtn" onclick="submitAdminGate()">Unlock</button>
+      </div>
+      <div id="gate-error" style="color:var(--red);font-size:12px;margin-top:.5rem;display:none">Wrong password</div>
+    </div>
 
+    <div class="admin-tab-panel" id="tab-photos">
       <!-- LIBRARY -->
       <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">📚 Photo Library</div>
       <div class="photo-upload-zone" onclick="document.getElementById('admin-file').click()">
@@ -433,7 +443,6 @@ body.dark .guess-counter { background:#450a0a; }
     </div>
     <div class="admin-tab-panel" id="tab-manage">
       <p style="margin-bottom:.85rem;font-size:13px">Send everyone back to the lobby and clear all active games.</p>
-      <div class="pass-row"><input type="password" id="manage-pass" placeholder="Admin password"></div>
       <!-- FIX 7: password not shown anywhere in UI -->
       <button class="mbtn" style="width:100%;background:#111" onclick="hardReset()">🔴 Hard Reset — Send Everyone to Lobby</button>
       <div class="admin-msg-line" id="manage-msg"></div>
@@ -587,20 +596,16 @@ function handle(msg){
 
   if(msg.type==='matched'){
     myStatus='playing';
+    boardBuilt=false; // reset board for new game
+    localFlippedThisTurn=new Set();
+    lastTurn=null;
     showLoading(msg.opponentName);
     return;
   }
   if(msg.type==='game_state'){
-    // Always hydrate photos with src from currentPhotos cache
-    if(msg.photos && msg.photos.length > 0) {
-      msg.photos = msg.photos.map(p => {
-        if(p.src) return p;
-        const cached = currentPhotos.find(cp => cp.id === p.id);
-        if(cached) return Object.assign({}, p, { src: cached.src });
-        return p;
-      });
-      // If merge worked, update currentPhotos so future merges work too
-      if(msg.photos[0] && msg.photos[0].src) currentPhotos = msg.photos;
+    // Photos now include full src from server — update cache too
+    if(msg.photos && msg.photos.length>0 && msg.photos[0].src){
+      currentPhotos = msg.photos;
     }
     currentGame=msg;
     if(msg.phase==='pick') renderPick(msg);
@@ -655,6 +660,11 @@ function handle(msg){
   }
   if(msg.type==='challenge_sent') return;
   if(msg.type==='error'){ alert(msg.text); return; }
+  if(msg.type==='admin_gate_fail'){
+    document.getElementById('gate-error').style.display='block';
+    adminPassword='';
+    return;
+  }
   if(msg.type==='admin_ok'){
     showAdminMsg('admin-msg',msg.text,'ok');
     showAdminMsg('manage-msg',msg.text,'ok');
@@ -666,6 +676,8 @@ function handle(msg){
     renderPhotosList();
     serverPresets=msg.presets||[];
     renderPresets();
+    // Unlock gate if password was correct (server responded successfully)
+    onAdminUnlocked();
     return;
   }
   if(msg.type==='presets_update'){
@@ -863,8 +875,14 @@ function renderGame(msg){
   }
   const myElim=new Set(msg.me?.eliminated||[]);
   // FIX 4: flippedThisTurn not sent from server — track locally
-  if(!boardBuilt){ buildBoard(photos,myElim,isMyTurn,localFlippedThisTurn); boardBuilt=true; }
-  else syncBoard(myElim,isMyTurn,localFlippedThisTurn);
+  // Always rebuild if photos changed or board not built yet
+  const gridHasCards = document.getElementById('board-grid').children.length > 0;
+  if(!boardBuilt || !gridHasCards){
+    buildBoard(photos,myElim,isMyTurn,localFlippedThisTurn);
+    boardBuilt=true;
+  } else {
+    syncBoard(myElim,isMyTurn,localFlippedThisTurn);
+  }
 }
 
 function buildBoard(photos,elimSet,isMyTurn,flippedThis){
@@ -1049,14 +1067,58 @@ function backToLobby(){
 //  FIX 1: ADMIN — sync with server photos
 // ══════════════════════════════════════
 // ── ADMIN STATE ──
-let allLibraryPhotos = []; // full library from server (with srcs)
-let serverPresets = [];    // [{ id, name, count }]
-let editingPreset = null;  // preset being edited
+let allLibraryPhotos = [];
+let serverPresets = [];
+let editingPreset = null;
+let adminUnlocked = false;
+let adminPassword = '';
+let pendingAdminTab = null; // tab to open after unlock
+
+function requireAdminTab(tabName, btn){
+  if(adminUnlocked){
+    switchAdminTab(tabName, btn);
+  } else {
+    pendingAdminTab = { name: tabName, btn };
+    // Hide all tab panels, show gate
+    document.querySelectorAll('.admin-tab-panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('admin-gate').style.display='block';
+    document.getElementById('gate-error').style.display='none';
+    setTimeout(()=>document.getElementById('admin-gate-pass').focus(), 100);
+  }
+}
+
+function submitAdminGate(){
+  const pass = document.getElementById('admin-gate-pass').value;
+  if(!pass) return;
+  // Try to verify by requesting admin data
+  adminPassword = pass;
+  wsSend({type:'admin_get_data', password:pass});
+}
+
+function onAdminUnlocked(){
+  adminUnlocked = true;
+  document.getElementById('admin-gate').style.display='none';
+  document.getElementById('admin-gate-pass').value='';
+  if(pendingAdminTab){
+    switchAdminTab(pendingAdminTab.name, pendingAdminTab.btn);
+    pendingAdminTab = null;
+  }
+}
+
+function loadAdminData(){
+  const pass=adminPassword||document.getElementById('admin-gate-pass')?.value;
+  if(!pass) return;
+  wsSend({type:'admin_get_data', password:pass});
+}
 
 function openAdmin(){
   document.getElementById('modal-admin').classList.add('show');
-  // Sync library from currentPhotos (which has srcs from welcome)
-  if(allLibraryPhotos.length===0 && currentPhotos.length>0){
+  // If already unlocked, refresh from server
+  if(adminUnlocked) loadAdminData();
+  // If library is empty and we have photos, pre-populate
+  else if(allLibraryPhotos.length===0 && currentPhotos.length>0){
     allLibraryPhotos=currentPhotos.map(p=>({...p}));
     adminPhotos=allLibraryPhotos.map(p=>({src:p.src,name:p.name||''}));
     renderPhotosList();
@@ -1121,18 +1183,16 @@ function renderPhotosList(){
 function removeAdminPhoto(i){ adminPhotos.splice(i,1); renderPhotosList(); }
 
 function pushPhotos(){
-  const pass=document.getElementById('admin-pass').value;
-  if(!pass){ showAdminMsg('admin-msg','Enter the admin password.','err'); return; }
-  if(adminPhotos.length<1){ showAdminMsg('admin-msg','Upload at least 2 photos.','err'); return; }
-  wsSend({type:'admin_photos',password:pass,photos:adminPhotos.map(p=>({src:p.src,name:p.name}))});
+  if(!adminUnlocked){ showAdminMsg('admin-msg','Not unlocked.','err'); return; }
+  if(adminPhotos.length<1){ showAdminMsg('admin-msg','Upload at least 1 photo.','err'); return; }
+  wsSend({type:'admin_photos',password:adminPassword,photos:adminPhotos.map(p=>({src:p.src,name:p.name}))});
 }
 
 // FIX 3: hard reset
 function hardReset(){
-  const pass=document.getElementById('manage-pass').value;
-  if(!pass){ showAdminMsg('manage-msg','Enter the admin password.','err'); return; }
+  if(!adminUnlocked){ showAdminMsg('manage-msg','Not unlocked.','err'); return; }
   if(!confirm('Hard reset — send everyone back to lobby and clear all games?')) return;
-  wsSend({type:'admin_reset',password:pass});
+  wsSend({type:'admin_reset',password:adminPassword});
 }
 
 function clearAllPhotos(){
@@ -1161,46 +1221,39 @@ function renderPresets(){
 }
 
 function createPreset(){
-  const pass=document.getElementById('admin-pass').value;
-  if(!pass){ showAdminMsg('admin-msg','Enter password first.','err'); return; }
+  if(!adminUnlocked) return;
   if(serverPresets.length>=3){ showAdminMsg('admin-msg','Max 3 presets.','err'); return; }
   if(!allLibraryPhotos.length){ showAdminMsg('admin-msg','Upload photos to library first.','err'); return; }
   const name=prompt('Preset name (e.g. "Game Night Set 1"):');
   if(!name) return;
-  // Show a picker — for now just use all library photos as default
   const photoIds=allLibraryPhotos.map(p=>p.id);
-  wsSend({type:'admin_save_preset',password:pass,preset:{name,photoIds}});
+  wsSend({type:'admin_save_preset',password:adminPassword,preset:{name,photoIds}});
 }
 
 function editPreset(presetId){
-  const pass=document.getElementById('admin-pass').value;
-  if(!pass){ showAdminMsg('admin-msg','Enter password first.','err'); return; }
+  if(!adminUnlocked) return;
   const preset=serverPresets.find(p=>p.id===presetId);
   if(!preset) return;
   const name=prompt('Rename preset:',preset.name);
   if(!name) return;
-  // Keep same photos, just rename
-  wsSend({type:'admin_save_preset',password:pass,preset:{id:presetId,name,photoIds:allLibraryPhotos.map(p=>p.id)}});
+  wsSend({type:'admin_save_preset',password:adminPassword,preset:{id:presetId,name,photoIds:allLibraryPhotos.map(p=>p.id)}});
 }
 
 function deletePreset(presetId){
-  const pass=document.getElementById('admin-pass').value;
-  if(!pass){ showAdminMsg('admin-msg','Enter password first.','err'); return; }
+  if(!adminUnlocked) return;
   if(!confirm('Delete this preset?')) return;
-  wsSend({type:'admin_delete_preset',password:pass,presetId});
+  wsSend({type:'admin_delete_preset',password:adminPassword,presetId});
 }
 
 function activatePreset(presetId){
-  const pass=document.getElementById('admin-pass').value;
-  if(!pass){ showAdminMsg('admin-msg','Enter password first.','err'); return; }
-  wsSend({type:'admin_activate_preset',password:pass,presetId});
+  if(!adminUnlocked) return;
+  wsSend({type:'admin_activate_preset',password:adminPassword,presetId});
 }
 
 function activateRandom(){
-  const pass=document.getElementById('admin-pass').value;
-  if(!pass){ showAdminMsg('admin-msg','Enter password first.','err'); return; }
+  if(!adminUnlocked) return;
   const count=parseInt(document.getElementById('random-count').value)||25;
-  wsSend({type:'admin_activate_preset',password:pass,presetId:'random',count});
+  wsSend({type:'admin_activate_preset',password:adminPassword,presetId:'random',count});
 }
 
 function showAdminMsg(id,text,type){
