@@ -410,7 +410,10 @@ body.dark .guess-counter { background:#450a0a; }
       <input type="file" id="admin-file" accept="image/*" multiple>
       <div class="admin-count-line" id="admin-count"></div>
       <div class="photos-name-list" id="photos-name-list"></div>
-      <button class="mbtn" style="width:100%;margin-bottom:.75rem" onclick="pushPhotos()">📤 Save Library</button>
+      <div style="display:flex;gap:.4rem;margin-bottom:.75rem">
+        <button class="mbtn" style="flex:1" onclick="pushPhotos()">📤 Save Library</button>
+        <button class="mbtn-ghost" style="flex:0;white-space:nowrap" onclick="clearAllPhotos()">🗑 Clear All</button>
+      </div>
 
       <!-- PRESETS -->
       <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:.4rem 0">🎮 Presets (up to 3 fixed sets)</div>
@@ -588,15 +591,17 @@ function handle(msg){
     return;
   }
   if(msg.type==='game_state'){
-    // Merge photo srcs from cache — server only sends id+name to save bandwidth
+    // Always hydrate photos with src from currentPhotos cache
     if(msg.photos && msg.photos.length > 0) {
       msg.photos = msg.photos.map(p => {
-        if(p.src) return p; // already has src
+        if(p.src) return p;
         const cached = currentPhotos.find(cp => cp.id === p.id);
-        return cached ? { ...p, src: cached.src } : p;
+        if(cached) return Object.assign({}, p, { src: cached.src });
+        return p;
       });
+      // If merge worked, update currentPhotos so future merges work too
+      if(msg.photos[0] && msg.photos[0].src) currentPhotos = msg.photos;
     }
-    // Never overwrite currentPhotos with stripped data — keep the full srcs
     currentGame=msg;
     if(msg.phase==='pick') renderPick(msg);
     else if(msg.phase==='playing') renderGame(msg);
@@ -605,8 +610,11 @@ function handle(msg){
     return;
   }
   if(msg.type==='lobby_update'){
-    // Immediately render — no waiting
-    currentPhotos=msg.photos||[];
+    // Only update currentPhotos if the data has src (full data, not stripped)
+    const incomingPhotos = msg.photos||[];
+    if(incomingPhotos.length>0 && incomingPhotos[0].src) {
+      currentPhotos = incomingPhotos;
+    }
     if(msg.myStatus){
       if(msg.myStatus==='playing'){
         myStatus='playing';
@@ -1090,7 +1098,7 @@ document.querySelector('.photo-upload-zone').addEventListener('dragover',e=>e.pr
 document.querySelector('.photo-upload-zone').addEventListener('drop',e=>{ e.preventDefault(); handleAdminFiles(e.dataTransfer.files); });
 
 function handleAdminFiles(files){
-  const slots=25-adminPhotos.length;
+  const slots=999;
   Array.from(files).slice(0,slots).forEach(f=>{
     if(!f.type.startsWith('image/')) return;
     const r=new FileReader();
@@ -1107,7 +1115,7 @@ function renderPhotosList(){
     d.innerHTML=`<div class="pthumb"><img src="${p.src}"></div><input class="name-input" type="text" value="${esc(p.name)}" placeholder="Name" oninput="adminPhotos[${i}].name=this.value"><button class="rm-btn" onclick="removeAdminPhoto(${i})">✕</button>`;
     wrap.appendChild(d);
   });
-  document.getElementById('admin-count').textContent=`${adminPhotos.length} / 25 photos`;
+  document.getElementById('admin-count').textContent=`${adminPhotos.length} photos`;
 }
 
 function removeAdminPhoto(i){ adminPhotos.splice(i,1); renderPhotosList(); }
@@ -1115,7 +1123,7 @@ function removeAdminPhoto(i){ adminPhotos.splice(i,1); renderPhotosList(); }
 function pushPhotos(){
   const pass=document.getElementById('admin-pass').value;
   if(!pass){ showAdminMsg('admin-msg','Enter the admin password.','err'); return; }
-  if(adminPhotos.length<2){ showAdminMsg('admin-msg','Upload at least 2 photos.','err'); return; }
+  if(adminPhotos.length<1){ showAdminMsg('admin-msg','Upload at least 2 photos.','err'); return; }
   wsSend({type:'admin_photos',password:pass,photos:adminPhotos.map(p=>({src:p.src,name:p.name}))});
 }
 
@@ -1125,6 +1133,12 @@ function hardReset(){
   if(!pass){ showAdminMsg('manage-msg','Enter the admin password.','err'); return; }
   if(!confirm('Hard reset — send everyone back to lobby and clear all games?')) return;
   wsSend({type:'admin_reset',password:pass});
+}
+
+function clearAllPhotos(){
+  if(!confirm('Remove all photos from the list?')) return;
+  adminPhotos=[];
+  renderPhotosList();
 }
 
 function renderPresets(){
