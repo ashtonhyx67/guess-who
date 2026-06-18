@@ -154,34 +154,30 @@ body.dark .opp-av { background:#2a0a0e; }
 .guess-counter { display:inline-flex; align-items:center; gap:2px; background:var(--red-lt); color:var(--red); border-radius:20px; padding:1px 6px; font-size:10px; font-weight:700; margin-left:4px; }
 body.dark .guess-counter { background:#450a0a; }
 
-/* Board takes all remaining space */
-.board-section { flex:1; overflow:hidden; display:flex; flex-direction:column; gap:3px; min-height:0; }
+/* Board — scrollable */
+.board-section { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:4px; min-height:0; }
 .board-hint { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; flex-shrink:0; line-height:1; }
 
-/* Grid — columns/rows set by JS based on photo count */
+/* Grid — columns set by JS, rows grow naturally with card size */
 .board-grid {
   display: grid;
-  gap: 3px;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  align-content: stretch;
+  gap: 5px;
 }
 
-/* Cards fill their cell exactly */
-.flip-card { perspective:800px; cursor:pointer; overflow:hidden; min-height:0; min-width:0; }
-.flip-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .35s cubic-bezier(.4,0,.2,1); border-radius:5px; }
+/* Cards have a proper aspect ratio so they look good */
+.flip-card { aspect-ratio:3/4; perspective:800px; cursor:pointer; overflow:hidden; }
+.flip-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .35s cubic-bezier(.4,0,.2,1); border-radius:8px; }
 .flip-card.flipped .flip-inner { transform:rotateY(180deg); }
 .flip-card.flipped { cursor:default; }
 .flip-card.blocked { cursor:not-allowed; }
-.flip-face { position:absolute; inset:0; backface-visibility:hidden; border-radius:5px; overflow:hidden; border:1px solid var(--border); }
+.flip-face { position:absolute; inset:0; backface-visibility:hidden; border-radius:8px; overflow:hidden; border:1.5px solid var(--border); }
 .flip-front { background:var(--white); display:flex; flex-direction:column; }
-.flip-front .fimg { flex:1; overflow:hidden; min-height:0; }
+.flip-front .fimg { flex:1; overflow:hidden; }
 .flip-front .fimg img { width:100%; height:100%; object-fit:cover; display:block; }
-.flip-front .fname { font-size:7px; font-weight:700; text-align:center; padding:1px 2px 2px; background:var(--white); color:var(--text); border-top:1px solid var(--border); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; line-height:1.2; }
-.flip-back { background:var(--red); transform:rotateY(180deg); display:flex; align-items:center; justify-content:center; flex-direction:column; }
-.flip-back .xmark { font-size:1.4rem; font-weight:900; color:rgba(255,255,255,.35); line-height:1; }
-.flip-back .out-lbl { font-size:7px; color:rgba(255,255,255,.45); font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+.flip-front .fname { font-size:9px; font-weight:700; text-align:center; padding:2px 3px 3px; background:var(--white); color:var(--text); border-top:1px solid var(--border); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; line-height:1.3; }
+.flip-back { background:var(--red); transform:rotateY(180deg); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:2px; }
+.flip-back .xmark { font-size:1.8rem; font-weight:900; color:rgba(255,255,255,.35); line-height:1; }
+.flip-back .out-lbl { font-size:8px; color:rgba(255,255,255,.45); font-weight:700; text-transform:uppercase; letter-spacing:1px; }
 
 /* Action buttons — compact but still clearly clickable */
 .game-actions { display:grid; grid-template-columns:1fr 1fr; gap:5px; flex-shrink:0; }
@@ -361,9 +357,9 @@ body.dark .guess-counter { background:#450a0a; }
         <div class="guess-counter" id="guess-counter">🎯 3 left</div>
       </div>
     </div>
-    <div class="board-section" style="display:flex;flex-direction:column;min-height:0;flex:1;overflow:hidden;">
+    <div class="board-section">
       <div class="board-hint" id="board-hint">Tap to eliminate — only on your turn</div>
-      <div class="board-grid" id="board-grid" style="flex:1;min-height:0;"></div>
+      <div class="board-grid" id="board-grid"></div>
     </div>
     <!-- FIX 5: BIG action buttons at bottom -->
     <div class="game-actions">
@@ -785,16 +781,12 @@ function buildBoard(photos,elimSet,isMyTurn){
   grid.innerHTML='';
   const n=photos.length;
 
-  // Calculate best cols/rows to fill the grid area with no overflow
-  // Pick cols so that ceil(n/cols) rows fit nicely
-  let cols, rows;
-  if(n<=12)      { cols=4; rows=Math.ceil(n/4); }
-  else if(n<=15) { cols=5; rows=3; }
-  else if(n<=20) { cols=5; rows=4; }
-  else           { cols=5; rows=5; }
-
+  // Set columns only — rows grow naturally, board scrolls if needed
+  // On mobile use 4 cols, desktop 5
+  const isMobile=window.innerWidth<600;
+  const cols=isMobile?4:5;
   grid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
-  grid.style.gridTemplateRows=`repeat(${rows},1fr)`;
+  grid.style.gridTemplateRows=''; // let it grow naturally
 
   photos.forEach(p=>{
     const isFlipped=elimSet.has(p.id);
