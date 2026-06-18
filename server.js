@@ -207,9 +207,10 @@ wss.on('connection', ws => {
     if (msg.type === 'join') {
       clients[clientId] = { ws, name: (msg.name||'Player').slice(0,20), status:'lobby', gameId:null };
       send(clientId, { type:'welcome', clientId, photos });
-      const waiting = Object.entries(clients).filter(([,c])=>c.status==='waiting').map(([id,c])=>({id,name:c.name}));
-      const online = Object.entries(clients).map(([id,c])=>({id,name:c.name,status:c.status}));
-      send(clientId, { type:'lobby_update', waiting, online, photos, myStatus:'lobby' });
+      // Immediately send full lobby state to the new client
+      const waiting0 = Object.entries(clients).filter(([,c])=>c.status==='waiting').map(([id,c])=>({id,name:c.name}));
+      const online0 = Object.entries(clients).map(([id,c])=>({id,name:c.name,status:c.status}));
+      send(clientId, { type:'lobby_update', waiting:waiting0, online:online0, photos, myStatus:'lobby' });
       broadcastLobby();
     }
 
@@ -328,6 +329,19 @@ wss.on('connection', ws => {
       g.snipe.choices[clientId] = msg.photoId || 'pass';
       resolveSnipe(c.gameId);
     }
+
+    // Client requesting a fresh lobby state (e.g. on page focus)
+    else if (msg.type === 'request_lobby') {
+      const c = clients[clientId];
+      if (!c || c.status === 'playing') return;
+      const waiting = Object.entries(clients).filter(([,c])=>c.status==='waiting').map(([id,c])=>({id,name:c.name}));
+      const online = Object.entries(clients).map(([id,c])=>({id,name:c.name,status:c.status}));
+      const photosMeta = photos.map(p=>({id:p.id,src:p.src,name:p.name}));
+      send(clientId, { type:'lobby_update', waiting, online, photos:photosMeta, myStatus:c.status });
+    }
+
+    // Keep-alive ping from client — just ignore, ws.isAlive already set above
+    else if (msg.type === 'ping') { /* no-op */ }
 
     else if (msg.type === 'back_to_lobby') {
       const c = clients[clientId]; if (!c) return;

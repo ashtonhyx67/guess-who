@@ -563,28 +563,7 @@ function handle(msg){
     syncAdminPhotos(currentPhotos);
     return;
   }
-  if(msg.type==='lobby_update'){
-    currentPhotos=msg.photos||[];
-    // Sync status from server — but never let a stale lobby_update
-    // flicker us back from waiting->lobby (race condition fix)
-    if(msg.myStatus) {
-      if(msg.myStatus === 'playing') {
-        // server says playing — always trust this
-        myStatus = 'playing';
-      } else if(msg.myStatus === 'waiting' && myStatus === 'lobby') {
-        // server confirmed our ready request
-        myStatus = 'waiting';
-        syncFindUI('waiting');
-      } else if(msg.myStatus === 'lobby' && myStatus === 'lobby') {
-        // both agree we're in lobby — sync UI just in case
-        syncFindUI('lobby');
-      }
-      // if myStatus==='waiting' and server says 'lobby', ignore it —
-      // our ready msg is still in flight
-    }
-    if(myStatus!=='playing') renderLobby(msg);
-    return;
-  }
+
   if(msg.type==='matched'){
     myStatus='playing';
     showLoading(msg.opponentName);
@@ -604,6 +583,22 @@ function handle(msg){
     else if(msg.phase==='playing') renderGame(msg);
     else if(msg.phase==='snipe') renderSnipe(msg);
     else if(msg.phase==='gameover') renderResult(msg);
+    return;
+  }
+  if(msg.type==='lobby_update'){
+    // Immediately render — no waiting
+    currentPhotos=msg.photos||[];
+    if(msg.myStatus){
+      if(msg.myStatus==='playing'){
+        myStatus='playing';
+      } else if(msg.myStatus==='waiting'&&myStatus==='lobby'){
+        myStatus='waiting';
+        syncFindUI('waiting');
+      } else if(msg.myStatus==='lobby'&&myStatus==='lobby'){
+        syncFindUI('lobby');
+      }
+    }
+    if(myStatus!=='playing') renderLobby(msg);
     return;
   }
   if(msg.type==='go_lobby'||msg.type==='force_lobby'){ // FIX 3
@@ -1101,7 +1096,12 @@ function expandSecret(){
   document.getElementById('modal-secret-expand').classList.add('show');
 }
 
-function showPage(id){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // Whenever lobby is shown, immediately ask server for fresh state
+  if(id==='page-lobby') refreshLobby();
+}
 function closeOverlay(id){ document.getElementById(id).classList.remove('show'); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
