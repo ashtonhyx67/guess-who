@@ -575,8 +575,10 @@ function handle(msg){
   if(msg.type==='welcome'){
     myId=msg.clientId;
     currentPhotos=msg.photos||[];
-    // FIX 1: load server photos into admin panel on welcome
     syncAdminPhotos(currentPhotos);
+    // Show lobby page — server sends lobby_update right after this
+    // Use _showPage (no refresh) to avoid sending request_lobby before we're registered
+    _showPage('page-lobby');
     return;
   }
 
@@ -677,7 +679,8 @@ function joinLobby(){
   const name=document.getElementById('join-name').value.trim();
   if(!name) return;
   myName=name;
-  connect(()=>{ wsSend({type:'join',name}); showPage('page-lobby'); });
+  // Connect first, then send join — lobby page shown after server sends welcome+lobby_update
+  connect(()=>{ wsSend({type:'join',name}); });
 }
 document.getElementById('join-name').addEventListener('keydown',e=>{ if(e.key==='Enter') joinLobby(); });
 
@@ -728,7 +731,7 @@ function syncFindUI(status){
 
 function renderLobby(msg){
   if(myStatus==='playing') return;
-  showPage('page-lobby');
+  // Don't call showPage here — it triggers refreshLobby again
   const online=msg.online||[], waiting=msg.waiting||[];
   const row=document.getElementById('players-row');
   row.innerHTML='';
@@ -1208,11 +1211,16 @@ function expandSecret(){
   document.getElementById('modal-secret-expand').classList.add('show');
 }
 
-function showPage(id){
+// Internal page switch — no side effects
+function _showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  // Whenever lobby is shown, immediately ask server for fresh state
-  if(id==='page-lobby') refreshLobby();
+}
+// Public page switch — requests lobby refresh when going to lobby
+function showPage(id){
+  _showPage(id);
+  // Request fresh lobby state when navigating TO lobby (but only if connected & joined)
+  if(id==='page-lobby' && myId) refreshLobby();
 }
 function closeOverlay(id){ document.getElementById(id).classList.remove('show'); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
