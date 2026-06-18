@@ -8,6 +8,7 @@ const ADMIN_PASSWORD = 'xzone';
 const DATA_DIR = fs.existsSync('/data') ? '/data' : __dirname;
 const PHOTOS_FILE  = path.join(DATA_DIR, 'photos.json');
 const PRESETS_FILE = path.join(DATA_DIR, 'presets.json');
+const ACTIVE_FILE  = path.join(DATA_DIR, 'active.json'); // persists active preset choice
 
 let allPhotos = [];  // master library
 let photos = [];     // active game set
@@ -47,6 +48,27 @@ try {
   }
 } catch(e) { console.error(e.message); }
 
+// Restore last active preset
+try {
+  if (fs.existsSync(ACTIVE_FILE) && allPhotos.length > 0) {
+    const active = JSON.parse(fs.readFileSync(ACTIVE_FILE, 'utf8'));
+    if (active.presetId === 'all') {
+      photos = allPhotos;
+      console.log('Restored active: all photos (' + photos.length + ')');
+    } else if (active.presetId === 'random') {
+      // Random can't be restored deterministically — fall back to all
+      photos = allPhotos;
+      console.log('Restored active: all photos (was random)');
+    } else {
+      const pr = presets.find(p => p.id === active.presetId);
+      if (pr) {
+        photos = pr.photoIds.map(pid => allPhotos.find(p => p.id === pid)).filter(Boolean).map((p,i) => ({...p, id:i}));
+        console.log('Restored active preset "' + pr.name + '" (' + photos.length + ' photos)');
+      }
+    }
+  }
+} catch(e) { console.error('Failed to restore active preset:', e.message); }
+
 function savePhotos() {
   try {
     const data = JSON.stringify(allPhotos);
@@ -55,6 +77,9 @@ function savePhotos() {
     fs.writeFileSync(PHOTOS_FILE + '.bak', data);
     console.log('Saved', allPhotos.length, 'photos to disk');
   } catch(e) { console.error('Failed to save photos:', e.message); }
+}
+function saveActive(presetId, count) {
+  try { fs.writeFileSync(ACTIVE_FILE, JSON.stringify({ presetId, count })); } catch(e) { console.error(e.message); }
 }
 function savePresets() { try { fs.writeFileSync(PRESETS_FILE, JSON.stringify(presets));   } catch(e) { console.error(e.message); } }
 function shuffle(arr)  { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
@@ -96,7 +121,8 @@ function broadcastLobby() {
 function sendGameState(gameId) {
   const g = games[gameId];
   if (!g) return;
-  const photoIds = photos.map(p=>p.id); // just ids — client already has full photos
+  const gamePhotos = g.photos || photos; // use game's snapshot, fallback to global
+  const photoIds = gamePhotos.map(p=>p.id);
   [g.p1, g.p2].forEach(pid => {
     const me  = g.players[pid];
     const opp = g.players[pid===g.p1?g.p2:g.p1];
@@ -120,8 +146,11 @@ function sendGameState(gameId) {
 
 function startGame(p1, p2) {
   const gid = String(nextGameId++);
+  // Snapshot the active photos at game start — immune to admin changes mid-game
+  const gamePhotos = [...photos];
   games[gid] = {
     p1, p2, phase:'pick', turn:null, result:null, snipe:null,
+    photos: gamePhotos, // locked-in photos for this game
     flippedThisTurn:{ [p1]:new Set(), [p2]:new Set() },
     players:{ [p1]:{secret:null,eliminated:new Set(),guessesLeft:3}, [p2]:{secret:null,eliminated:new Set(),guessesLeft:3} }
   };
@@ -129,12 +158,12 @@ function startGame(p1, p2) {
   clients[p2].status='playing'; clients[p2].gameId=gid;
   [p1,p2].forEach(pid => send(pid, {type:'matched',gameId:gid,opponentName:clients[pid===p1?p2:p1]?.name}));
   broadcastLobby();
-  // Send full photos to both players immediately
-  [p1,p2].forEach(pid => sendPhotos(pid));
-  // Also resend photos just before game_state so cache is definitely warm
+  // Send game's snapshot photos to both players
+  const sendGamePhotos = (pid) => send(pid, { type:'photos_data', photos: gamePhotos });
+  [p1,p2].forEach(pid => sendGamePhotos(pid));
   setTimeout(() => {
     if(!games[gid]) return;
-    [p1,p2].forEach(pid => sendPhotos(pid));
+    [p1,p2].forEach(pid => sendGamePhotos(pid)); // resend before game_state
     setTimeout(() => { if(games[gid]) sendGameState(gid); }, 200);
   }, 2800);
 }
@@ -231,6 +260,8 @@ wss.on('connection', ws => {
       const cr=clients[msg.challengerId];
       if(!cr||cr.status!=='waiting'||!tg||tg.status!=='waiting') { send(clientId,{type:'error',text:'Player no longer available.'}); return; }
       delete pendingChallenges[msg.challengerId];
+      // Final photo check before starting
+      if(photos.length===0 && allPhotos.length>0) photos=allPhotos;
       startGame(msg.challengerId,clientId);
     }
     else if (msg.type==='decline_challenge') {
@@ -250,7 +281,8 @@ wss.on('connection', ws => {
       const elim=g.players[clientId].eliminated, ft=g.flippedThisTurn[clientId];
       if(elim.has(msg.photoId)) { if(ft.has(msg.photoId)){ elim.delete(msg.photoId); ft.delete(msg.photoId); } }
       else { elim.add(msg.photoId); ft.add(msg.photoId); }
-      const remaining=photos.filter(p=>!elim.has(p.id));
+      const gamePhotos=games[c.gameId]?.photos||photos;
+      const remaining=gamePhotos.filter(p=>!elim.has(p.id));
       if(remaining.length===1) {
         const oppId=clientId===g.p1?g.p2:g.p1;
         g.phase='snipe'; g.snipe={initiatorId:clientId,initiatorGuessId:remaining[0].id,choices:{[clientId]:remaining[0].id}};
@@ -319,6 +351,8 @@ wss.on('connection', ws => {
         if(!pr) { send(clientId,{type:'error',text:'Preset not found.'}); return; }
         photos=pr.photoIds.map(pid=>allPhotos.find(p=>p.id===pid)).filter(Boolean).map((p,i)=>({...p,id:i}));
       }
+      // Persist the active selection so it survives restarts
+      saveActive(msg.presetId, photos.length);
       Object.entries(clients).forEach(([id,c])=>{ if(c.status!=='playing') sendPhotos(id); });
       broadcastLobby();
       console.log('Active game photos set to', photos.length, 'photos');

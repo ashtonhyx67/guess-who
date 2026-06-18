@@ -619,13 +619,13 @@ function handle(msg){
     case 'photos_data':
       currentPhotos=msg.photos||[];
       photoCache={};
-      currentPhotos.forEach(p=>{photoCache[p.id]=p;});
-      // If game_state was waiting for photos, render it now
+      currentPhotos.forEach(p=>{ photoCache[p.id]=p; });
+      console.log('photos_data received:', currentPhotos.length, 'photos');
       if(pendingGS){
         const gs=pendingGS; pendingGS=null;
         gs.photos=gs.photoIds.map(id=>photoCache[id]).filter(Boolean);
-        currentGame=gs;
-        renderPhase(gs);
+        if(gs.photos.length>0){ currentGame=gs; renderPhase(gs); }
+        else { console.warn('photos_data arrived but still cant hydrate game_state'); }
       }
       return;
 
@@ -873,8 +873,14 @@ function renderGame(msg){
   const elim=new Set(msg.me?.eliminated||[]);
   const grid=document.getElementById('board-grid');
   const needsBuild=!boardBuilt||grid.children.length===0||grid.children.length!==photos.length;
-  if(needsBuild&&photos.length>0){buildBoard(photos,elim,isMine);boardBuilt=true;}
-  else syncBoard(elim,isMine);
+  if(needsBuild&&photos.length>0){
+    buildBoard(photos,elim,isMine);
+    boardBuilt=true;
+  } else if(photos.length>0) {
+    syncBoard(elim,isMine);
+  } else {
+    console.warn('renderGame: no photos available');
+  }
 }
 
 function buildBoard(photos,elimSet,isMine){
@@ -1170,19 +1176,16 @@ let pmPrevPage = 'pg-lobby';
 function openPM() {
   pmPrevPage = document.querySelector('.page.active')?.id || 'pg-lobby';
   if (!adminUnlocked) {
-    // Show a simple password prompt
     const p = prompt('Enter admin password:');
     if (!p) return;
     adminPass = p;
-    adminUnlocked = false; // will be set true on admin_data response
     wsSend({ type: 'admin_get_data', password: p });
-    // Store that we want to open PM after unlock
     pendingAdminTab = { openPM: true };
     return;
   }
-  // Already unlocked — load fresh data and show PM
-  wsSend({ type: 'admin_get_data', password: adminPass });
+  // Already unlocked — refresh data then show
   show('pg-photos');
+  wsSend({ type: 'admin_get_data', password: adminPass });
 }
 
 function closePM() {
@@ -1310,6 +1313,7 @@ document.getElementById('pm-file').addEventListener('change', e => {
 });
 
 function pmSaveLibrary() {
+  if(!adminUnlocked){ alert('Admin not unlocked'); return; }
   wsSend({ type: 'admin_photos', password: adminPass, photos: pmLibrary.map(p => ({ src: p.src, name: p.name || '' })) });
 }
 
@@ -1351,7 +1355,6 @@ function pmNewPreset() {
   const name = prompt('Preset name (e.g. "Game Night 1"):');
   if (!name) return;
   wsSend({ type: 'admin_save_preset', password: adminPass, preset: { name, photoIds: [] } });
-  // renderPresetsPanel will be called when presets_update arrives
 }
 
 function pmNewPresetFromSel() {
