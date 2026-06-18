@@ -155,21 +155,20 @@ body.dark .opp-av { background:#2a0a0e; }
 body.dark .guess-counter { background:#450a0a; }
 
 /* Board — no scroll, fixed fit */
-.board-section { flex:1; overflow:hidden; display:flex; flex-direction:column; gap:4px; min-height:0; }
+.board-section { flex:1; overflow:hidden; display:flex; flex-direction:column; gap:4px; min-height:0; overflow-y:auto; }
 .board-hint { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; flex-shrink:0; line-height:1; }
 
 /* Grid — 5 cols, 5 rows, fills available space exactly */
 .board-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(5, 1fr);
   gap: 5px;
-  flex: 1;
-  min-height: 0;
+  overflow-y: auto;
+  align-content: start;
 }
 
-/* Cards fill their cell — no aspect ratio */
-.flip-card { perspective:800px; cursor:pointer; overflow:hidden; min-height:0; min-width:0; }
+/* Cards keep portrait shape — they do NOT fill height */
+.flip-card { perspective:800px; cursor:pointer; overflow:hidden; aspect-ratio: 3/4; }
 .flip-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .35s cubic-bezier(.4,0,.2,1); border-radius:6px; }
 .flip-card.flipped .flip-inner { transform:rotateY(180deg); }
 .flip-card.flipped { cursor:default; }
@@ -802,6 +801,8 @@ function showLoading(oppName){
 function renderPick(msg){
   showPage('page-pick');
   const photos=msg.photos||[];
+  // Ensure currentPhotos is populated for later use in game
+  if(photos.length>0 && photos[0].src) currentPhotos=photos;
   const myLocked=msg.me?.secret!==null&&msg.me?.secret!==undefined;
   if(myLocked) pendingPickId=msg.me.secret;
   const grid=document.getElementById('pick-grid');
@@ -847,7 +848,12 @@ function confirmPickFinal(){
 function renderGame(msg){
   showPage('page-game');
   closeOverlay('modal-snipe');
-  const photos=msg.photos||[];
+  // Always prefer msg.photos; fallback to currentPhotos if msg.photos is empty/missing srcs
+  let photos=msg.photos||[];
+  if(photos.length===0 || !photos[0]?.src){
+    photos=currentPhotos;
+  }
+  if(photos.length>0 && photos[0]?.src) currentPhotos=photos;
   const isMyTurn=msg.turn===myId;
   const guessesLeft=msg.me?.guessesLeft??3;
   document.getElementById('game-sub').textContent=isMyTurn?'Your turn':`${msg.opponent?.name||'Opponent'}'s turn`;
@@ -875,12 +881,13 @@ function renderGame(msg){
   }
   const myElim=new Set(msg.me?.eliminated||[]);
   // FIX 4: flippedThisTurn not sent from server — track locally
-  // Always rebuild if photos changed or board not built yet
-  const gridHasCards = document.getElementById('board-grid').children.length > 0;
-  if(!boardBuilt || !gridHasCards){
+  // Rebuild board if not built, grid is empty, or photos just arrived
+  const gridEl = document.getElementById('board-grid');
+  const needsBuild = !boardBuilt || gridEl.children.length === 0 || (photos.length > 0 && gridEl.children.length !== photos.length);
+  if(needsBuild && photos.length > 0){
     buildBoard(photos,myElim,isMyTurn,localFlippedThisTurn);
     boardBuilt=true;
-  } else {
+  } else if(!needsBuild){
     syncBoard(myElim,isMyTurn,localFlippedThisTurn);
   }
 }
