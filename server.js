@@ -268,11 +268,7 @@ wss.on('connection', ws => {
       const c = clients[clientId]; if (!c) return;
       const g = games[c.gameId]; if (!g || g.phase !== 'pick') return;
       if (!msg.confirmed) return; // must be confirmed
-      // FIX 4: reject if opponent already picked this
-      const oppId = clientId === g.p1 ? g.p2 : g.p1;
-      if (g.players[oppId].secret === msg.photoId) {
-        send(clientId, { type:'error', text:'Your opponent already chose that person! Pick someone else.' }); return;
-      }
+      // Both players are allowed to pick the same character
       g.players[clientId].secret = msg.photoId;
       const both = Object.values(g.players).every(p => p.secret !== null);
       if (both) { g.phase = 'playing'; g.turn = g.p1; }
