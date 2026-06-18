@@ -106,9 +106,14 @@ function startGame(p1, p2) {
   clients[p2].status='playing'; clients[p2].gameId=gid;
   [p1,p2].forEach(pid => send(pid, {type:'matched',gameId:gid,opponentName:clients[pid===p1?p2:p1]?.name}));
   broadcastLobby();
-  // Send full photos to both players right now before game starts
+  // Send full photos to both players immediately
   [p1,p2].forEach(pid => sendPhotos(pid));
-  setTimeout(() => { if(games[gid]) sendGameState(gid); }, 3000);
+  // Also resend photos just before game_state so cache is definitely warm
+  setTimeout(() => {
+    if(!games[gid]) return;
+    [p1,p2].forEach(pid => sendPhotos(pid));
+    setTimeout(() => { if(games[gid]) sendGameState(gid); }, 200);
+  }, 2800);
 }
 
 function resolveSnipe(gid) {
@@ -257,6 +262,10 @@ wss.on('connection', ws => {
       send(clientId,{type:'lobby_update',waiting:w,online:o,photosMeta:photos.map(p=>({id:p.id,name:p.name})),myStatus:c.status});
     }
     else if (msg.type==='ping') { /* keepalive */ }
+    else if (msg.type==='request_photos') {
+      // Client is missing photo data — resend it
+      sendPhotos(clientId);
+    }
     else if (msg.type==='admin_get_data') {
       if(msg.password!==ADMIN_PASSWORD) { send(clientId,{type:'admin_gate_fail'}); return; }
       send(clientId,{type:'admin_data',allPhotos,presets});

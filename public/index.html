@@ -589,11 +589,20 @@ function handle(msg){
     return;
   }
   if(msg.type==='photos_data'){
-    // Full photo data — store in cache and currentPhotos
     currentPhotos=msg.photos||[];
     photoCache={};
     currentPhotos.forEach(p=>{ photoCache[p.id]=p; });
     syncAdminPhotos(currentPhotos);
+    // If there was a game_state waiting for photos, render it now
+    if(pendingGameState){
+      const pgs=pendingGameState; pendingGameState=null;
+      pgs.photos=pgs.photoIds.map(id=>photoCache[id]).filter(Boolean);
+      currentGame=pgs;
+      if(pgs.phase==='pick') renderPick(pgs);
+      else if(pgs.phase==='playing') renderGame(pgs);
+      else if(pgs.phase==='snipe') renderSnipe(pgs);
+      else if(pgs.phase==='gameover') renderResult(pgs);
+    }
     return;
   }
 
@@ -616,6 +625,14 @@ function handle(msg){
       msg.photos = currentPhotos;
     }
     currentGame=msg;
+    // If photos failed to hydrate, request them again from server
+    if(msg.photos.length===0 && msg.photoIds && msg.photoIds.length>0){
+      wsSend({type:'request_photos'});
+      // Don't render yet — wait for photos_data then re-render
+      pendingGameState=msg;
+      return;
+    }
+    pendingGameState=null;
     if(msg.phase==='pick') renderPick(msg);
     else if(msg.phase==='playing') renderGame(msg);
     else if(msg.phase==='snipe') renderSnipe(msg);
