@@ -10,6 +10,18 @@ const PHOTOS_FILE  = path.join(DATA_DIR, 'photos.json');
 const PRESETS_FILE = path.join(DATA_DIR, 'presets.json');
 const ACTIVE_FILE  = path.join(DATA_DIR, 'active.json'); // persists active preset choice
 
+// DIAGNOSTIC: confirm whether the Railway persistent volume is actually mounted.
+// If this prints "/data NOT FOUND — using ephemeral storage", photos WILL be
+// wiped on every redeploy because Railway's container filesystem resets.
+// Fix: in Railway dashboard -> your service -> Volumes tab -> add a volume
+// mounted at /data.
+console.log('========================================');
+console.log('DATA_DIR:', DATA_DIR);
+console.log(fs.existsSync('/data')
+  ? '✅ /data volume IS mounted — photos will persist across restarts'
+  : '⚠️  /data volume NOT FOUND — using ' + __dirname + ' which is WIPED on every redeploy!');
+console.log('========================================');
+
 let allPhotos = [];  // master library
 let photos = [];     // active game set
 let presets = [];
@@ -151,7 +163,6 @@ function startGame(p1, p2) {
   games[gid] = {
     p1, p2, phase:'pick', turn:null, result:null, snipe:null,
     photos: gamePhotos, // locked-in photos for this game
-    flippedThisTurn:{ [p1]:new Set(), [p2]:new Set() },
     players:{ [p1]:{secret:null,eliminated:new Set(),guessesLeft:3}, [p2]:{secret:null,eliminated:new Set(),guessesLeft:3} }
   };
   clients[p1].status='playing'; clients[p1].gameId=gid;
@@ -180,7 +191,6 @@ function resolveSnipe(gid) {
     g.players[initiatorId].eliminated.add(initiatorGuessId);
     if(rGuessed) g.players[responderId].eliminated.add(rChoice);
     g.snipe=null; g.phase='playing'; g.turn=responderId;
-    g.flippedThisTurn[responderId]=new Set();
     sendGameState(gid); return;
   }
   const sr = iCorrect&&rCorrect?'tie':iCorrect?'initiator':'responder';
@@ -277,10 +287,10 @@ wss.on('connection', ws => {
     }
     else if (msg.type==='toggle_eliminate') {
       const c=clients[clientId]; if(!c) return;
-      const g=games[c.gameId]; if(!g||g.phase!=='playing'||g.turn!==clientId) return;
-      const elim=g.players[clientId].eliminated, ft=g.flippedThisTurn[clientId];
-      if(elim.has(msg.photoId)) { if(ft.has(msg.photoId)){ elim.delete(msg.photoId); ft.delete(msg.photoId); } }
-      else { elim.add(msg.photoId); ft.add(msg.photoId); }
+      const g=games[c.gameId]; if(!g||g.phase!=='playing') return;
+      const elim=g.players[clientId].eliminated;
+      if(elim.has(msg.photoId)) elim.delete(msg.photoId);
+      else elim.add(msg.photoId);
       const gamePhotos=games[c.gameId]?.photos||photos;
       const remaining=gamePhotos.filter(p=>!elim.has(p.id));
       if(remaining.length===1) {
@@ -293,7 +303,7 @@ wss.on('connection', ws => {
       const c=clients[clientId]; if(!c) return;
       const g=games[c.gameId]; if(!g||g.phase!=='playing'||g.turn!==clientId) return;
       const next=clientId===g.p1?g.p2:g.p1;
-      g.turn=next; g.flippedThisTurn[next]=new Set();
+      g.turn=next;
       sendGameState(c.gameId);
     }
     else if (msg.type==='guess') {

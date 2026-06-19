@@ -142,9 +142,7 @@ body.dark .gcounter{background:#450a0a}
 .card-overlay{display:none;position:absolute;inset:0;background:rgba(245,66,81,.85);align-items:center;justify-content:center;flex-direction:column;gap:2px}
 .card-overlay .xmark{font-size:2rem;font-weight:900;color:#fff;line-height:1}
 .card-overlay .out{font-size:9px;color:rgba(255,255,255,.85);font-weight:700;text-transform:uppercase;letter-spacing:1px}
-.card.blocked{cursor:not-allowed}
-.card.reversible{cursor:pointer}
-.card.reversible .card-overlay{background:rgba(180,30,50,.8)}
+
 .game-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px;flex-shrink:0}
 .act-btn{padding:10px;border:none;border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;transition:background .15s}
 .act-btn:disabled{opacity:.4;cursor:not-allowed}
@@ -371,28 +369,11 @@ body.dark .gcounter{background:#450a0a}
     </div>
     <!-- Photos -->
     <div class="apanel" id="tab-photos">
-      <div class="upload-zone" onclick="document.getElementById('admin-file').click()">
-        <div style="font-size:1.5rem">📸</div>
-        <strong style="font-size:13px">Click to upload photos</strong>
-        <p>No limit — select as many as you want at once (JPG, PNG, WEBP)</p>
-      </div>
-      <input type="file" id="admin-file" accept="image/*" multiple>
-      <div class="pcnt" id="admin-count"></div>
-      <div class="pnl" id="photo-list"></div>
-      <div style="display:flex;gap:.4rem;margin-bottom:.75rem">
-        <button class="mbtn" style="flex:1" onclick="pushPhotos()">📤 Save & Push to All</button>
-        <button class="mbtn-g" onclick="if(confirm('Clear all?')){adminPhotos=[];renderAdminList()}">🗑 Clear</button>
-      </div>
-      <!-- Presets -->
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:.5rem 0 .4rem">🎮 Presets</div>
-      <div id="presets-list" style="margin-bottom:.5rem"></div>
-      <button class="mbtn-g" style="width:100%;font-size:12px;margin-bottom:.75rem" onclick="createPreset()">+ New preset from current library</button>
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">▶ Set active game photos</div>
-      <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:.5rem">
-        <button class="mbtn-g" style="font-size:12px;text-align:left" onclick="activatePreset('all')">🌐 Use all library photos</button>
-        <div style="display:flex;align-items:center;gap:.5rem">
-          <button class="mbtn-g" style="font-size:12px;flex:1" onclick="activateRandom()">🔀 Random — pick <input id="rand-n" type="number" value="25" min="2" style="width:40px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:12px;background:var(--white);color:var(--text)" onclick="event.stopPropagation()"> cards</button>
-        </div>
+      <div style="text-align:center;padding:2rem 1rem">
+        <div style="font-size:2.5rem;margin-bottom:.5rem">📸</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:.4rem">Photo management has moved!</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:1.25rem;line-height:1.6">Manage your photo library and presets on the dedicated Photo Manager page — drag &amp; drop photos, edit presets, and set the active game set all in one place.</div>
+        <button class="mbtn" onclick="closeOverlay('modal-admin');openPM()">📸 Open Photo Manager</button>
       </div>
       <div class="amsg" id="admin-msg"></div>
     </div>
@@ -453,7 +434,14 @@ body.dark .gcounter{background:#450a0a}
     <div class="modal-photo"><img id="res-photo" src="" alt=""></div>
     <h2 id="res-title"></h2>
     <p id="res-msg"></p>
-    <div class="mbtns"><button class="mbtn" onclick="backToLobby()">Back to Lobby</button></div>
+    <div id="res-opp-card" style="margin-top:1rem;padding-top:1rem;border-top:1.5px solid var(--border)">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.5rem">Your opponent's card</div>
+      <div style="width:90px;height:108px;border-radius:11px;overflow:hidden;margin:0 auto .4rem;border:3px solid var(--red)">
+        <img id="res-opp-photo" src="" alt="" style="width:100%;height:100%;object-fit:cover">
+      </div>
+      <div id="res-opp-name" style="font-size:13px;font-weight:700"></div>
+    </div>
+    <div class="mbtns" style="margin-top:1.1rem"><button class="mbtn" onclick="backToLobby()">Back to Lobby</button></div>
   </div>
 </div>
 
@@ -492,7 +480,7 @@ body.dark .gcounter{background:#450a0a}
 <div id="pg-photos" class="page" style="background:var(--off)">
   <!-- Top bar -->
   <div class="tb">
-    <div><div class="tb-logo">📸 Photo Manager</div><div class="tb-sub" id="pm-sub">Library & Presets</div></div>
+    <div><div class="tb-logo">📸 Photo Manager</div><div class="tb-sub" id="pm-sub">All Photos</div></div>
     <div class="tb-right">
       <button class="pill solid" onclick="closePM()">← Back to Lobby</button>
     </div>
@@ -501,45 +489,51 @@ body.dark .gcounter{background:#450a0a}
   <!-- Body: two columns -->
   <div style="flex:1;display:flex;overflow:hidden;min-height:0">
 
-    <!-- LEFT: Library -->
-    <div style="width:58%;display:flex;flex-direction:column;border-right:1.5px solid var(--border);overflow:hidden">
+    <!-- LEFT: Drop zone / current mode's photos -->
+    <div style="width:60%;display:flex;flex-direction:column;border-right:1.5px solid var(--border);overflow:hidden">
       <div style="padding:.75rem 1rem;background:var(--white);border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:.5rem;flex-shrink:0">
-        <div style="font-size:13px;font-weight:800;flex:1">📚 Library <span id="lib-count" style="font-size:11px;color:var(--muted);font-weight:400"></span></div>
-        <button onclick="document.getElementById('pm-file').click()" style="padding:5px 14px;background:var(--red);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">+ Add Photos</button>
-        <button onclick="pmSelectAll()" style="padding:5px 12px;background:var(--off);border:1.5px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-weight:600" id="selall-btn">Select All</button>
-        <button onclick="pmDeleteSelected()" style="padding:5px 12px;background:#fee2e2;color:var(--red);border:none;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600">Delete Selected</button>
-        <input type="file" id="pm-file" accept="image/*" multiple style="display:none">
-      </div>
-      <!-- Selected action bar -->
-      <div id="pm-action-bar" style="display:none;padding:.5rem 1rem;background:#fff8e1;border-bottom:1.5px solid #fbbf24;font-size:12px;align-items:center;gap:.75rem;flex-shrink:0">
-        <span id="pm-sel-count" style="font-weight:700;color:#92400e"></span>
-        <span style="color:#92400e">photos selected</span>
-        <div style="margin-left:auto;display:flex;gap:.5rem">
-          <span style="font-size:12px;color:#92400e;font-weight:600">Add to preset:</span>
-          <div id="pm-preset-btns" style="display:flex;gap:.4rem"></div>
-          <button onclick="pmClearSel()" style="padding:3px 10px;background:transparent;border:1px solid #fbbf24;border-radius:6px;font-size:11px;cursor:pointer;color:#92400e">Clear</button>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:800" id="pm-mode-title">📚 All Photos</div>
+          <div style="font-size:11px;color:var(--muted)" id="pm-mode-count"></div>
         </div>
+        <button onclick="pmSelectAll()" style="padding:5px 12px;background:var(--off);border:1.5px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-weight:600" id="selall-btn">Select All</button>
+        <button onclick="pmRemoveSelected()" style="padding:5px 12px;background:#fee2e2;color:var(--red);border:none;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600" id="pm-remove-btn">Remove Selected</button>
       </div>
-      <div style="flex:1;overflow-y:auto;padding:.75rem">
+
+      <!-- Drag & drop zone -->
+      <div id="pm-dropzone" style="flex:1;overflow-y:auto;padding:.75rem;position:relative;transition:background .15s">
+        <div id="pm-drop-overlay" style="display:none;position:absolute;inset:.5rem;border:3px dashed var(--red);border-radius:14px;background:rgba(245,66,81,.08);align-items:center;justify-content:center;flex-direction:column;gap:.5rem;z-index:5;pointer-events:none">
+          <div style="font-size:2.5rem">📥</div>
+          <div style="font-size:14px;font-weight:800;color:var(--red)" id="pm-drop-label">Drop photos here</div>
+        </div>
+        <div id="pm-empty-state" style="display:none;text-align:center;padding:3rem 1rem;color:var(--muted)">
+          <div style="font-size:2.5rem;margin-bottom:.5rem">🖼️</div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:.3rem">No photos yet</div>
+          <div style="font-size:12px">Drag &amp; drop image files anywhere in this panel, or click below</div>
+          <button onclick="document.getElementById('pm-file').click()" style="margin-top:1rem;padding:8px 20px;background:var(--red);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">+ Browse Files</button>
+        </div>
         <div id="pm-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px"></div>
+      </div>
+      <input type="file" id="pm-file" accept="image/*" multiple style="display:none">
+      <div style="padding:.5rem 1rem;background:var(--white);border-top:1.5px solid var(--border);flex-shrink:0;text-align:center">
+        <button onclick="document.getElementById('pm-file').click()" style="padding:6px 18px;background:var(--off);border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text)">+ Browse to add more photos</button>
       </div>
     </div>
 
-    <!-- RIGHT: Presets + Active -->
-    <div style="width:42%;display:flex;flex-direction:column;overflow:hidden">
+    <!-- RIGHT: Mode selector — All / Presets -->
+    <div style="width:40%;display:flex;flex-direction:column;overflow:hidden">
 
-      <!-- Active game set -->
+      <!-- ALL button -->
       <div style="padding:.75rem 1rem;background:var(--white);border-bottom:1.5px solid var(--border);flex-shrink:0">
-        <div style="font-size:13px;font-weight:800;margin-bottom:.5rem">▶ Active Game Set <span id="active-count" style="font-size:11px;color:var(--muted);font-weight:400"></span></div>
-        <div style="display:flex;gap:.4rem;flex-wrap:wrap">
-          <button onclick="pmActivate('all')" style="padding:5px 12px;background:var(--off);border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">🌐 Use All</button>
-          <div style="display:flex;align-items:center;gap:.3rem">
-            <button onclick="pmActivateRandom()" style="padding:5px 12px;background:var(--off);border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">🔀 Random</button>
-            <input id="rand-count" type="number" value="25" min="2" style="width:44px;padding:4px 5px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;background:var(--off);color:var(--text);outline:none">
-            <span style="font-size:11px;color:var(--muted)">cards</span>
-          </div>
+        <button onclick="pmSwitchMode('all')" id="pm-all-btn" style="width:100%;padding:12px;border-radius:10px;border:2px solid var(--red);background:var(--red);color:#fff;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem">
+          🌐 All <span id="pm-all-count" style="font-weight:600;font-size:12px;opacity:.85"></span>
+        </button>
+        <div style="margin-top:.5rem;font-size:11px;color:var(--muted);text-align:center" id="active-label">Active in game: all photos</div>
+        <div style="margin-top:.4rem;display:flex;align-items:center;gap:.4rem;justify-content:center">
+          <button onclick="pmActivate('all')" style="padding:4px 10px;background:var(--off);border:1.5px solid var(--border);border-radius:7px;font-size:11px;font-weight:600;cursor:pointer">▶ Use All Now</button>
+          <button onclick="pmActivateRandom()" style="padding:4px 10px;background:var(--off);border:1.5px solid var(--border);border-radius:7px;font-size:11px;font-weight:600;cursor:pointer">🔀 Random</button>
+          <input id="rand-count" type="number" value="25" min="2" style="width:40px;padding:3px 4px;border:1.5px solid var(--border);border-radius:5px;font-size:11px;background:var(--off);color:var(--text);outline:none">
         </div>
-        <div style="margin-top:.5rem;font-size:11px;color:var(--muted)" id="active-label">Using: all photos</div>
       </div>
 
       <!-- Presets list -->
@@ -549,9 +543,9 @@ body.dark .gcounter{background:#450a0a}
           <button onclick="pmNewPreset()" style="padding:4px 12px;background:var(--red);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">+ New Preset</button>
         </div>
         <div id="presets-panel"></div>
-        <div style="font-size:11px;color:var(--muted);margin-top:.5rem;line-height:1.5">
-          Select photos from the library, then use "Add to preset" to build a preset.<br>
-          Click ▶ Use on a preset to make it the active game set.
+        <div style="font-size:11px;color:var(--muted);margin-top:.75rem;line-height:1.5">
+          Click <b>Edit</b> on a preset to drag in photos just for that set.<br>
+          Click <b>▶ Use</b> to make a preset the active game set.
         </div>
       </div>
 
@@ -578,13 +572,11 @@ let currentPhotos=[];     // ordered array for display
 let currentGame=null;
 let pendingPickId=null, pendingGuessId=null, pendingSnipeId=null;
 let boardBuilt=false, showNames=true;
-let localFlipped=new Set();  // flipped this turn (reversible)
-let pendingFlips=new Set();  // awaiting server ack
-let lastTurn=null;
+let pendingFlips=new Set();  // awaiting server ack, prevents double-send on rapid taps
 let incomingChalId=null;
 let pendingGS=null;          // game_state waiting for photos
 // admin
-let adminPhotos=[], adminUnlocked=false, adminPass='', serverPresets=[], pendingAdminTab=null, pendingPresetName=null;
+let adminPhotos=[], adminUnlocked=false, adminPass='', serverPresets=[], pendingAdminTab=null;
 let pingTimer=null;
 
 // ═══ CONNECT ═══
@@ -640,7 +632,7 @@ function handle(msg){
 
     case 'matched':
       myStatus='playing';
-      boardBuilt=false; localFlipped=new Set(); pendingFlips=new Set(); lastTurn=null; pendingGS=null;
+      boardBuilt=false; pendingFlips=new Set(); pendingGS=null;
       showLoading(msg.opponentName);
       return;
 
@@ -665,7 +657,7 @@ function handle(msg){
 
     case 'go_lobby': case 'force_lobby':
       myStatus='lobby'; boardBuilt=false; pendingPickId=null; currentGame=null; pendingGS=null;
-      localFlipped=new Set(); pendingFlips=new Set();
+      pendingFlips=new Set();
       syncFindUI('lobby');
       ['modal-result','modal-left','modal-guess','modal-snipe'].forEach(closeOverlay);
       show('pg-lobby');
@@ -697,15 +689,13 @@ function handle(msg){
 
     case 'admin_data':
       adminPhotos=(msg.allPhotos||[]).map(p=>({src:p.src,name:p.name||''}));
-      renderAdminList();
       serverPresets=msg.presets||[];
-      renderPresets();
       onAdminUnlocked();
+      pmOnData(msg.allPhotos||[], msg.presets||[]);
       return;
 
     case 'presets_update':
       serverPresets=msg.presets||[];
-      renderPresets();
       pmPresets=(msg.presets||[]).map(p=>({id:p.id,name:p.name,photoIds:p.photoIds||[]}));
       renderPresetsPanel();
       return;
@@ -713,14 +703,7 @@ function handle(msg){
     case 'admin_ok':
       showAMsg('admin-msg',msg.text,'ok');
       showAMsg('manage-msg',msg.text,'ok');
-      // Update active count in PM
       updateActiveCount();
-      // If we were waiting to create a preset, the server now has the photos
-      // saved (allPhotos), so it's safe to save the preset referencing them.
-      if(pendingPresetName){
-        const name=pendingPresetName; pendingPresetName=null;
-        wsSend({type:'admin_save_preset',password:adminPass,preset:{name,photoIds:adminPhotos.map((_,i)=>i)}});
-      }
       return;
   }
 }
@@ -875,62 +858,48 @@ function renderGame(msg){
   document.getElementById('opp-av').textContent=on[0]?.toUpperCase()||'?';
   document.getElementById('opp-name').textContent=on;
   document.getElementById('opp-elim').textContent=`${(msg.opponent?.eliminated||[]).length} eliminated`;
-  if(msg.turn!==lastTurn){localFlipped=new Set();pendingFlips=new Set();lastTurn=msg.turn;}
   const elim=new Set(msg.me?.eliminated||[]);
   const grid=document.getElementById('board-grid');
   const needsBuild=!boardBuilt||grid.children.length===0||grid.children.length!==photos.length;
   if(needsBuild&&photos.length>0){
-    buildBoard(photos,elim,isMine);
+    buildBoard(photos,elim);
     boardBuilt=true;
   } else if(photos.length>0) {
-    syncBoard(elim,isMine);
+    syncBoard(elim);
   } else {
     console.warn('renderGame: no photos available');
   }
 }
 
-function buildBoard(photos,elimSet,isMine){
+// Cards can be flipped/unflipped freely by either player at any time —
+// no turn restriction on elimination, only on asking/guessing actions.
+function buildBoard(photos,elimSet){
   const grid=document.getElementById('board-grid');
   grid.innerHTML='';
   photos.forEach(p=>{
     const isElim=elimSet.has(p.id);
-    const isRev=isElim&&isMine&&localFlipped.has(p.id);
-    const blocked=!isMine&&!isElim;
     const d=document.createElement('div');
-    d.className='card'+(isElim?' elim':'')+(blocked?' blocked':'')+(isRev?' reversible':'');
+    d.className='card'+(isElim?' elim':'');
     d.dataset.id=p.id;
     d.innerHTML=`<div class="card-inner"><div class="card-img"><img src="${p.src}" loading="lazy" alt=""></div>${showNames?`<div class="card-name">${esc(p.name||'')}</div>`:''}<div class="card-overlay"><div class="xmark">✕</div><div class="out">Out</div></div></div>`;
-    d.onclick=()=>tapCard(p.id,d,isElim,isRev,isMine);
+    d.onclick=()=>tapCard(p.id,d,isElim);
     grid.appendChild(d);
   });
 }
 
-function syncBoard(elimSet,isMine){
+function syncBoard(elimSet){
   document.querySelectorAll('.card').forEach(d=>{
     const id=parseInt(d.dataset.id);
     const isElim=elimSet.has(id);
-    const isRev=isElim&&isMine&&localFlipped.has(id);
-    const blocked=!isMine&&!isElim;
     d.classList.toggle('elim',isElim);
-    d.classList.toggle('blocked',blocked);
-    d.classList.toggle('reversible',isRev);
-    d.onclick=()=>tapCard(id,d,isElim,isRev,isMine);
+    d.onclick=()=>tapCard(id,d,isElim);
   });
 }
 
-function tapCard(id,el,isElim,isRev,isMine){
-  if(!isMine) return;
+function tapCard(id,el,isElim){
   if(pendingFlips.has(id)) return;
-  if(isElim&&!isRev) return;
   pendingFlips.add(id);
-  if(isElim&&isRev){
-    el.classList.remove('elim','reversible');
-    localFlipped.delete(id);
-  } else {
-    el.classList.add('elim');
-    el.classList.remove('blocked');
-    localFlipped.add(id);
-  }
+  el.classList.toggle('elim',!isElim);
   wsSend({type:'toggle_eliminate',photoId:id});
   setTimeout(()=>pendingFlips.delete(id),1000);
 }
@@ -983,7 +952,9 @@ function renderSnipe(msg){
   const grid=document.getElementById('snipe-grid');
   grid.innerHTML='';
   document.getElementById('snipe-ok-btn').disabled=true;
-  (msg.photos||[]).forEach(p=>{
+  // Only let the responder counter-guess from cards they haven't already eliminated
+  const myElimForSnipe=new Set(msg.me?.eliminated||[]);
+  (msg.photos||[]).filter(p=>!myElimForSnipe.has(p.id)).forEach(p=>{
     const d=document.createElement('div'); d.className='go';
     d.innerHTML=`<div class="gi"><img src="${p.src}" alt=""></div>${showNames?`<div class="gn">${esc(p.name||'')}</div>`:''}<div class="gt">✓</div>`;
     d.onclick=()=>{grid.querySelectorAll('.go').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');pendingSnipeId=p.id;document.getElementById('snipe-ok-btn').disabled=false;};
@@ -1021,12 +992,27 @@ function renderResult(msg){
   document.getElementById('res-photo').src=src;
   document.getElementById('res-title').textContent=title;
   document.getElementById('res-msg').textContent=body;
+
+  // Reveal opponent's secret card to this player — server sends opponent.secret
+  // only once phase is 'gameover', and it's already scoped per-player so each
+  // person sees only their own opponent's pick.
+  const oppSecretId=msg.opponent?.secret;
+  const oppPhoto=oppSecretId!==null&&oppSecretId!==undefined?photoCache[oppSecretId]:null;
+  const oppCardSection=document.getElementById('res-opp-card');
+  if(oppPhoto){
+    document.getElementById('res-opp-photo').src=oppPhoto.src;
+    document.getElementById('res-opp-name').textContent=oppPhoto.name||'';
+    oppCardSection.style.display='block';
+  } else {
+    oppCardSection.style.display='none';
+  }
+
   document.getElementById('modal-result').classList.add('show');
 }
 function backToLobby(){
   ['modal-result','modal-left'].forEach(closeOverlay);
   boardBuilt=false; pendingPickId=null; currentGame=null; pendingGS=null;
-  localFlipped=new Set(); pendingFlips=new Set(); myStatus='lobby'; syncFindUI('lobby');
+  pendingFlips=new Set(); myStatus='lobby'; syncFindUI('lobby');
   wsSend({type:'back_to_lobby'});
 }
 
@@ -1082,10 +1068,15 @@ function toggleNames(on){
     buildBoard(currentGame.photos||[],e,currentGame.turn===myId);
   }
 }
-// Photo uploads
-document.getElementById('admin-file').addEventListener('change',e=>addFiles(e.target.files));
-document.querySelector('.upload-zone').addEventListener('dragover',e=>e.preventDefault());
-document.querySelector('.upload-zone').addEventListener('drop',e=>{e.preventDefault();addFiles(e.dataTransfer.files);});
+// Legacy photo upload listeners — guarded since #admin-file/.upload-zone were removed
+// (photo management now lives in the dedicated Photo Manager page)
+const _legacyAdminFile = document.getElementById('admin-file');
+if (_legacyAdminFile) _legacyAdminFile.addEventListener('change',e=>addFiles(e.target.files));
+const _legacyUploadZone = document.querySelector('.upload-zone');
+if (_legacyUploadZone) {
+  _legacyUploadZone.addEventListener('dragover',e=>e.preventDefault());
+  _legacyUploadZone.addEventListener('drop',e=>{e.preventDefault();addFiles(e.dataTransfer.files);});
+}
 function addFiles(files){
   Array.from(files).forEach(f=>{
     if(!f.type.startsWith('image/')) return;
@@ -1176,15 +1167,18 @@ function openOverview(){
 
 
 // ═══════════════════════════════════════
-//  PHOTO MANAGER
+//  PHOTO MANAGER (mode-based: All / per-preset editing)
 // ═══════════════════════════════════════
-let pmLibrary = [];       // [{id,src,name}] — full library from server
-let pmSelected = new Set(); // selected photo ids
-let pmPresets = [];       // [{id,name,photoIds:[]}]
+let pmLibrary = [];         // [{id,src,name}] master library from server
+let pmPresets = [];         // [{id,name,photoIds:[]}]
+let pmSelected = new Set(); // selected ids in current mode view
+let pmMode = 'all';         // 'all' or a preset id being edited
+let pmDraftPhotos = [];     // photos shown in left panel for current mode
 let pmActiveLabel = 'all';
 let pmPrevPage = 'pg-lobby';
+let pmDragCounter = 0;
+let pendingNewPresetSwitch = null; // name of preset we just created, switch into it once it arrives
 
-// Gate: open photo manager (requires admin password)
 function openPM() {
   pmPrevPage = document.querySelector('.page.active')?.id || 'pg-lobby';
   if (!adminUnlocked) {
@@ -1195,34 +1189,69 @@ function openPM() {
     pendingAdminTab = { openPM: true };
     return;
   }
-  // Already unlocked — refresh data then show
   show('pg-photos');
   wsSend({ type: 'admin_get_data', password: adminPass });
 }
+function closePM() { show(pmPrevPage); }
 
-function closePM() {
-  show(pmPrevPage);
-}
-
-// Called when admin_data arrives
 function pmOnData(allPhotos, presets) {
   pmLibrary = allPhotos.map(p => ({ ...p }));
   pmPresets = presets.map(p => ({ id:p.id, name:p.name, photoIds:p.photoIds||[] }));
-  pmSelected = new Set();
-  renderPMGrid();
+  // If we just created a new preset, switch into editing it
+  if (pendingNewPresetSwitch) {
+    const justCreated = pmPresets.find(p => p.name === pendingNewPresetSwitch);
+    pendingNewPresetSwitch = null;
+    if (justCreated) { pmSwitchMode(justCreated.id); renderPresetsPanel(); updateActiveCount(); return; }
+  }
+  pmSwitchMode(pmMode, true);
   renderPresetsPanel();
   updateActiveCount();
 }
 
-// Render library grid
+// ── MODE SWITCHING ──
+function pmSwitchMode(mode, silent) {
+  pmMode = mode;
+  pmSelected = new Set();
+  if (mode === 'all') {
+    pmDraftPhotos = pmLibrary.map(p => ({ ...p }));
+    document.getElementById('pm-mode-title').textContent = '📚 All Photos';
+    document.getElementById('pm-drop-label').textContent = 'Drop photos here — adds to master library';
+    document.getElementById('pm-all-btn').style.background = 'var(--red)';
+    document.getElementById('pm-all-btn').style.color = '#fff';
+  } else {
+    const pr = pmPresets.find(p => p.id === mode);
+    if (!pr) { pmSwitchMode('all'); return; }
+    pmDraftPhotos = pr.photoIds.map(pid => pmLibrary.find(p => p.id === pid)).filter(Boolean).map(p => ({ ...p }));
+    document.getElementById('pm-mode-title').textContent = '✏️ Editing: ' + pr.name;
+    document.getElementById('pm-drop-label').textContent = 'Drop photos here — adds to "' + pr.name + '"';
+    document.getElementById('pm-all-btn').style.background = 'var(--white)';
+    document.getElementById('pm-all-btn').style.color = 'var(--text)';
+  }
+  renderPMGrid();
+  renderPresetsPanel();
+  if (!silent) { const dz = document.getElementById('pm-dropzone'); if (dz) dz.scrollTop = 0; }
+}
+
+// ── GRID RENDER ──
 function renderPMGrid() {
   const grid = document.getElementById('pm-grid');
+  const empty = document.getElementById('pm-empty-state');
   if (!grid) return;
   grid.innerHTML = '';
-  document.getElementById('lib-count').textContent = `(${pmLibrary.length} photos)`;
-  pmLibrary.forEach(p => {
-    const d = document.createElement('div');
+  const modeCountEl = document.getElementById('pm-mode-count');
+  if (modeCountEl) modeCountEl.textContent = `${pmDraftPhotos.length} photo${pmDraftPhotos.length!==1?'s':''}`;
+
+  if (pmDraftPhotos.length === 0) {
+    if (empty) empty.style.display = 'block';
+    grid.style.display = 'none';
+  } else {
+    if (empty) empty.style.display = 'none';
+    grid.style.display = 'grid';
+  }
+
+  pmDraftPhotos.forEach(p => {
     const sel = pmSelected.has(p.id);
+    const d = document.createElement('div');
     d.style.cssText = `position:relative;border-radius:8px;overflow:hidden;border:3px solid ${sel ? 'var(--red)' : 'var(--border)'};cursor:pointer;transition:border-color .1s`;
     d.dataset.id = p.id;
     d.innerHTML = `
@@ -1234,14 +1263,14 @@ function renderPMGrid() {
         onclick="event.stopPropagation()"
         oninput="pmRename(${p.id},this.value)">
       ${sel ? `<div style="position:absolute;top:5px;right:5px;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900">✓</div>` : ''}
-      <button onclick="event.stopPropagation();pmDeleteOne(${p.id})" style="position:absolute;top:5px;left:5px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;cursor:pointer;font-size:11px;display:none" class="pm-del-btn">✕</button>
+      <button onclick="event.stopPropagation();pmRemoveOne(${p.id})" style="position:absolute;top:5px;left:5px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;cursor:pointer;font-size:11px;display:none" class="pm-del-btn" title="${pmMode==='all'?'Delete from library':'Remove from preset'}">✕</button>
     `;
     d.onmouseenter = () => { d.querySelector('.pm-del-btn').style.display = 'flex'; };
     d.onmouseleave = () => { d.querySelector('.pm-del-btn').style.display = 'none'; };
     d.onclick = () => pmToggleSel(p.id);
     grid.appendChild(d);
   });
-  updateSelBar();
+  updateSelButtons();
 }
 
 function pmToggleSel(id) {
@@ -1249,113 +1278,162 @@ function pmToggleSel(id) {
   else pmSelected.add(id);
   renderPMGrid();
 }
-
 function pmSelectAll() {
-  if (pmSelected.size === pmLibrary.length) pmSelected = new Set();
-  else pmLibrary.forEach(p => pmSelected.add(p.id));
+  if (pmSelected.size === pmDraftPhotos.length) pmSelected = new Set();
+  else pmDraftPhotos.forEach(p => pmSelected.add(p.id));
   renderPMGrid();
 }
-
-function pmClearSel() { pmSelected = new Set(); renderPMGrid(); }
-
-function updateSelBar() {
-  const bar = document.getElementById('pm-action-bar');
-  const cnt = document.getElementById('pm-sel-count');
+function updateSelButtons() {
   const selAllBtn = document.getElementById('selall-btn');
-  if (!bar || !cnt) return;
-  if (pmSelected.size > 0) {
-    bar.style.display = 'flex';
-    cnt.textContent = pmSelected.size;
-    // Render preset add buttons
-    const pb = document.getElementById('pm-preset-btns');
-    pb.innerHTML = '';
-    pmPresets.forEach(pr => {
-      const b = document.createElement('button');
-      b.textContent = pr.name;
-      b.style.cssText = 'padding:3px 10px;background:var(--white);border:1.5px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer;font-weight:600';
-      b.onclick = () => pmAddToPreset(pr.id);
-      pb.appendChild(b);
-    });
-    // Also "New preset from selection"
-    const nb = document.createElement('button');
-    nb.textContent = '+ New preset';
-    nb.style.cssText = 'padding:3px 10px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer;font-weight:700';
-    nb.onclick = pmNewPresetFromSel;
-    pb.appendChild(nb);
-  } else {
-    bar.style.display = 'none';
-  }
-  if (selAllBtn) selAllBtn.textContent = pmSelected.size === pmLibrary.length ? 'Deselect All' : 'Select All';
+  if (selAllBtn) selAllBtn.textContent = (pmSelected.size > 0 && pmSelected.size === pmDraftPhotos.length) ? 'Deselect All' : 'Select All';
+  const removeBtn = document.getElementById('pm-remove-btn');
+  if (removeBtn) removeBtn.textContent = pmMode === 'all' ? 'Delete Selected' : 'Remove Selected';
 }
 
 function pmRename(id, name) {
-  const p = pmLibrary.find(x => x.id === id);
-  if (p) p.name = name;
+  const lp = pmLibrary.find(x => x.id === id);
+  if (lp) lp.name = name;
+  const dp = pmDraftPhotos.find(x => x.id === id);
+  if (dp) dp.name = name;
+  clearTimeout(window._pmRenameTimer);
+  window._pmRenameTimer = setTimeout(pmSaveLibrary, 800);
 }
 
-function pmDeleteOne(id) {
-  if (!confirm('Remove this photo from library?')) return;
-  pmLibrary = pmLibrary.filter(p => p.id !== id).map((p, i) => ({ ...p, id: i }));
-  pmSelected.delete(id);
-  pmSaveLibrary();
-  renderPMGrid();
+// ── REMOVE / DELETE ──
+// 'all' mode: deletes from master library + unlinks from every preset
+// preset mode: only unlinks from that preset, library stays untouched
+function pmRemoveOne(id) {
+  if (pmMode === 'all') {
+    if (!confirm('Delete this photo from the library? It will also be removed from any presets using it.')) return;
+    pmLibrary = pmLibrary.filter(p => p.id !== id);
+    pmPresets.forEach(pr => { pr.photoIds = pr.photoIds.filter(pid => pid !== id); });
+    pmSaveLibrary();
+    pmPresets.forEach(pr => pmPersistPreset(pr));
+    pmSwitchMode('all', true);
+  } else {
+    const pr = pmPresets.find(p => p.id === pmMode);
+    if (!pr) return;
+    pr.photoIds = pr.photoIds.filter(pid => pid !== id);
+    pmPersistPreset(pr);
+    pmSwitchMode(pmMode, true);
+  }
 }
 
-function pmDeleteSelected() {
+function pmRemoveSelected() {
   if (pmSelected.size === 0) { alert('Select some photos first.'); return; }
-  if (!confirm(`Delete ${pmSelected.size} photos from library?`)) return;
-  pmLibrary = pmLibrary.filter(p => !pmSelected.has(p.id)).map((p, i) => ({ ...p, id: i }));
-  pmSelected = new Set();
-  pmSaveLibrary();
-  renderPMGrid();
+  const ids = [...pmSelected];
+  if (pmMode === 'all') {
+    if (!confirm(`Delete ${ids.length} photo(s) from the library? They'll also be removed from any presets.`)) return;
+    pmLibrary = pmLibrary.filter(p => !ids.includes(p.id));
+    pmPresets.forEach(pr => { pr.photoIds = pr.photoIds.filter(pid => !ids.includes(pid)); });
+    pmSaveLibrary();
+    pmPresets.forEach(pr => pmPersistPreset(pr));
+    pmSwitchMode('all', true);
+  } else {
+    if (!confirm(`Remove ${ids.length} photo(s) from this preset? They'll stay in the library.`)) return;
+    const pr = pmPresets.find(p => p.id === pmMode);
+    if (!pr) return;
+    pr.photoIds = pr.photoIds.filter(pid => !ids.includes(pid));
+    pmPersistPreset(pr);
+    pmSwitchMode(pmMode, true);
+  }
 }
 
-// Add files from upload
-document.getElementById('pm-file').addEventListener('change', e => {
-  const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
-  e.target.value = '';
+// ── ADD FILES (drag-drop + file picker both call this) ──
+function pmAddFiles(fileList) {
+  const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
   if (files.length === 0) return;
   let loaded = 0;
+  const newPhotos = [];
   files.forEach(f => {
     const r = new FileReader();
     r.onload = ev => {
-      pmLibrary.push({ id: pmLibrary.length, src: ev.target.result, name: f.name.replace(/\.[^.]+$/, '') });
+      newPhotos.push({ src: ev.target.result, name: f.name.replace(/\.[^.]+$/, '') });
       loaded++;
-      renderPMGrid();
-      // Once every selected file has been read, push the updated library to
-      // the server right away. This keeps pmLibrary and the server's
-      // allPhotos in sync so presets built right after never go stale.
-      if (loaded === files.length) pmSaveLibrary();
+      if (loaded === files.length) pmCommitNewFiles(newPhotos);
     };
     r.readAsDataURL(f);
   });
-});
-
-function pmSaveLibrary() {
-  if(!adminUnlocked){ alert('Admin not unlocked'); return; }
-  wsSend({ type: 'admin_photos', password: adminPass, photos: pmLibrary.map(p => ({ src: p.src, name: p.name || '' })) });
 }
 
-// Presets
+function pmCommitNewFiles(newPhotos) {
+  const startId = pmLibrary.length ? Math.max(...pmLibrary.map(p=>p.id)) + 1 : 0;
+  const added = newPhotos.map((p, i) => ({ id: startId + i, src: p.src, name: p.name }));
+  pmLibrary = [...pmLibrary, ...added];
+  pmSaveLibrary();
+
+  if (pmMode !== 'all') {
+    const pr = pmPresets.find(p => p.id === pmMode);
+    if (pr) {
+      pr.photoIds = [...pr.photoIds, ...added.map(p => p.id)];
+      pmPersistPreset(pr);
+    }
+  }
+  pmSwitchMode(pmMode, true);
+}
+
+document.getElementById('pm-file').addEventListener('change', e => {
+  pmAddFiles(e.target.files);
+  e.target.value = '';
+});
+
+// ── DRAG & DROP ──
+(function setupPMDragDrop(){
+  const zone = document.getElementById('pm-dropzone');
+  const overlay = document.getElementById('pm-drop-overlay');
+  if (!zone || !overlay) return;
+  ['dragenter','dragover'].forEach(evt => zone.addEventListener(evt, e => {
+    e.preventDefault(); e.stopPropagation();
+    pmDragCounter++;
+    overlay.style.display = 'flex';
+  }));
+  zone.addEventListener('dragleave', e => {
+    e.preventDefault(); e.stopPropagation();
+    pmDragCounter = Math.max(0, pmDragCounter - 1);
+    if (pmDragCounter === 0) overlay.style.display = 'none';
+  });
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); e.stopPropagation();
+    pmDragCounter = 0;
+    overlay.style.display = 'none';
+    if (e.dataTransfer.files && e.dataTransfer.files.length) pmAddFiles(e.dataTransfer.files);
+  });
+})();
+
+// ── SAVE HELPERS ──
+function pmSaveLibrary() {
+  if (!adminUnlocked) { alert('Admin not unlocked'); return; }
+  wsSend({ type: 'admin_photos', password: adminPass, photos: pmLibrary.map(p => ({ src: p.src, name: p.name || '' })) });
+}
+function pmPersistPreset(pr) {
+  if (!adminUnlocked) return;
+  wsSend({ type: 'admin_save_preset', password: adminPass, preset: { id: pr.id, name: pr.name, photoIds: pr.photoIds } });
+}
+
+// ── PRESETS PANEL ──
 function renderPresetsPanel() {
   const panel = document.getElementById('presets-panel');
   if (!panel) return;
   panel.innerHTML = '';
+  const allCountEl = document.getElementById('pm-all-count');
+  if (allCountEl) allCountEl.textContent = `(${pmLibrary.length})`;
   if (!pmPresets.length) {
-    panel.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:.3rem 0">No presets yet. Select photos and click "+ New preset".</div>';
+    panel.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:.3rem 0">No presets yet. Click "+ New Preset" to start one.</div>';
     return;
   }
   pmPresets.forEach(pr => {
+    const isEditing = pmMode === pr.id;
     const d = document.createElement('div');
-    d.style.cssText = 'background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:.65rem .85rem;margin-bottom:.5rem';
+    d.style.cssText = `background:var(--white);border:1.5px solid ${isEditing?'var(--red)':'var(--border)'};border-radius:10px;padding:.65rem .85rem;margin-bottom:.5rem`;
     d.innerHTML = `
       <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem">
         <div style="flex:1">
-          <input value="${esc(pr.name)}" oninput="pmRenamePreset('${pr.id}',this.value)"
+          <input value="${esc(pr.name)}" oninput="pmRenamePresetName('${pr.id}',this.value)"
             style="font-size:13px;font-weight:700;border:none;background:transparent;color:var(--text);outline:none;width:100%" />
           <div style="font-size:10px;color:var(--muted)">${pr.photoIds.length} photos</div>
         </div>
-        <button onclick="pmActivate('${pr.id}')" style="padding:5px 12px;background:var(--red);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer">▶ Use</button>
+        <button onclick="pmActivate('${pr.id}')" style="padding:5px 10px;background:var(--red);color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">▶ Use</button>
+        <button onclick="pmSwitchMode('${pr.id}')" style="padding:5px 10px;background:${isEditing?'var(--red)':'var(--off)'};color:${isEditing?'#fff':'var(--text)'};border:1.5px solid var(--border);border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">${isEditing?'✓ Editing':'✏️ Edit'}</button>
         <button onclick="pmDeletePreset('${pr.id}')" style="padding:5px 8px;background:#fee2e2;color:var(--red);border:none;border-radius:7px;font-size:12px;cursor:pointer">✕</button>
       </div>
       <div style="display:flex;gap:3px;flex-wrap:wrap;max-height:60px;overflow:hidden">
@@ -1373,46 +1451,23 @@ function renderPresetsPanel() {
 function pmNewPreset() {
   const name = prompt('Preset name (e.g. "Game Night 1"):');
   if (!name) return;
+  pendingNewPresetSwitch = name;
   wsSend({ type: 'admin_save_preset', password: adminPass, preset: { name, photoIds: [] } });
 }
 
-function pmNewPresetFromSel() {
-  if (pmLibrary.length < 1) { alert('Upload some photos first.'); return; }
-  const name = prompt('Preset name:');
-  if (!name) return;
-  const photoIds = [...pmSelected];
-  wsSend({ type: 'admin_save_preset', password: adminPass, preset: { name, photoIds } });
-  pmSelected = new Set();
-  renderPMGrid();
-  // renderPresetsPanel called when presets_update arrives from server
-}
-
-function pmAddToPreset(presetId) {
-  const pr = pmPresets.find(p => p.id === presetId);
-  if (!pr) return;
-  const existing = new Set(pr.photoIds);
-  [...pmSelected].forEach(id => existing.add(id));
-  pr.photoIds = [...existing];
-  wsSend({ type: 'admin_save_preset', password: adminPass, preset: { id: presetId, name: pr.name, photoIds: pr.photoIds } });
-  pmSelected = new Set();
-  renderPMGrid();
-  // renderPresetsPanel called when presets_update arrives
-}
-
-function pmRenamePreset(id, name) {
+function pmRenamePresetName(id, name) {
   const pr = pmPresets.find(p => p.id === id);
-  if (pr) pr.name = name;
-  // Debounce save
+  if (!pr) return;
+  pr.name = name;
   clearTimeout(pr._saveTimer);
-  pr._saveTimer = setTimeout(() => {
-    wsSend({ type: 'admin_save_preset', password: adminPass, preset: { id, name: pr.name, photoIds: pr.photoIds } });
-  }, 800);
+  pr._saveTimer = setTimeout(() => pmPersistPreset(pr), 700);
 }
 
 function pmDeletePreset(id) {
-  if (!confirm('Delete this preset?')) return;
+  if (!confirm('Delete this preset? Photos stay in the library.')) return;
   pmPresets = pmPresets.filter(p => p.id !== id);
   wsSend({ type: 'admin_delete_preset', password: adminPass, presetId: id });
+  if (pmMode === id) pmSwitchMode('all', true);
   renderPresetsPanel();
 }
 
@@ -1421,22 +1476,15 @@ function pmActivate(presetId) {
   pmActiveLabel = presetId === 'all' ? 'all photos' : (pmPresets.find(p => p.id === presetId)?.name || presetId);
   updateActiveCount();
 }
-
 function pmActivateRandom() {
   const n = parseInt(document.getElementById('rand-count').value) || 25;
   wsSend({ type: 'admin_activate_preset', password: adminPass, presetId: 'random', count: n });
   pmActiveLabel = `${n} random photos`;
   updateActiveCount();
 }
-
 function updateActiveCount() {
   const el = document.getElementById('active-label');
-  if (el) el.textContent = 'Using: ' + pmActiveLabel;
-  const ac = document.getElementById('active-count');
-  if (ac) {
-    const cnt = currentPhotos.length;
-    ac.textContent = cnt > 0 ? `(${cnt} photos)` : '';
-  }
+  if (el) el.textContent = 'Active in game: ' + pmActiveLabel;
 }
 
 // ═══ UTILS ═══
