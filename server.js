@@ -30,6 +30,11 @@ let games = {};
 let pendingChallenges = {};
 let nextId = 1;
 let nextGameId = 1;
+// Maps a persistent session token (generated client-side, survives page
+// reload / phone sleep) to the player's last-known clientId. Lets us
+// recognize "this is the same person reconnecting" instead of treating
+// every new WebSocket connection as a brand new player.
+let sessions = {}; // sessionId -> clientId
 
 try {
   if (fs.existsSync(PHOTOS_FILE)) {
@@ -206,18 +211,43 @@ function resolveSnipe(gid) {
   sendGameState(gid);
 }
 
+// How long to wait before treating a disconnected mid-game player as
+// actually gone (vs. their phone just locking/backgrounding briefly).
+// During this window the game object is kept alive so a session-resumed
+// reconnect can slot right back in.
+const RECONNECT_GRACE_MS = 45000; // 45 seconds
+
 function handleDisconnect(clientId) {
   const c = clients[clientId]; if(!c) return;
-  if (c.gameId) {
-    const g = games[c.gameId];
-    if (g) {
-      const oppId = clientId===g.p1?g.p2:g.p1;
-      if(clients[oppId]) { clients[oppId].status='lobby'; clients[oppId].gameId=null; send(oppId,{type:'opponent_left'}); }
-      delete games[c.gameId];
-    }
-  }
   delete pendingChallenges[clientId];
   Object.keys(pendingChallenges).forEach(k=>{ if(pendingChallenges[k]?.targetId===clientId) delete pendingChallenges[k]; });
+
+  if (c.gameId && games[c.gameId]) {
+    const gameId = c.gameId;
+    // Don't delete the client record or the game yet — keep both alive so
+    // a session-resumed reconnect (phone waking back up) can swap straight
+    // back into this exact slot. Only notify the opponent and tear
+    // everything down if they're still gone after the grace period.
+    setTimeout(() => {
+      const g = games[gameId];
+      if (!g) return; // already cleaned up (e.g. both left normally via back_to_lobby)
+      const current = clients[clientId];
+      const stillGone = !current || current.ws.readyState !== WebSocket.OPEN;
+      if (!stillGone) return; // they reconnected in time — nothing to do
+      const oppId = clientId===g.p1?g.p2:g.p1;
+      if (clients[oppId]) { clients[oppId].status='lobby'; clients[oppId].gameId=null; send(oppId,{type:'opponent_left'}); }
+      delete games[gameId];
+      delete clients[clientId];
+      console.log(`Game ${gameId} cleaned up — player ${clientId} did not reconnect within grace period`);
+      broadcastLobby();
+    }, RECONNECT_GRACE_MS);
+    // Still remove them from the visible lobby list immediately (they're
+    // not "online" while disconnected) without destroying their game state.
+    broadcastLobby();
+    return;
+  }
+
+  // Not in a game — safe to remove immediately, nothing to preserve.
   delete clients[clientId];
   broadcastLobby();
 }
@@ -232,13 +262,56 @@ wss.on('connection', ws => {
     let msg; try { msg=JSON.parse(raw); } catch { return; }
 
     if (msg.type==='join') {
-      clients[clientId] = {ws, name:(msg.name||'Player').slice(0,20), status:'lobby', gameId:null};
-      // Send full photos immediately on join
+      const sid = msg.sessionId;
+      const prevClientId = sid ? sessions[sid] : null;
+      const prevClient = prevClientId ? clients[prevClientId] : null;
+
+      if (prevClient && prevClient.gameId && games[prevClient.gameId]) {
+        // RECONNECTION: same session was mid-game. Swap this new WebSocket
+        // into the existing client record (keep gameId/status/name intact)
+        // and re-point the game's p1/p2 + players map to the new clientId.
+        const g = games[prevClient.gameId];
+        const oldId = prevClientId;
+        // Move client record under the new connection's id
+        clients[clientId] = { ...prevClient, ws, name: (msg.name||prevClient.name||'Player').slice(0,20) };
+        delete clients[oldId];
+        // Re-point game references from oldId -> clientId
+        if (g.p1 === oldId) g.p1 = clientId;
+        if (g.p2 === oldId) g.p2 = clientId;
+        if (g.players[oldId]) { g.players[clientId] = g.players[oldId]; delete g.players[oldId]; }
+        if (g.turn === oldId) g.turn = clientId;
+        if (g.snipe) {
+          if (g.snipe.initiatorId === oldId) g.snipe.initiatorId = clientId;
+          if (g.snipe.choices && g.snipe.choices[oldId] !== undefined) { g.snipe.choices[clientId] = g.snipe.choices[oldId]; delete g.snipe.choices[oldId]; }
+        }
+        if (g.result) {
+          if (g.result.guesserId === oldId) g.result.guesserId = clientId;
+          if (g.result.initiatorId === oldId) g.result.initiatorId = clientId;
+          if (g.result.responderId === oldId) g.result.responderId = clientId;
+        }
+        sessions[sid] = clientId;
+        console.log(`Session ${sid} reconnected: ${oldId} -> ${clientId} (resumed game ${prevClient.gameId})`);
+        send(clientId, {type:'welcome', clientId});
+        sendPhotos(clientId);
+        sendGameState(prevClient.gameId);
+        return;
+      }
+
+      if (prevClient) {
+        // Same session, but they were only in the lobby (not a game) — just
+        // carry their old status/name forward onto the new connection.
+        clients[clientId] = { ...prevClient, ws, name: (msg.name||prevClient.name||'Player').slice(0,20) };
+        if (prevClientId !== clientId) delete clients[prevClientId];
+      } else {
+        clients[clientId] = {ws, name:(msg.name||'Player').slice(0,20), status:'lobby', gameId:null};
+      }
+      if (sid) sessions[sid] = clientId;
+
       send(clientId, {type:'welcome', clientId});
       sendPhotos(clientId);
       const w=Object.entries(clients).filter(([,c])=>c.status==='waiting').map(([id,c])=>({id,name:c.name}));
       const o=Object.entries(clients).map(([id,c])=>({id,name:c.name,status:c.status}));
-      send(clientId, {type:'lobby_update',waiting:w,online:o,photosMeta:photos.map(p=>({id:p.id,name:p.name})),myStatus:'lobby'});
+      send(clientId, {type:'lobby_update',waiting:w,online:o,photosMeta:photos.map(p=>({id:p.id,name:p.name})),myStatus:clients[clientId].status});
       broadcastLobby();
     }
     else if (msg.type==='ready') {
@@ -419,14 +492,32 @@ wss.on('connection', ws => {
   ws.on('error', ()=>handleDisconnect(clientId));
 });
 
-// Ping every 20s to keep connections alive
+// Heartbeat: ping every 30s, but give a generous 3-strikes grace period
+// before actually disconnecting. Phones that lock/background throttle their
+// JS timers and WebSocket pong handling (especially iOS Safari), so a single
+// missed ping is normal and should NOT count as a disconnect — only treat
+// the connection as dead after several consecutive missed pongs in a row
+// (roughly 2-3 minutes of total silence).
+const PING_INTERVAL_MS = 30000;
+const MAX_MISSED_PINGS = 4; // ~2 minutes of no response before we give up
 setInterval(()=>{
   Object.entries(clients).forEach(([id,c])=>{
     if(c.ws.readyState!==WebSocket.OPEN){ handleDisconnect(id); return; }
-    if(!c.ws.isAlive){ c.ws.terminate(); handleDisconnect(id); return; }
-    c.ws.isAlive=false;
+    c.missedPings = c.missedPings || 0;
+    if(!c.ws.isAlive){
+      c.missedPings++;
+      if(c.missedPings >= MAX_MISSED_PINGS){
+        console.log(`Client ${id} (${c.name}) unresponsive after ${MAX_MISSED_PINGS} pings — disconnecting`);
+        c.ws.terminate();
+        handleDisconnect(id);
+        return;
+      }
+    } else {
+      c.missedPings = 0; // got a pong (or a message) since last check — reset
+    }
+    c.ws.isAlive = false;
     try{ c.ws.ping(); }catch(e){}
   });
-},20000);
+},PING_INTERVAL_MS);
 
-server.listen(PORT,'0.0.0.0',()=>console.log(`Guess Who on port ${PORT}`));
+server.listen(PORT,'0.0.0.0',()=>console.log(`Guess Who on port ${PORT}`)); 

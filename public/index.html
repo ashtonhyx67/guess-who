@@ -570,6 +570,23 @@ body.dark .gcounter{background:#450a0a}
 <script>
 // ═══ STATE ═══
 let ws=null, myId=null, myName='', myStatus='lobby';
+// Persistent session token — survives page reloads (sessionStorage) so that
+// if a phone locks/backgrounds and the WebSocket drops, reconnecting can
+// resume the exact same game instead of getting kicked to the lobby.
+let mySessionId = (function(){
+  try {
+    let sid = sessionStorage.getItem('gw_session_id');
+    if (!sid) {
+      sid = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+      sessionStorage.setItem('gw_session_id', sid);
+    }
+    return sid;
+  } catch(e) {
+    // sessionStorage unavailable (private browsing etc) — fall back to an
+    // in-memory id, which still helps for reconnects within the same load.
+    return 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  }
+})();
 let photoCache={};        // id->photo — populated by photos_data
 let currentPhotos=[];     // ordered array for display
 let currentGame=null;
@@ -598,7 +615,7 @@ function wsSend(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o));}
 function startPing(){clearInterval(pingTimer);pingTimer=setInterval(()=>wsSend({type:'ping'}),15000);}
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'){
-    if(!ws||ws.readyState!==WebSocket.OPEN) connect(()=>{if(myName)wsSend({type:'join',name:myName});});
+    if(!ws||ws.readyState!==WebSocket.OPEN) connect(()=>{if(myName)wsSend({type:'join',name:myName,sessionId:mySessionId});});
     else{startPing();if(isPage('pg-lobby'))refreshLobby();}
   }
 });
@@ -723,9 +740,24 @@ function joinLobby(){
   const n=document.getElementById('join-name').value.trim();
   if(!n) return;
   myName=n;
-  connect(()=>wsSend({type:'join',name:n}));
+  try { sessionStorage.setItem('gw_session_name', n); } catch(e) {}
+  connect(()=>wsSend({type:'join',name:n,sessionId:mySessionId}));
 }
 document.getElementById('join-name').addEventListener('keydown',e=>{if(e.key==='Enter')joinLobby();});
+
+// On page load, if we have a saved name + session from before (e.g. the
+// phone's browser tab was reloaded after backgrounding), auto-fill the name
+// field and auto-rejoin so the player doesn't have to retype anything.
+(function tryAutoRejoin(){
+  try {
+    const savedName = sessionStorage.getItem('gw_session_name');
+    if (savedName) {
+      document.getElementById('join-name').value = savedName;
+      myName = savedName;
+      connect(()=>wsSend({type:'join',name:savedName,sessionId:mySessionId}));
+    }
+  } catch(e) {}
+})();
 
 // ═══ LOBBY ═══
 function toggleFind(){
@@ -920,11 +952,19 @@ function openGuessModal(){
   const photos=currentGame?.photos||currentPhotos;
   const gl=currentGame?.me?.guessesLeft??3;
   const myElim=new Set(currentGame?.me?.eliminated||[]);
-  document.getElementById('guess-sub').textContent=`Who is it? (${gl} guess${gl!==1?'es':''} left)`;
+  // Normally you can only guess from cards you haven't eliminated yourself.
+  // But if you've flipped down EVERY card, there's nothing left to pick from
+  // under that rule — so in that case, open it back up to all cards.
+  const available=photos.filter(p=>!myElim.has(p.id));
+  const allEliminated = photos.length>0 && available.length===0;
+  const choices = allEliminated ? photos : available;
+  document.getElementById('guess-sub').textContent = allEliminated
+    ? `You've eliminated everyone — pick anyone to guess! (${gl} guess${gl!==1?'es':''} left)`
+    : `Who is it? (${gl} guess${gl!==1?'es':''} left)`;
   const grid=document.getElementById('guess-grid');
   grid.innerHTML='';
   document.getElementById('guess-ok-btn').disabled=true;
-  photos.filter(p=>!myElim.has(p.id)).forEach(p=>{
+  choices.forEach(p=>{
     const d=document.createElement('div'); d.className='go';
     d.innerHTML=`<div class="gi"><img src="${p.src}" alt=""></div>${showNames?`<div class="gn">${esc(p.name||'')}</div>`:''}<div class="gt">✓</div>`;
     d.onclick=()=>{grid.querySelectorAll('.go').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');pendingGuessId=p.id;document.getElementById('guess-ok-btn').disabled=false;};
@@ -957,13 +997,20 @@ function renderSnipe(msg){
   // Responder: show snipe modal
   pendingSnipeId=null;
   document.getElementById('snipe-title').textContent=`⚡ ${esc(snipe.initiatorName)} is making a guess!`;
-  document.getElementById('snipe-desc').textContent=`${esc(snipe.initiatorName)} thinks they know your secret character. Counter-guess their character?`;
   const grid=document.getElementById('snipe-grid');
   grid.innerHTML='';
   document.getElementById('snipe-ok-btn').disabled=true;
-  // Only let the responder counter-guess from cards they haven't already eliminated
+  // Only let the responder counter-guess from cards they haven't already
+  // eliminated — unless they've eliminated literally everyone, in which
+  // case fall back to letting them pick from all cards.
   const myElimForSnipe=new Set(msg.me?.eliminated||[]);
-  (msg.photos||[]).filter(p=>!myElimForSnipe.has(p.id)).forEach(p=>{
+  const snipeAvailable=(msg.photos||[]).filter(p=>!myElimForSnipe.has(p.id));
+  const snipeAllElim = (msg.photos||[]).length>0 && snipeAvailable.length===0;
+  const snipeChoices = snipeAllElim ? (msg.photos||[]) : snipeAvailable;
+  document.getElementById('snipe-desc').textContent = snipeAllElim
+    ? `${esc(snipe.initiatorName)} thinks they know your secret character. You've eliminated everyone — counter-guess from anyone!`
+    : `${esc(snipe.initiatorName)} thinks they know your secret character. Counter-guess their character?`;
+  snipeChoices.forEach(p=>{
     const d=document.createElement('div'); d.className='go';
     d.innerHTML=`<div class="gi"><img src="${p.src}" alt=""></div>${showNames?`<div class="gn">${esc(p.name||'')}</div>`:''}<div class="gt">✓</div>`;
     d.onclick=()=>{grid.querySelectorAll('.go').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');pendingSnipeId=p.id;document.getElementById('snipe-ok-btn').disabled=false;};
