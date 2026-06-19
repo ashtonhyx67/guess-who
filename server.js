@@ -289,7 +289,11 @@ wss.on('connection', ws => {
       const c=clients[clientId]; if(!c) return;
       const g=games[c.gameId]; if(!g||g.phase!=='playing') return;
       const elim=g.players[clientId].eliminated;
-      if(elim.has(msg.photoId)) elim.delete(msg.photoId);
+      const alreadyElim=elim.has(msg.photoId);
+      // Flipping a card DOWN (eliminating) only allowed on your own turn.
+      // Flipping a card BACK UP (un-eliminating) allowed anytime.
+      if(!alreadyElim && g.turn!==clientId) return;
+      if(alreadyElim) elim.delete(msg.photoId);
       else elim.add(msg.photoId);
       const gamePhotos=games[c.gameId]?.photos||photos;
       const remaining=gamePhotos.filter(p=>!elim.has(p.id));
@@ -323,7 +327,25 @@ wss.on('connection', ws => {
     }
     else if (msg.type==='back_to_lobby') {
       const c=clients[clientId]; if(!c) return;
-      c.status='lobby'; c.gameId=null; broadcastLobby(); send(clientId,{type:'go_lobby'});
+      const oldGameId=c.gameId;
+      c.status='lobby'; c.gameId=null;
+      // Clean up the game object once a player leaves it (game is over by now,
+      // this just prevents stale games from lingering in memory and prevents
+      // the opponent from being stuck referencing a half-empty game).
+      if(oldGameId && games[oldGameId]){
+        const g=games[oldGameId];
+        const oppId = clientId===g.p1 ? g.p2 : g.p1;
+        // Only fully delete once BOTH players have left, so the opponent
+        // can still see/interact with their own result screen if they're slower.
+        if(clients[oppId] && clients[oppId].gameId===oldGameId){
+          // Opponent hasn't left yet — leave the game object alive for them,
+          // just detach this player from it.
+        } else {
+          delete games[oldGameId];
+        }
+      }
+      broadcastLobby();
+      send(clientId,{type:'go_lobby'});
     }
     else if (msg.type==='request_lobby') {
       const c=clients[clientId]; if(!c||c.status==='playing') return;
