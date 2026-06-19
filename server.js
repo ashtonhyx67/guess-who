@@ -65,24 +65,25 @@ try {
   }
 } catch(e) { console.error(e.message); }
 
-// Restore last active preset
+// Restore last active preset (including randomizer toggle/count)
 try {
   if (fs.existsSync(ACTIVE_FILE) && allPhotos.length > 0) {
     const active = JSON.parse(fs.readFileSync(ACTIVE_FILE, 'utf8'));
-    if (active.presetId === 'all') {
-      photos = allPhotos;
-      console.log('Restored active: all photos (' + photos.length + ')');
-    } else if (active.presetId === 'random') {
-      // Random can't be restored deterministically — fall back to all
-      photos = allPhotos;
-      console.log('Restored active: all photos (was random)');
+    let basePool;
+    if (active.presetId === 'all' || active.presetId === 'random') {
+      // 'random' is a legacy value from before the randomizer became a
+      // toggle — treat it the same as 'all' going forward.
+      basePool = allPhotos;
     } else {
       const pr = presets.find(p => p.id === active.presetId);
-      if (pr) {
-        photos = pr.photoIds.map(pid => allPhotos.find(p => p.id === pid)).filter(Boolean).map((p,i) => ({...p, id:i}));
-        console.log('Restored active preset "' + pr.name + '" (' + photos.length + ' photos)');
-      }
+      basePool = pr ? pr.photoIds.map(pid => allPhotos.find(p => p.id === pid)).filter(Boolean) : allPhotos;
     }
+    // NOTE: randomization itself is NOT deterministic across restarts (the
+    // exact shuffled subset can't be reproduced), so on restore we just use
+    // the full base pool. The randomizer toggle/count is preserved purely
+    // as a UI preference for next time the admin hits "Use".
+    photos = basePool.map((p,i) => ({...p, id:i}));
+    console.log('Restored active set: ' + photos.length + ' photos' + (active.randomize ? ' (randomizer was on, count=' + active.count + ' — re-roll to apply)' : ''));
   }
 } catch(e) { console.error('Failed to restore active preset:', e.message); }
 
@@ -95,8 +96,8 @@ function savePhotos() {
     console.log('Saved', allPhotos.length, 'photos to disk');
   } catch(e) { console.error('Failed to save photos:', e.message); }
 }
-function saveActive(presetId, count) {
-  try { fs.writeFileSync(ACTIVE_FILE, JSON.stringify({ presetId, count })); } catch(e) { console.error(e.message); }
+function saveActive(presetId, count, randomize, randomCount) {
+  try { fs.writeFileSync(ACTIVE_FILE, JSON.stringify({ presetId, count, randomize: !!randomize, randomCount: randomCount||null })); } catch(e) { console.error(e.message); }
 }
 function savePresets() { try { fs.writeFileSync(PRESETS_FILE, JSON.stringify(presets));   } catch(e) { console.error(e.message); } }
 function shuffle(arr)  { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
@@ -447,20 +448,29 @@ wss.on('connection', ws => {
     }
     else if (msg.type==='admin_activate_preset') {
       if(msg.password!==ADMIN_PASSWORD) { send(clientId,{type:'error',text:'Wrong password.'}); return; }
-      if(msg.presetId==='all') { photos=allPhotos; }
-      else if(msg.presetId==='random') {
-        const n=Math.min(msg.count||25,allPhotos.length);
-        photos=shuffle(allPhotos).slice(0,n).map((p,i)=>({...p,id:i}));
+      // Resolve the base pool of photos for whichever preset (or 'all') was picked
+      let basePool;
+      if(msg.presetId==='all') {
+        basePool = allPhotos;
       } else {
         const pr=presets.find(p=>p.id===msg.presetId);
         if(!pr) { send(clientId,{type:'error',text:'Preset not found.'}); return; }
-        photos=pr.photoIds.map(pid=>allPhotos.find(p=>p.id===pid)).filter(Boolean).map((p,i)=>({...p,id:i}));
+        basePool = pr.photoIds.map(pid=>allPhotos.find(p=>p.id===pid)).filter(Boolean);
       }
-      // Persist the active selection so it survives restarts
-      saveActive(msg.presetId, photos.length);
+      // Randomizer is now an independent toggle that layers on top of
+      // whichever base set was chosen — works for 'all' or any preset.
+      // If the requested random count is >= the pool size, just use the
+      // whole pool (shown in original order) instead of trimming it.
+      if (msg.randomize && msg.count && msg.count < basePool.length) {
+        photos = shuffle(basePool).slice(0, msg.count).map((p,i)=>({...p,id:i}));
+      } else {
+        photos = basePool.map((p,i)=>({...p,id:i}));
+      }
+      // Persist the active selection (including randomizer state) so it survives restarts
+      saveActive(msg.presetId, photos.length, !!msg.randomize, msg.count||null);
       Object.entries(clients).forEach(([id,c])=>{ if(c.status!=='playing') sendPhotos(id); });
       broadcastLobby();
-      console.log('Active game photos set to', photos.length, 'photos');
+      console.log('Active game photos set to', photos.length, 'photos', msg.randomize ? `(randomized, requested ${msg.count})` : '');
       send(clientId,{type:'admin_ok',text:`Active set: ${photos.length} photos ready!`});
     }
     else if (msg.type==='admin_save_preset') {
@@ -520,4 +530,4 @@ setInterval(()=>{
   });
 },PING_INTERVAL_MS);
 
-server.listen(PORT,'0.0.0.0',()=>console.log(`Guess Who on port ${PORT}`)); 
+server.listen(PORT,'0.0.0.0',()=>console.log(`Guess Who on port ${PORT}`));

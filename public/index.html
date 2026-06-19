@@ -451,8 +451,8 @@ body.dark .gcounter{background:#450a0a}
   <div class="modal">
     <div style="font-size:2.5rem;margin-bottom:.4rem">🔌</div>
     <h2>Opponent disconnected</h2>
-    <p>Your opponent left the game.</p>
-    <div class="mbtns"><button class="mbtn" onclick="backToLobby()">Back to Lobby</button></div>
+    <p>Your opponent left the game. Sending you back to the lobby...</p>
+    <div class="mbtns"><button class="mbtn" onclick="backToLobby()">Back to Lobby Now</button></div>
   </div>
 </div>
 
@@ -524,19 +524,33 @@ body.dark .gcounter{background:#450a0a}
     <!-- RIGHT: Mode selector — All / Presets -->
     <div style="width:40%;display:flex;flex-direction:column;overflow:hidden">
 
+      <!-- Global randomizer toggle — applies to whichever "Use" button is clicked next, for All or any preset -->
+      <div style="padding:.65rem 1rem;background:var(--white);border-bottom:1.5px solid var(--border);flex-shrink:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem">
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <label class="tog" style="width:38px;height:21px"><input type="checkbox" id="randomizer-toggle" onchange="pmToggleRandomizer(this.checked)"><span class="tog-sl"></span></label>
+            <div>
+              <div style="font-size:12px;font-weight:700">🔀 Randomizer</div>
+              <div style="font-size:10px;color:var(--muted)" id="randomizer-status">Off — Use shows the full set</div>
+            </div>
+          </div>
+        </div>
+        <div id="randomizer-count-row" style="display:none;align-items:center;gap:.4rem;margin-top:.55rem">
+          <span style="font-size:11px;color:var(--muted)">Pick</span>
+          <input id="rand-count" type="number" value="25" min="2" style="width:60px;padding:3px 6px;border:1.5px solid var(--border);border-radius:5px;font-size:12px;background:var(--off);color:var(--text);outline:none;text-align:center" oninput="this._userEdited=true">
+          <span style="font-size:11px;color:var(--muted)">cards out of whatever set you Use</span>
+          <button onclick="document.getElementById('rand-count').value=pmLibrary.length;document.getElementById('rand-count')._userEdited=true" style="padding:2px 7px;background:transparent;border:1px solid var(--border);border-radius:5px;font-size:10px;color:var(--muted);cursor:pointer">Max</button>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:.4rem;line-height:1.4">If the pick count is more than the set has, the whole set is used instead.</div>
+      </div>
+
       <!-- ALL button -->
       <div style="padding:.75rem 1rem;background:var(--white);border-bottom:1.5px solid var(--border);flex-shrink:0">
         <button onclick="pmSwitchMode('all')" id="pm-all-btn" style="width:100%;padding:12px;border-radius:10px;border:2px solid var(--red);background:var(--red);color:#fff;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem">
           🌐 All <span id="pm-all-count" style="font-weight:600;font-size:12px;opacity:.85"></span>
         </button>
         <div style="margin-top:.5rem;font-size:11px;color:var(--muted);text-align:center" id="active-label">Active in game: all photos</div>
-        <div style="margin-top:.4rem;display:flex;align-items:center;gap:.4rem;justify-content:center;flex-wrap:wrap">
-          <button onclick="pmActivate('all')" style="padding:4px 10px;background:var(--off);border:1.5px solid var(--border);border-radius:7px;font-size:11px;font-weight:600;cursor:pointer">▶ Use All Now</button>
-          <button onclick="pmActivateRandom()" style="padding:4px 10px;background:var(--off);border:1.5px solid var(--border);border-radius:7px;font-size:11px;font-weight:600;cursor:pointer">🔀 Random</button>
-          <input id="rand-count" type="number" value="25" min="2" style="width:64px;padding:3px 6px;border:1.5px solid var(--border);border-radius:5px;font-size:12px;background:var(--off);color:var(--text);outline:none;text-align:center" oninput="this._userEdited=true">
-          <span style="font-size:10px;color:var(--muted)" id="rand-max-hint">cards</span>
-          <button onclick="document.getElementById('rand-count').value=pmLibrary.length;document.getElementById('rand-count')._userEdited=true" style="padding:3px 8px;background:transparent;border:1px solid var(--border);border-radius:5px;font-size:10px;color:var(--muted);cursor:pointer">Max</button>
-        </div>
+        <button onclick="pmActivate('all')" style="width:100%;margin-top:.45rem;padding:6px 10px;background:var(--off);border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-weight:700;cursor:pointer">▶ Use All</button>
       </div>
 
       <!-- Presets list -->
@@ -676,6 +690,7 @@ function handle(msg){
       return;
 
     case 'go_lobby': case 'force_lobby':
+      clearTimeout(window._oppLeftAutoTimer);
       myStatus='lobby'; boardBuilt=false; pendingPickId=null; currentGame=null; pendingGS=null;
       pendingFlips=new Set();
       syncFindUI('lobby');
@@ -686,6 +701,13 @@ function handle(msg){
     case 'opponent_left':
       closeOverlay('modal-guess'); closeOverlay('modal-snipe');
       document.getElementById('modal-left').classList.add('show');
+      // Auto-send this player back to the lobby after a short pause so they
+      // don't have to manually click — but still leave the button there in
+      // case they want to leave immediately instead of waiting.
+      clearTimeout(window._oppLeftAutoTimer);
+      window._oppLeftAutoTimer = setTimeout(() => {
+        if (document.getElementById('modal-left').classList.contains('show')) backToLobby();
+      }, 3000);
       return;
 
     case 'challenge_received':
@@ -1066,6 +1088,7 @@ function renderResult(msg){
   document.getElementById('modal-result').classList.add('show');
 }
 function backToLobby(){
+  clearTimeout(window._oppLeftAutoTimer);
   ['modal-result','modal-left'].forEach(closeOverlay);
   boardBuilt=false; pendingPickId=null; currentGame=null; pendingGS=null;
   pendingFlips=new Set(); myStatus='lobby'; syncFindUI('lobby');
@@ -1473,10 +1496,9 @@ function renderPresetsPanel() {
   panel.innerHTML = '';
   const allCountEl = document.getElementById('pm-all-count');
   if (allCountEl) allCountEl.textContent = `(${pmLibrary.length})`;
-  // Random-count field has no artificial ceiling — just clamp the displayed
-  // hint to however many photos actually exist in the library right now.
-  const randHint = document.getElementById('rand-max-hint');
-  if (randHint) randHint.textContent = `of ${pmLibrary.length} cards`;
+  // Random-count field has no artificial ceiling — just keep the default
+  // pre-filled value sane relative to the current library size, unless the
+  // admin has already typed their own number.
   const randInput = document.getElementById('rand-count');
   if (randInput && !randInput._userEdited) {
     randInput.value = Math.min(parseInt(randInput.value)||25, pmLibrary.length || 25);
@@ -1535,15 +1557,25 @@ function pmDeletePreset(id) {
   renderPresetsPanel();
 }
 
-function pmActivate(presetId) {
-  wsSend({ type: 'admin_activate_preset', password: adminPass, presetId });
-  pmActiveLabel = presetId === 'all' ? 'all photos' : (pmPresets.find(p => p.id === presetId)?.name || presetId);
-  updateActiveCount();
+// Whether the randomizer toggle is currently on, and how many cards to pick.
+// This is independent of which preset/All you click "Use" on — it layers
+// on top of whatever base set you choose.
+let pmRandomizeOn = false;
+
+function pmToggleRandomizer(on) {
+  pmRandomizeOn = on;
+  document.getElementById('randomizer-count-row').style.display = on ? 'flex' : 'none';
+  document.getElementById('randomizer-status').textContent = on
+    ? 'On — randomizes whatever set you Use'
+    : 'Off — Use shows the full set';
 }
-function pmActivateRandom() {
-  const n = parseInt(document.getElementById('rand-count').value) || 25;
-  wsSend({ type: 'admin_activate_preset', password: adminPass, presetId: 'random', count: n });
-  pmActiveLabel = `${n} random photos`;
+
+function pmActivate(presetId) {
+  const randomize = pmRandomizeOn;
+  const count = randomize ? (parseInt(document.getElementById('rand-count').value) || 25) : null;
+  wsSend({ type: 'admin_activate_preset', password: adminPass, presetId, randomize, count });
+  const baseName = presetId === 'all' ? 'all photos' : (pmPresets.find(p => p.id === presetId)?.name || presetId);
+  pmActiveLabel = randomize ? `${count} random from ${baseName}` : baseName;
   updateActiveCount();
 }
 function updateActiveCount() {
